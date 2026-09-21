@@ -1,41 +1,40 @@
-## FL-XX · <title>
+## Proposed changes
 
-<!-- What this changes, in a sentence or two. The what is visible in the diff;
-     say the why, and anything you decided against. -->
+> In your own words, write at least one paragraph explaining the why and how of the changes in this PR. An important note: if your PR has changed more than 500 lines, consider splitting it into smaller ones.
 
-### Why this way
+## Related ticket
 
-<!-- The decision worth recording, if there is one. For example: why the state
-     lives where it does, why a rule is data rather than a branch, why a library
-     was or was not used. Delete the section if the change has no such decision. -->
+> FL-XX in [task-chunks.md](../task-chunks.md). Link the requirement in
+> [plan.md](../plan.md) if this implements one.
 
-### Checks
+## Tests
 
-- [ ] `npm test` passes
-- [ ] `npm run typecheck` passes
-- [ ] `npx eslint .` is clean
-- [ ] `npm run build` passes
+> Paste the run, not a claim that it passed.
 
-### Where relevant
+```bash
+npm test && npm run typecheck && npx eslint . && npm run build
+```
 
-- [ ] Tests cover the failure path, not only the happy path
-- [ ] Domain logic stays free of Vue imports
-- [ ] New per-type behaviour is a registry entry, not a new branch in a component
-- [ ] Checked in the browser, not only in tests
-- [ ] Works in light and dark, including anything the platform draws (native
-      dropdowns, the date picker, the canvas)
-- [ ] Keyboard reachable, with a visible focus state
-- [ ] Every new control has an accessible name and a tooltip that says something
-      its label does not
-- [ ] Documentation updated: README, `plan.md`, or `task-chunks.md`
+```
+paste output here
+```
 
-### Screenshots
+## Screenshots / video
 
-<!-- For any visible change, both themes. A screenshot catches what a passing
-     test cannot: whether the thing actually reads well. -->
+> Any visible change, in both themes. A screenshot catches what a green test cannot: whether the
+> thing reads well.
 
-### Notes for review
+## How to test
 
-<!-- Anything you are unsure about, deliberately left out, or want a second
-     opinion on. Say what you did not do and why, so it reads as a decision
-     rather than an omission. -->
+> The steps a reviewer follows to see it working. Name the URL, the control, and what should happen.
+
+## Review checklist
+
+- [ ] Logic stayed out of the components: `src/domain` has no Vue imports
+- [ ] Tests cover the failure path, including rollback, not only the happy path
+- [ ] Opened in a browser, in both themes, including what the platform draws itself
+- [ ] Keyboard reachable, with a visible focus state, an accessible name and a useful tooltip
+
+## Left out
+
+> What you chose not to do, and why. Naming it makes it a decision rather than something the reviewer discovers.
