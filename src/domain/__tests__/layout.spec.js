@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '../../../public/payload.json'
+import payload from '@/tests/fixtures/payload.json'
 import { NODE_GAP, NODE_SIZE } from '../constants.js'
 import { normaliseNode } from '../graph.js'
 import { layoutTree, nextFreePosition } from '../layout.js'

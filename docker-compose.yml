@@ -7,6 +7,8 @@ services:
       - '5173:5173'
     environment:
       - VITE_PAYLOAD_URL=${VITE_PAYLOAD_URL:-}
+      - PAYLOAD_ORIGIN=${PAYLOAD_ORIGIN}
+      - PAYLOAD_PATH=${PAYLOAD_PATH}
     volumes:
       - .:/app
       # Anonymous volume, so the host's node_modules are not mounted over.
@@ -23,6 +25,10 @@ services:
         VITE_PAYLOAD_URL: ${VITE_PAYLOAD_URL:-}
     ports:
       - '8080:80'
+    environment:
+      - PAYLOAD_ORIGIN=${PAYLOAD_ORIGIN}
+      - PAYLOAD_PATH=${PAYLOAD_PATH}
+      - PAYLOAD_HOST=${PAYLOAD_HOST}
     networks:
       - flow-net
 

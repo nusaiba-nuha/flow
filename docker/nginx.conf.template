@@ -4,6 +4,13 @@ server {
   root /usr/share/nginx/html;
   index index.html;
 
+  # Same reason as the dev proxy: the bucket sends no CORS headers.
+  location /api/payload {
+    proxy_pass ${PAYLOAD_ORIGIN}${PAYLOAD_PATH};
+    proxy_set_header Host ${PAYLOAD_HOST};
+    proxy_ssl_server_name on;
+  }
+
   # Client-side routes have no file on disk; without this a refresh returns 404.
   location / {
     try_files $uri $uri/ /index.html;
