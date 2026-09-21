@@ -1,5 +1,19 @@
 import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createPinia } from 'pinia'
+import { VueQueryPlugin } from '@tanstack/vue-query'
 
-createApp(App).mount('#app')
+import App from './App.vue'
+import router from './router'
+import { queryClientConfig } from './api/queryClient'
+
+// Library stylesheets first, so our own rules win where they overlap.
+import '@vue-flow/core/dist/style.css'
+import '@vue-flow/core/dist/theme-default.css'
+import '@vuepic/vue-datepicker/dist/main.css'
+import './style.css'
+
+createApp(App)
+  .use(createPinia())
+  .use(router)
+  .use(VueQueryPlugin, { queryClientConfig })
+  .mount('#app')
