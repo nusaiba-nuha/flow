@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to the same branch cancels the run it supersedes, so a queue of
+# stale jobs does not build up on an active branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, types, tests, build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Kept in step with .nvmrc so CI and local use the same Node.
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` rather than `npm install`: it installs exactly the lockfile and
+      # fails if package.json and the lock have drifted.
+      - run: npm ci
+
+      # Each step runs even when an earlier one failed, so one run reports every
+      # problem instead of making you fix them one push at a time.
+      - name: Lint
+        if: '!cancelled()'
+        run: npx eslint .
+
+      - name: Type check
+        if: '!cancelled()'
+        run: npm run typecheck
+
+      - name: Unit tests
+        if: '!cancelled()'
+        run: npm run test:coverage
+
+      - name: Build
+        if: '!cancelled()'
+        run: npm run build
