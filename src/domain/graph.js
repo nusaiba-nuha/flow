@@ -1,8 +1,7 @@
 import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from './constants.js'
 
 /**
- * The payload mixes a numeric trigger id with hex strings, and route params are
- * always strings, so every id is normalised once, here.
+ * The payload mixes a numeric id with hex strings; route params are strings.
  * @param {unknown} id
  * @returns {string}
  */
@@ -24,10 +23,8 @@ export function normaliseNode(raw) {
 }
 
 /**
- * Edges come from `parentId` alone. The dateTime node also lists its children in
- * `data.connectors`, but two sources that can disagree is a bug waiting to happen.
- *
- * Unlabelled: a branch is already named by its connector node.
+ * From `parentId` alone: `data.connectors` says the same thing and could disagree.
+ * Unlabelled, because the connector node already names the branch.
  *
  * @param {import('./types.js').FlowNode[]} nodes
  * @returns {import('./types.js').VueFlowEdge[]}
@@ -54,9 +51,7 @@ export function connectorLabel(node) {
 }
 
 /**
- * Raw payload in, Vue Flow graph out, so the canvas never sees the payload shape.
  * Positions are wired to the layout at FL-07.
- *
  * @param {Record<string, any>[]} payload
  * @returns {{ nodes: import('./types.js').VueFlowNode[], edges: import('./types.js').VueFlowEdge[] }}
  */
@@ -75,11 +70,8 @@ export function payloadToGraph(payload) {
 }
 
 /**
- * Remove a node, returning a new list.
- *
- * Children are re-parented rather than cascaded, so a delete never destroys work
- * nobody asked to remove. A dateTime node's connectors are the exception: they
- * are part of that node, so they go with it and their children move up instead.
+ * Children are re-parented, not cascaded. A dateTime node's connectors are the
+ * exception: they belong to it, so they go too.
  *
  * @param {Record<string, any>[]} flow
  * @param {string} id
