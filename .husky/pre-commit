@@ -1,0 +1,6 @@
+# Fast checks only: lint and format the staged files.
+#
+# Anything slower belongs in pre-push or CI. A pre-commit hook that runs the
+# whole suite is a hook people start bypassing, and a bypassed hook protects
+# nothing.
+npx lint-staged
