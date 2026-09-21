@@ -21,8 +21,7 @@ paste output here
 
 ## Screenshots / video
 
-> Any visible change, in both themes. A screenshot catches what a green test cannot: whether the
-> thing reads well.
+> Any visible change, in both themes. A screenshot catches what a green test cannot: whether the thing reads well.
 
 ## How to test
 
