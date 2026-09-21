@@ -1,4 +1,5 @@
 import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from './constants.js'
+import { layoutTree } from './layout.js'
 
 /**
  * The payload mixes a numeric id with hex strings; route params are strings.
@@ -51,18 +52,19 @@ export function connectorLabel(node) {
 }
 
 /**
- * Positions are wired to the layout at FL-07.
+ * A dragged node keeps where it was put; everything else is laid out.
  * @param {Record<string, any>[]} payload
  * @returns {{ nodes: import('./types.js').VueFlowNode[], edges: import('./types.js').VueFlowEdge[] }}
  */
 export function payloadToGraph(payload) {
   const nodes = (payload ?? []).map(normaliseNode)
+  const positions = layoutTree(nodes)
 
   return {
     nodes: nodes.map((node) => ({
       id: node.id,
       type: node.type,
-      position: node.position ?? { x: 0, y: 0 },
+      position: node.position ?? positions.get(node.id) ?? { x: 0, y: 0 },
       data: { node },
     })),
     edges: buildEdges(nodes),
