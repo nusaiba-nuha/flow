@@ -1,5 +1,7 @@
-<script setup></script>
+<script setup>
+import { RouterView } from 'vue-router'
+</script>
 
 <template>
-  <div>Flow Builder</div>
+  <RouterView />
 </template>
