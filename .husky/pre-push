@@ -1,0 +1,6 @@
+# The gates that must hold on a shared branch: types and unit tests.
+#
+# Still not the build or the end to end suite. CI runs those, and CI is the real
+# authority here: a hook is local and one --no-verify skips it.
+npm run typecheck
+npm test
