@@ -1,10 +1,5 @@
 @import 'tailwindcss';
 
-/*
- * Base rules only. Design tokens and the dark palette arrive at FL-26; starting
- * a palette here would mean writing it twice.
- */
-
 html,
 body,
 #app {

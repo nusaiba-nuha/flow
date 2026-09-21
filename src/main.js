@@ -6,7 +6,7 @@ import App from './App.vue'
 import router from './router'
 import { queryClientConfig } from './api/queryClient'
 
-// Library stylesheets first, so our own rules win where they overlap.
+// Library styles first, so ours win where they overlap.
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vuepic/vue-datepicker/dist/main.css'
