@@ -64,10 +64,7 @@
           "day": "sun"
         }
       ],
-      "connectors": [
-        "161f52",
-        "28c4b9"
-      ],
+      "connectors": ["161f52", "28c4b9"],
       "timezone": "UTC",
       "action": "businessHours"
     },
