@@ -1,5 +1,4 @@
 services:
-  # Development: source is mounted, so edits reload without a rebuild.
   app:
     build:
       context: .
@@ -7,24 +6,20 @@ services:
     ports:
       - '5173:5173'
     environment:
-      # Unset means public/payload.json. Read at runtime by the dev server.
       - VITE_PAYLOAD_URL=${VITE_PAYLOAD_URL:-}
     volumes:
       - .:/app
-      # Anonymous volume, so the container keeps its own node_modules rather than
-      # having the host's mounted over them.
+      # Anonymous volume, so the host's node_modules are not mounted over.
       - /app/node_modules
     networks:
       - flow-net
 
-  # Production: the built bundle on nginx. Started with --profile prod.
   app-prod:
     profiles: ['prod']
     build:
       context: .
       target: prod
       args:
-        # Baked into the bundle at build time, not read at container start.
         VITE_PAYLOAD_URL: ${VITE_PAYLOAD_URL:-}
     ports:
       - '8080:80'

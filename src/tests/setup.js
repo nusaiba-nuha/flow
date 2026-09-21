@@ -1,7 +1,4 @@
-// Runs before every test file, per `setupFiles` in vite.config.js.
-//
-// happy-dom does not implement the layout APIs Vue Flow probes on mount, so the
-// stubs live here rather than in each spec that happens to render a canvas.
+// happy-dom lacks the layout APIs Vue Flow probes on mount.
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
   class {
