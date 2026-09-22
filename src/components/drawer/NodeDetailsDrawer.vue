@@ -6,6 +6,8 @@ import TextField from '@/components/ui/TextField.vue'
 import { useNode } from '@/composables/useFlowQuery.js'
 import { useDeleteNode, useUpdateNode } from '@/composables/useNodeMutations.js'
 import { useDraft } from '@/composables/useDraft.js'
+import { useFlowHistory } from '@/composables/useFlowHistory.js'
+import { useToastStore } from '@/stores/toasts.js'
 import { metaFor } from '@/domain/nodeMeta.js'
 import { validateNodeData } from '@/domain/nodeValidation.js'
 import { FIELD_LIMIT, maxLength, required } from '@/domain/validators.js'
@@ -20,6 +22,8 @@ const router = useRouter()
 const { node, isLoading } = useNode(() => props.id)
 const updateNode = useUpdateNode()
 const deleteNode = useDeleteNode()
+const toasts = useToastStore()
+const { undo } = useFlowHistory()
 
 const meta = computed(() => (node.value ? metaFor(node.value.type) : null))
 const body = computed(() => (node.value ? detailComponentFor(node.value.type) : null))
@@ -67,14 +71,26 @@ function save() {
   showBodyError.value = true
   if (!canSave.value || !isDirty.value) return
 
-  updateNode.mutate({
-    id: props.id,
-    patch: { name: draft.name, data: { ...draft.data, description: draft.description } },
-  })
+  updateNode.mutate(
+    {
+      id: props.id,
+      patch: { name: draft.name, data: { ...draft.data, description: draft.description } },
+    },
+    // The drawer stays open, so this is the only sign the write actually landed.
+    { onSuccess: () => toasts.push('Changes saved', { label: 'Undo', run: undo }) },
+  )
 }
 
 function remove() {
-  deleteNode.mutate({ id: props.id }, { onSuccess: close })
+  deleteNode.mutate(
+    { id: props.id },
+    {
+      onSuccess() {
+        close()
+        toasts.push('Node deleted', { label: 'Undo', run: undo })
+      },
+    },
+  )
 }
 
 /** @param {KeyboardEvent} event */
