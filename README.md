@@ -11,7 +11,8 @@ Nodes load from a payload API, render on a draggable canvas, and are edited thro
 [![CI](https://img.shields.io/badge/CI-passing-brightgreen.svg)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff5a2c.svg)](LICENSE)
 
-[Screencast from 09-22-2026 11:06:07 PM.webm](https://github.com/user-attachments/assets/2eb168f7-9c48-476e-8fd2-9fdb94a53b4e)
+https://github.com/user-attachments/assets/99048de2-753a-4d37-9012-1011bc2347ea
+
 
 </div>
 
