@@ -1,5 +1,88 @@
 @import 'tailwindcss';
 
+/* Light palette now; FL-26 adds the dark one without touching a component. */
+:root {
+  --canvas: #f4f5f8;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f8fafc;
+  --hover: #f1f5f9;
+
+  --ink: #14181f;
+  --muted: #64748b;
+  --subtle: #94a3b8;
+
+  --line: #e3e7ee;
+  --line-strong: #cbd5e1;
+
+  --brand: #0f172a;
+  --brand-ink: #ffffff;
+  --brand-hover: #1e293b;
+
+  --danger: #e11d48;
+  --focus: #2563eb;
+
+  --dots: #d6dbe4;
+  --edge: #f97362;
+  --branch-bg: #eef2ff;
+  --branch-ink: #4f46e5;
+
+  --node-trigger: #e11d48;
+  --node-trigger-soft: #fecdd3;
+  --node-hours: #ea580c;
+  --node-hours-soft: #fed7aa;
+  --node-message: #059669;
+  --node-message-soft: #a7f3d0;
+  --node-comment: #0284c7;
+  --node-comment-soft: #bae6fd;
+  --node-branch: #4f46e5;
+  --node-branch-soft: #c7d2fe;
+  --node-unknown: #94a3b8;
+  --node-unknown-soft: #e2e8f0;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.08);
+  --shadow-raised: 0 4px 12px rgb(15 23 42 / 0.1);
+  --shadow-panel: -8px 0 24px rgb(15 23 42 / 0.08);
+}
+
+/* Utilities map onto the variables, so `bg-surface` follows the active theme. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--surface-raised);
+  --color-sunken: var(--surface-sunken);
+  --color-hover: var(--hover);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-hover: var(--brand-hover);
+
+  --color-danger: var(--danger);
+  --color-focus: var(--focus);
+  --color-branch-bg: var(--branch-bg);
+  --color-branch-ink: var(--branch-ink);
+
+  --color-node-trigger: var(--node-trigger);
+  --color-node-trigger-soft: var(--node-trigger-soft);
+  --color-node-hours: var(--node-hours);
+  --color-node-hours-soft: var(--node-hours-soft);
+  --color-node-message: var(--node-message);
+  --color-node-message-soft: var(--node-message-soft);
+  --color-node-comment: var(--node-comment);
+  --color-node-comment-soft: var(--node-comment-soft);
+  --color-node-branch: var(--node-branch);
+  --color-node-branch-soft: var(--node-branch-soft);
+  --color-node-unknown: var(--node-unknown);
+  --color-node-unknown-soft: var(--node-unknown-soft);
+}
+
 html,
 body,
 #app {
@@ -8,6 +91,8 @@ body,
 
 body {
   margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
   font-family:
     'Inter',
     ui-sans-serif,
