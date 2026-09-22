@@ -5,19 +5,23 @@ import { flowKeys } from '@/api/queryKeys.js'
 import { toNodeId, withNodeRemoved } from '@/domain/graph.js'
 import { creatableByValue } from '@/domain/nodeMeta.js'
 import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from '@/domain/constants.js'
+import { useHistoryStore } from '@/stores/history.js'
 
 /**
  * Every mutation shares one shape, so all of them behave the same way when the
- * server rejects a change.
+ * server rejects a change. History is recorded here, so a new mutation cannot
+ * forget to be undoable.
  *
  * @param {{
  *   mutationFn: (variables: any) => Promise<any>,
  *   apply: (flow: Record<string, any>[], variables: any) => Record<string, any>[],
  *   invalidate?: boolean,
+ *   label?: string,
  * }} options
  */
-function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true }) {
+function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true, label = '' }) {
   const queryClient = useQueryClient()
+  const history = useHistoryStore()
 
   return useMutation({
     mutationFn,
@@ -36,6 +40,13 @@ function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true }) {
       return { previous }
     },
 
+    onSuccess(_data, _variables, context) {
+      // On success only: an undo entry for a change that was rolled back would
+      // take the user somewhere they have never been.
+      const previous = /** @type {Record<string, any>[] | undefined} */ (context?.previous)
+      if (label) history.record(label, previous)
+    },
+
     onError(_error, _variables, context) {
       // Restore the whole list rather than reversing the change: one rollback
       // path, and it cannot drift out of step with `apply`.
@@ -50,6 +61,7 @@ function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true }) {
 
 export function useCreateNode() {
   return useOptimisticFlowMutation({
+    label: 'Create node',
     mutationFn: (variables) => flowApi.createNode(variables),
     apply: (flow, variables) => {
       // The form value is not always the payload type: businessHours is a dateTime.
@@ -84,6 +96,7 @@ export function useCreateNode() {
 
 export function useUpdateNode() {
   return useOptimisticFlowMutation({
+    label: 'Edit node',
     mutationFn: (variables) => flowApi.updateNode(variables),
     apply: (flow, { id, patch }) =>
       flow.map((node) =>
@@ -101,6 +114,7 @@ export function useUpdateNode() {
 
 export function useDeleteNode() {
   return useOptimisticFlowMutation({
+    label: 'Delete node',
     mutationFn: (variables) => flowApi.deleteNode(variables),
     // The same function the backend uses, so both results agree.
     apply: (flow, { id }) => withNodeRemoved(flow, id),
@@ -110,6 +124,7 @@ export function useDeleteNode() {
 /** Drag persistence. Skips the invalidate: a refetch mid-drag snaps the node back. */
 export function useMoveNode() {
   return useOptimisticFlowMutation({
+    label: 'Move node',
     mutationFn: ({ id, position }) => flowApi.updateNode({ id, patch: { position } }),
     apply: (flow, { id, position }) =>
       flow.map((node) => (toNodeId(node.id) === id ? { ...node, position } : node)),
@@ -120,11 +135,14 @@ export function useMoveNode() {
 /** Discard local changes and re-seed from the payload. */
 export function useRestoreFlow() {
   const queryClient = useQueryClient()
+  const history = useHistoryStore()
 
   return useMutation({
     mutationFn: () => flowApi.restoreFlow(),
     onSuccess(flow) {
       queryClient.setQueryData(flowKeys.list(), flow)
+      // Nothing coherent to go back to once the flow is re-seeded.
+      history.clear()
     },
   })
 }
