@@ -12,11 +12,23 @@ import { createTestQueryClient, waitUntil } from '@/tests/utils.js'
 /** Vue Flow measures real DOM, which happy-dom cannot provide; E2E covers the real thing. */
 const fitView = vi.fn()
 const setViewport = vi.fn()
-const setNodes = vi.fn()
-const setEdges = vi.fn()
+// A tiny stand-in store, so the diff has something to read back.
+const store = { nodes: [], edges: [] }
+const addNodes = vi.fn((added) => store.nodes.push(...added))
+const addEdges = vi.fn((added) => store.edges.push(...added))
+const removeNodes = vi.fn((ids) => (store.nodes = store.nodes.filter((n) => !ids.includes(n.id))))
+const removeEdges = vi.fn((ids) => (store.edges = store.edges.filter((e) => !ids.includes(e.id))))
+const updateFlowNode = vi.fn()
+const updateEdge = vi.fn()
+// Measured nodes, which is what the canvas waits for before panning.
+const findNode = vi.fn((id) => ({
+  id,
+  position: { x: 0, y: 0 },
+  dimensions: { width: 160, height: 60 },
+}))
 
-const lastNodes = () => setNodes.mock.calls.at(-1)?.[0] ?? []
-const lastEdges = () => setEdges.mock.calls.at(-1)?.[0] ?? []
+const lastNodes = () => store.nodes
+const lastEdges = () => store.edges
 
 const VueFlowStub = defineComponent({
   name: 'VueFlow',
@@ -29,9 +41,16 @@ vi.mock('@vue-flow/core', () => ({
   VueFlow: VueFlowStub,
   useVueFlow: () => ({
     fitView,
+    findNode,
     setViewport,
-    setNodes,
-    setEdges,
+    addNodes,
+    addEdges,
+    removeNodes,
+    removeEdges,
+    updateNode: updateFlowNode,
+    updateEdge,
+    getNodes: { value: store.nodes },
+    getEdges: { value: store.edges },
     viewport: ref({ x: 0, y: 0, zoom: 1 }),
   }),
   Handle: { template: '<div />' },
@@ -68,6 +87,8 @@ beforeEach(() => {
   setActivePinia(createPinia())
   resetFlow()
   vi.clearAllMocks()
+  store.nodes = []
+  store.edges = []
   vi.stubEnv('VITE_PAYLOAD_URL', '')
   vi.stubGlobal(
     'fetch',
@@ -95,6 +116,8 @@ describe('FlowCanvas', () => {
     expect(fitView).toHaveBeenCalledTimes(1)
 
     vi.clearAllMocks()
+    store.nodes = []
+    store.edges = []
     const pinia = createPinia()
     setActivePinia(pinia)
     useCanvasStore().setViewport({ x: 10, y: 20, zoom: 1.5 })
@@ -122,6 +145,9 @@ describe('FlowCanvas', () => {
     expect(push).not.toHaveBeenCalled()
 
     flow.vm.$emit('node-drag-stop', { node: { id: 'b6a0c1', position: { x: 300, y: 500 } } })
-    await waitUntil(() => lastNodes().find((node) => node.id === 'b6a0c1')?.position?.x === 300)
+    // Persisted through the mutation, then applied to the existing node.
+    await waitUntil(() =>
+      updateFlowNode.mock.calls.some(([id, patch]) => id === 'b6a0c1' && patch.position?.x === 300),
+    )
   })
 })

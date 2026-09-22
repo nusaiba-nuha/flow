@@ -104,6 +104,7 @@ export function useUpdateNode() {
           ? {
               ...node,
               ...(patch.name !== undefined ? { name: patch.name } : {}),
+              ...(patch.parentId !== undefined ? { parentId: patch.parentId } : {}),
               ...(patch.position !== undefined ? { position: patch.position } : {}),
               ...(patch.data !== undefined ? { data: { ...node.data, ...patch.data } } : {}),
             }

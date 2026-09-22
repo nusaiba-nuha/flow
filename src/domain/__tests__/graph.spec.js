@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import payload from '@/tests/fixtures/payload.json'
 import { NODE_TYPE } from '../constants.js'
-import { buildEdges, normaliseNode, payloadToGraph, withNodeRemoved } from '../graph.js'
+import { buildEdges, canConnect, normaliseNode, payloadToGraph, withNodeRemoved } from '../graph.js'
 
 describe('payloadToGraph', () => {
   it('turns the payload into positioned nodes carrying their domain node', () => {
@@ -43,5 +43,23 @@ describe('withNodeRemoved', () => {
     expect(flow.find((node) => node.id === 'b0653a').parentId).toBe('1')
 
     expect(withNodeRemoved(payload, 'ghost')).toBe(payload)
+  })
+})
+
+describe('canConnect', () => {
+  it('allows a node to move under another', () => {
+    expect(canConnect(payload, 'd09c08', 'e879e4')).toBeNull()
+  })
+
+  it('refuses a loop, a self link and the branch connectors', () => {
+    // b6a0c1 already sits under 28c4b9, which sits under d09c08.
+    expect(canConnect(payload, 'e879e4', 'd09c08')).toMatch(/loop/i)
+    expect(canConnect(payload, 'b6a0c1', 'b6a0c1')).toMatch(/itself/i)
+    expect(canConnect(payload, 'b6a0c1', '161f52')).toMatch(/branches belong/i)
+    expect(canConnect(payload, 'b6a0c1', '1')).toMatch(/trigger/i)
+  })
+
+  it('says when two nodes are already connected', () => {
+    expect(canConnect(payload, 'b6a0c1', 'e879e4')).toMatch(/already connected/i)
   })
 })

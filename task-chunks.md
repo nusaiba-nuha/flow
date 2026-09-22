@@ -268,3 +268,12 @@
 
 - Pan to a new node once Vue Flow has measured it, not before
 - Keep the node clear of the drawer that opens over it
+
+---
+
+## FL-30 · Connect nodes
+
+- Drag between handles to set a node's parent
+- `canConnect`: no self, no cycle, no connector branches
+- Select an edge and delete it to detach
+- Say in the README that connecting is beyond the brief
