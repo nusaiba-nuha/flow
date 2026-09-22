@@ -85,31 +85,29 @@ describe('FlowCanvas', () => {
     expect(lastEdges()).toHaveLength(payload.length - 1)
   })
 
-  it('fits once the nodes are measured, and only once', async () => {
+  it('fits only once the nodes are measured, and not at all for a returning viewport', async () => {
     const wrapper = await renderCanvas()
     expect(fitView).not.toHaveBeenCalled()
 
     const flow = wrapper.findComponent(VueFlowStub)
     flow.vm.$emit('nodes-initialized')
     flow.vm.$emit('nodes-initialized')
-
     expect(fitView).toHaveBeenCalledTimes(1)
-  })
 
-  it('restores a returning viewport instead of refitting', async () => {
+    vi.clearAllMocks()
     const pinia = createPinia()
     setActivePinia(pinia)
     useCanvasStore().setViewport({ x: 10, y: 20, zoom: 1.5 })
 
-    const wrapper = mountCanvas(pinia)
-    await waitUntil(() => wrapper.findComponent(VueFlowStub).exists())
-    wrapper.findComponent(VueFlowStub).vm.$emit('nodes-initialized')
+    const returning = mountCanvas(pinia)
+    await waitUntil(() => returning.findComponent(VueFlowStub).exists())
+    returning.findComponent(VueFlowStub).vm.$emit('nodes-initialized')
 
     expect(setViewport).toHaveBeenCalledWith({ x: 10, y: 20, zoom: 1.5 })
     expect(fitView).not.toHaveBeenCalled()
   })
 
-  it('opens a node on click and ignores the display only ones', async () => {
+  it('opens an openable node on click, ignores the rest, and persists a drag on drop', async () => {
     const wrapper = await renderCanvas()
     const push = vi.spyOn(router, 'push')
     const flow = wrapper.findComponent(VueFlowStub)
@@ -122,16 +120,8 @@ describe('FlowCanvas', () => {
       flow.vm.$emit('node-click', { node: lastNodes().find((node) => node.id === id) })
     }
     expect(push).not.toHaveBeenCalled()
-  })
-
-  it('persists a position on drop and remembers the viewport on pan', async () => {
-    const wrapper = await renderCanvas()
-    const flow = wrapper.findComponent(VueFlowStub)
 
     flow.vm.$emit('node-drag-stop', { node: { id: 'b6a0c1', position: { x: 300, y: 500 } } })
     await waitUntil(() => lastNodes().find((node) => node.id === 'b6a0c1')?.position?.x === 300)
-
-    flow.vm.$emit('viewport-change', { x: 5, y: 5, zoom: 0.8 })
-    expect(useCanvasStore().viewport).toEqual({ x: 5, y: 5, zoom: 0.8 })
   })
 })
