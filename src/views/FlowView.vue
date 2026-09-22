@@ -6,6 +6,7 @@ import FlowCanvas from '@/components/canvas/FlowCanvas.vue'
 import CreateNodeDialog from '@/components/canvas/CreateNodeDialog.vue'
 import FlowToolbar from '@/components/canvas/FlowToolbar.vue'
 import HelpDialog from '@/components/ui/HelpDialog.vue'
+import ToastHost from '@/components/ui/ToastHost.vue'
 import { useHelpDialog } from '@/composables/useHelpDialog.js'
 
 // The route view stays a composition surface: layout, and what is on screen.
@@ -37,6 +38,7 @@ const help = useHelpDialog()
 
       <CreateNodeDialog v-if="isCreating" @close="isCreating = false" />
       <HelpDialog v-if="help.isOpen.value" @close="help.close" />
+      <ToastHost />
     </main>
   </div>
 </template>
