@@ -54,6 +54,11 @@ same-origin. `VITE_*` values are inlined at build time, so the production image 
   unmounts.
 - **Mutations are optimistic**, sharing one factory that cancels in-flight queries, snapshots the
   cache and restores the snapshot on failure.
+- **The keyboard reaches everything.** Arrows walk the nodes in reading order,
+  Ctrl+Z undoes, and `?` opens the shortcut reference. `domain/shortcuts.js` is the one list, read
+  by both the dialog and the tooltips.
+- **Light and dark** follow the system until you choose otherwise. Colours are tokens that Vue Flow
+  and the date picker read too, so neither ships a second palette.
 - **`layoutTree` places the nodes**: leaves take a left-to-right cursor, parents centre over their
   children, depth maps to `y`. Dragged positions persist and win over it.
 
@@ -76,10 +81,10 @@ The brief's Query config is used as given, with one correction: `degaultOptions`
 
 ## Tests
 
-| Level      | Count | Covers                                                      |
-| ---------- | ----- | ----------------------------------------------------------- |
-| Unit       | 75    | Domain logic, composables, components                       |
-| End to end | 12    | Rendering, drag, deep links, create, edit, delete, keyboard |
+| Level      | Count | Covers                                                                                |
+| ---------- | ----- | ------------------------------------------------------------------------------------- |
+| Unit       | 84    | Domain logic, composables, stores, components                                         |
+| End to end | 22    | Rendering, drag, deep links, create, edit, delete, keyboard, undo, theme, affordances |
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright
 covers the canvas. CI runs lint, typecheck, unit tests and the build in one job, Playwright in
@@ -89,11 +94,11 @@ another against the production build.
 
 ```
 src/
-  domain/        Pure logic: constants, registry, adapter, layout, validation, time.
-                 No Vue imports
+  domain/        Pure logic: constants, registry, adapter, layout, validation, time,
+                 shortcuts, platform. No Vue imports
   api/           Mock backend, query keys, query client config
-  composables/   Query, mutations, drafts, uploads, keyboard
-  stores/        Pinia: canvas viewport
+  composables/   Query, mutations, drafts, uploads, keyboard, history, theme, help
+  stores/        Pinia: canvas viewport, undo history, theme preference
   components/    canvas/, drawer/, drawer/bodies/, ui/
   views/         FlowView
   router/        Routes, including the nested drawer route
