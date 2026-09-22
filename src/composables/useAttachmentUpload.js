@@ -5,10 +5,7 @@ import { MESSAGE_PART } from '@/domain/constants.js'
 export const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024
 const ACCEPTED = /^image\//
 
-/**
- * No upload endpoint behind this project, so a file is stored inline as a data
- * URL. Swapping in a real upload means replacing this function alone.
- */
+/** No upload endpoint here, so a file is stored inline as a data URL. */
 export function useAttachmentUpload() {
   const error = ref('')
   const isReading = ref(false)

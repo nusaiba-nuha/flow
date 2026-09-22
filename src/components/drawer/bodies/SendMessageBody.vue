@@ -23,10 +23,7 @@ if (!data.value.payload) data.value.payload = []
 
 const payload = computed(() => data.value.payload ?? [])
 
-/**
- * Each entry keeps its payload index, so removing a text cannot disturb the
- * attachments either side of it. The predicate narrows the union for the template.
- */
+/** Keeps the payload index, so removing a text leaves the attachments alone. */
 const texts = computed(() =>
   payload.value
     .map((part, index) => ({ part, index }))
