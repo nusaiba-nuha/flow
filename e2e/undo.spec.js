@@ -1,0 +1,31 @@
+import { expect, test } from '@playwright/test'
+
+const nodeAt = (page, id) => page.locator(`.vue-flow__node[data-id="${id}"]`)
+const undoButton = (page) => page.getByRole('button', { name: 'Undo' })
+
+test('undoes a delete, and the button names the change', async ({ page }) => {
+  await page.goto('/flow/node/b6a0c1')
+
+  await page.getByRole('button', { name: 'Delete node' }).click()
+  await page.getByRole('button', { name: 'Confirm delete' }).click()
+  await expect(nodeAt(page, 'b6a0c1')).toHaveCount(0)
+
+  await expect(undoButton(page).locator('xpath=..')).toHaveAttribute('title', /delete node/i)
+  await undoButton(page).click()
+  await expect(nodeAt(page, 'b6a0c1')).toBeVisible()
+})
+
+test('undoes an edit with the keyboard', async ({ page }) => {
+  await page.goto('/flow/node/b6a0c1')
+
+  await page.getByLabel('Title').fill('Renamed')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  // The card updates optimistically; history records once the write succeeds.
+  await expect(undoButton(page).locator('xpath=..')).toHaveAttribute('title', /edit node/i)
+
+  // Away from the field: inside one, Ctrl+Z is the browser's own undo.
+  await page.locator('.vue-flow__pane').click()
+  await page.keyboard.press('Control+z')
+
+  await expect(nodeAt(page, 'b6a0c1')).toContainText('Away Message')
+})
