@@ -1,5 +1,6 @@
 import { NODE_TYPE } from './constants.js'
 import { FIELD_LIMIT, maxLength, required, validate } from './validators.js'
+import { attachmentParts, textParts } from './format.js'
 
 /**
  * Per-type body rules as pure functions, so they test without mounting anything
@@ -8,6 +9,23 @@ import { FIELD_LIMIT, maxLength, required, validate } from './validators.js'
  * @type {Readonly<Record<string, (data: import('./types.js').FlowNodeData) => string | null>>}
  */
 const RULES = Object.freeze({
+  [NODE_TYPE.SEND_MESSAGE]: (data) => {
+    const texts = textParts(data.payload)
+    if (!texts.length && !attachmentParts(data.payload).length) {
+      return 'Add a message or an attachment.'
+    }
+
+    for (const [index, part] of texts.entries()) {
+      const error = validate(part.text, [
+        required(`Message ${index + 1}`),
+        maxLength(`Message ${index + 1}`, FIELD_LIMIT.MESSAGE_MAX),
+      ])
+      if (error) return error
+    }
+
+    return null
+  },
+
   [NODE_TYPE.ADD_COMMENT]: (data) =>
     validate(data.comment, [required('Comment'), maxLength('Comment', FIELD_LIMIT.COMMENT_MAX)]),
 })

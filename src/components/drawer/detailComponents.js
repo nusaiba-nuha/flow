@@ -1,5 +1,6 @@
 import { NODE_TYPE } from '@/domain/constants.js'
 import AddCommentBody from './bodies/AddCommentBody.vue'
+import SendMessageBody from './bodies/SendMessageBody.vue'
 
 /**
  * Presentation half of the node registry, kept apart from `domain/nodeMeta.js`
@@ -9,6 +10,7 @@ import AddCommentBody from './bodies/AddCommentBody.vue'
  * @type {Readonly<Record<string, import('vue').Component>>}
  */
 export const detailComponents = Object.freeze({
+  [NODE_TYPE.SEND_MESSAGE]: SendMessageBody,
   [NODE_TYPE.ADD_COMMENT]: AddCommentBody,
 })
 
