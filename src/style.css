@@ -265,6 +265,41 @@ optgroup {
   border-color: var(--line-strong);
 }
 
+/*
+ * A 7px dot is too small to aim at, so the hit area is grown without growing the
+ * dot, and while a connection is being dragged the whole card takes the drop.
+ */
+/* Outward only, or the strip of card behind a handle stops being draggable. */
+.vue-flow__handle::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  height: 16px;
+}
+
+.vue-flow__handle-top::after {
+  bottom: 100%;
+}
+
+.vue-flow__handle-bottom::after {
+  top: 100%;
+}
+
+.vue-flow__node:hover .vue-flow__handle {
+  transform: scale(1.6) translate(-50%, 0);
+  transform-origin: left center;
+}
+
+.is-connecting .vue-flow__handle-top {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.75rem;
+  opacity: 0;
+  transform: none;
+}
+
 /* v14 renamed `dp__*` to `dp--*` and applies its own theme class, so both are targeted. */
 .dp--theme-light,
 .dp--theme-dark {
