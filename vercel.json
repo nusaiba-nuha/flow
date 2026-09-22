@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/payload",
+      "destination": "https://respond-io-fe-bucket.s3.ap-southeast-1.amazonaws.com/candidate-assessments/payload.json"
+    }
+  ]
+}

@@ -111,7 +111,12 @@ Requirements are in [plan.md](plan.md), the ticket breakdown in
 ## Deployment
 
 The build is a static SPA, so a host needs two rules: fall back to `index.html` for client routes,
-and proxy `/api/payload`. `docker/nginx.conf.template` does both.
+and proxy `/api/payload`. `docker/nginx.conf.template` does both, and `vercel.json` carries the
+rewrite for Vercel.
+
+Vercel reads `vercel.json` before the build, so its rewrite cannot come from `.env` the way the dev
+server and nginx do. Change the payload source in both places, or the deployed app keeps fetching
+the old one.
 
 ## Known limits
 
