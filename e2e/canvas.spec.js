@@ -49,3 +49,19 @@ test('opens a node by clicking it, and ignores the display only ones', async ({ 
   await nodeAt(page, NODE.success).click()
   await expect(page).toHaveURL(/\/flow$/)
 })
+
+test('zoom steps land on round numbers, and the label resets to 100%', async ({ page }) => {
+  const zoom = page.getByRole('button', { name: /Reset zoom/i })
+
+  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await expect(zoom).toHaveText('75%')
+
+  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await expect(zoom).toHaveText('100%')
+
+  await page.getByRole('button', { name: 'Fit to screen' }).click()
+  await expect(zoom).not.toHaveText('100%')
+
+  await zoom.click()
+  await expect(zoom).toHaveText('100%')
+})

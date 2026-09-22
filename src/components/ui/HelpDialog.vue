@@ -12,7 +12,7 @@ const groups = SHORTCUT_GROUPS
 
 <template>
   <BaseModal title="Keyboard shortcuts" @close="emit('close')">
-    <div class="max-h-[70vh] overflow-y-auto px-5 py-4">
+    <div class="scroll-panel max-h-[70vh] px-5 py-4">
       <section v-for="group in groups" :key="group.title" class="mb-5 last:mb-0">
         <h3 class="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">
           {{ group.title }}
