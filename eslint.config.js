@@ -43,6 +43,7 @@ export default [
         globalThis: 'readonly',
         File: 'readonly',
         FileReader: 'readonly',
+        Event: 'readonly',
         KeyboardEvent: 'readonly',
         URL: 'readonly',
         crypto: 'readonly',
