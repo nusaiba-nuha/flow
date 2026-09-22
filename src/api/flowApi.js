@@ -2,6 +2,7 @@ import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from '@/domain/constants.js
 import { toNodeId, withNodeRemoved } from '@/domain/graph.js'
 import { creatableByValue } from '@/domain/nodeMeta.js'
 
+/** Writes only: it exists to make optimistic updates and rollbacks visible. */
 const LATENCY_MS = 220
 
 /** Read through a function, so tests can stub the environment. */
@@ -69,7 +70,6 @@ async function ensureLoaded() {
 /** @returns {Promise<Record<string, any>[]>} */
 export async function fetchFlow() {
   const loaded = await ensureLoaded()
-  await delay(LATENCY_MS)
   return clone(loaded)
 }
 
