@@ -213,6 +213,12 @@ function onConnect({ source, target }) {
   }
 
   const id = toNodeId(target)
+
+  // Drawn here, with the id the adapter will use. Vue Flow remembers the
+  // connection the drag just made and refuses to add it again afterwards, so an
+  // edge left to the next sync never appears.
+  addEdges([{ id: `e-${id}`, source: toNodeId(source), target: id, type: 'flow' }])
+
   updateNode.mutate({ id, patch: { parentId: toNodeId(source), position: pinnedPosition(id) } })
 }
 
