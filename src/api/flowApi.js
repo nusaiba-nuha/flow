@@ -133,7 +133,7 @@ export async function createNode({
 }
 
 /**
- * @param {{ id: string, patch: { name?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
+ * @param {{ id: string, patch: { name?: string, parentId?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
  * @returns {Promise<Record<string, any>>}
  */
 export async function updateNode({ id, patch }) {
@@ -141,6 +141,7 @@ export async function updateNode({ id, patch }) {
   const node = requireNode(id)
 
   if (patch.name !== undefined) node.name = patch.name
+  if (patch.parentId !== undefined) node.parentId = patch.parentId
   if (patch.position !== undefined) node.position = clone(patch.position)
   if (patch.data !== undefined) node.data = { ...node.data, ...clone(patch.data) }
 
