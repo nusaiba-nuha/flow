@@ -14,6 +14,12 @@ const fitView = vi.fn()
 const setViewport = vi.fn()
 const setNodes = vi.fn()
 const setEdges = vi.fn()
+// Measured nodes, which is what the canvas waits for before panning.
+const findNode = vi.fn((id) => ({
+  id,
+  position: { x: 0, y: 0 },
+  dimensions: { width: 160, height: 60 },
+}))
 
 const lastNodes = () => setNodes.mock.calls.at(-1)?.[0] ?? []
 const lastEdges = () => setEdges.mock.calls.at(-1)?.[0] ?? []
@@ -29,6 +35,7 @@ vi.mock('@vue-flow/core', () => ({
   VueFlow: VueFlowStub,
   useVueFlow: () => ({
     fitView,
+    findNode,
     setViewport,
     setNodes,
     setEdges,

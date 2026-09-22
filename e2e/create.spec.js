@@ -51,11 +51,18 @@ test('brings a created node into view, clear of the drawer', async ({ page }) =>
     const card = page.locator(`.vue-flow__node[data-id="${id}"]`)
     await expect(card).toBeVisible()
 
-    const box = await card.boundingBox()
+    // Polled, because the pan is animated rather than a jump.
     const viewport = page.viewportSize()
-    expect(box.y).toBeGreaterThanOrEqual(0)
-    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
-    // 380 is the drawer, which opens over the right of the canvas.
-    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width - 380)
+    await expect
+      .poll(async () => {
+        const box = await card.boundingBox()
+        return (
+          box.y >= 0 &&
+          box.y + box.height <= viewport.height &&
+          // 380 is the drawer, which opens over the right of the canvas.
+          box.x + box.width <= viewport.width - 380
+        )
+      })
+      .toBe(true)
   }
 })
