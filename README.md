@@ -203,8 +203,17 @@ e2e/             Playwright specs
 | ---------------------------------- | ------------------------------------------------------------- |
 | [`plan.md`](plan.md)               | The requirements, written out in my own words before any code |
 | [`task-chunks.md`](task-chunks.md) | The ticket breakdown, one branch and one PR each              |
-| [`BACKLOG.md`](BACKLOG.md)         | Done, next, and what is deliberately left out                 |
 | [`SECURITY.md`](SECURITY.md)       | Threat model, untrusted input, CORS, headers                  |
+
+## Deliberately not doing
+
+| Not doing                       | Why                                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------------------- |
+| A component library             | The brief asks for custom implementation, and every control here is one file              |
+| A state library beyond Pinia    | Query owns server state and the URL owns what is open; a third store would duplicate both |
+| Inverse-command undo            | Snapshots are a few kilobytes at this size and cannot drift from the forward operation    |
+| Storing the payload in the repo | It is someone else's API; a copy would rot and hide CORS from us                          |
+| Server-side rendering           | The brief describes an editing tool, which gains nothing from SSR                         |
 
 ## Known limits
 
@@ -212,3 +221,7 @@ e2e/             Playwright specs
 - The mock backend is per browser, so two tabs do not see each other's edits.
 - Attachments are stored inline as data URLs, which is why the 2 MB cap exists.
 - No offline mode: the app depends on the payload API being reachable.
+
+Given more time, connecting nodes is first: a parent field on the create form, then dragging edges
+on the canvas. The layout and the delete rule already handle arbitrary parents, so it is UI work
+rather than model work. Replacing the mock backend is second, and touches one module.
