@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, inject, ref } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 
 import NodeIcon from '@/components/ui/NodeIcon.vue'
@@ -7,6 +7,7 @@ import { metaFor } from '@/domain/nodeMeta.js'
 import { truncate } from '@/domain/format.js'
 import { NODE_SIZE } from '@/domain/constants.js'
 import { accentClasses } from './accents.js'
+import { FOCUSED_NODE_ID } from './focusKey.js'
 
 /** One card for every node type; the registry supplies the rest. */
 const props = defineProps({
@@ -14,6 +15,10 @@ const props = defineProps({
   data: { type: Object, required: true },
   selected: { type: Boolean, default: false },
 })
+
+/** @type {import('vue').Ref<string>} */
+const focusedId = inject(FOCUSED_NODE_ID, ref(''))
+const isKeyboardFocused = computed(() => focusedId.value === props.id)
 
 const node = computed(() => props.data.node)
 const meta = computed(() => metaFor(node.value.type))
@@ -30,9 +35,11 @@ const description = computed(() =>
   <div
     class="rounded-xl border border-line bg-surface shadow-sm transition-shadow duration-150"
     :class="[
-      selected ? `ring-2 ${accent.ring} shadow-md` : 'hover:shadow-md',
+      selected || isKeyboardFocused ? `ring-2 ${accent.ring} shadow-md` : 'hover:shadow-md',
+      isKeyboardFocused ? 'outline-2 outline-offset-2 outline-focus' : '',
       meta.openable ? 'cursor-pointer' : 'cursor-default',
     ]"
+    :aria-current="isKeyboardFocused ? 'true' : undefined"
     :style="{ width: `${NODE_SIZE.WIDTH}px` }"
     :aria-label="`${meta.label}: ${node.name}`"
   >
