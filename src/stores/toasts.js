@@ -6,7 +6,8 @@ const DISMISS_MS = 4000
 /**
  * Short confirmations of things that already happened.
  *
- * @typedef {{ id: number, message: string, action?: { label: string, run: () => void } }} Toast
+ * @typedef {'success' | 'danger'} ToastTone
+ * @typedef {{ id: number, message: string, tone: ToastTone, action?: { label: string, run: () => void } }} Toast
  */
 export const useToastStore = defineStore('toasts', () => {
   /** @type {import('vue').Ref<Toast[]>} */
@@ -15,13 +16,13 @@ export const useToastStore = defineStore('toasts', () => {
 
   /**
    * @param {string} message
-   * @param {{ label: string, run: () => void }} [action]
+   * @param {{ action?: { label: string, run: () => void }, tone?: ToastTone }} [options]
    */
-  function push(message, action) {
+  function push(message, { action, tone = 'success' } = {}) {
     nextId += 1
     const id = nextId
 
-    toasts.value = [...toasts.value, { id, message, action }]
+    toasts.value = [...toasts.value, { id, message, tone, action }]
     setTimeout(() => dismiss(id), DISMISS_MS)
     return id
   }

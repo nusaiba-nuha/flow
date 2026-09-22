@@ -24,11 +24,12 @@ describe('toasts', () => {
     const toasts = useToastStore()
     const run = vi.fn()
 
-    const id = toasts.push('Node deleted', { label: 'Undo', run })
+    const id = toasts.push('Node deleted', { action: { label: 'Undo', run } })
     toasts.toasts[0].action.run()
     toasts.dismiss(id)
 
     expect(run).toHaveBeenCalled()
+    expect(toasts.toasts).toEqual([])
     expect(toasts.toasts).toEqual([])
   })
 })
