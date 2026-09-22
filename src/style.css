@@ -201,18 +201,38 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* A short transition rather than a hard flip when the theme changes. */
+/*
+ * One easing and two speeds for the whole app, so nothing moves to its own
+ * rhythm. The curve settles rather than stopping dead, which is what reads as
+ * considered instead of mechanical.
+ */
+:root {
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --fast: 140ms;
+  --slow: 240ms;
+}
+
 body,
 body * {
   transition-property: background-color, border-color;
-  transition-duration: 160ms;
+  transition-duration: var(--fast);
+  transition-timing-function: var(--ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --fast: 0ms;
+    --slow: 0ms;
+  }
+
   body,
   body * {
-    transition-duration: 0ms;
-    animation-duration: 0ms;
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+
+  .vue-flow__node:hover > div {
+    transform: none;
   }
 }
 
@@ -269,6 +289,35 @@ optgroup {
  * A 7px dot is too small to aim at, so the hit area is grown without growing the
  * dot, and while a connection is being dragged the whole card takes the drop.
  */
+/* A card lifts slightly under the pointer, and settles when selected. */
+.vue-flow__node > div {
+  transition:
+    box-shadow var(--slow) var(--ease),
+    transform var(--slow) var(--ease),
+    opacity var(--fast) var(--ease);
+}
+
+.vue-flow__node:hover > div {
+  transform: translateY(-1px);
+}
+
+.vue-flow__node.dragging > div {
+  transition: none;
+}
+
+/* Edges fade in and change colour with everything else. */
+.vue-flow__edge-path {
+  transition:
+    stroke var(--slow) var(--ease),
+    stroke-width var(--fast) var(--ease);
+}
+
+.vue-flow__handle {
+  transition:
+    transform var(--fast) var(--ease),
+    background-color var(--fast) var(--ease);
+}
+
 /* Outward only, or the strip of card behind a handle stops being draggable. */
 .vue-flow__handle::after {
   content: '';

@@ -97,8 +97,8 @@ function run(toast) {
 .toast-enter-active,
 .toast-leave-active {
   transition:
-    opacity 160ms ease,
-    transform 160ms ease;
+    opacity var(--fast) var(--ease),
+    transform var(--slow) var(--ease);
 }
 
 .toast-enter-from,

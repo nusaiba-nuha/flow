@@ -284,3 +284,12 @@
 
 - Add the edge in the connect handler, with the id the adapter uses
 - Vue Flow refuses to add a connection it has just seen made
+
+---
+
+## FL-32 · Motion
+
+- Do not move the canvas for a node already in view
+- Ease the pan, with a duration that follows the distance
+- Consistent transitions on cards, edges, the drawer and toasts
+- Honour `prefers-reduced-motion` everywhere
