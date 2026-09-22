@@ -8,24 +8,26 @@ Nodes load from a payload API, render on a draggable canvas, and are edited thro
 
 [Requirements](plan.md) · [Task breakdown](task-chunks.md) · [Security](SECURITY.md)
 
-[![CI](https://img.shields.io/badge/CI-passing-brightgreen.svg)](#)
+[![CI](https://github.com/raj-khan/flow/actions/workflows/ci.yml/badge.svg)](https://github.com/raj-khan/flow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff5a2c.svg)](LICENSE)
 
 https://github.com/user-attachments/assets/99048de2-753a-4d37-9012-1011bc2347ea
-
 
 </div>
 
 ## What it does
 
-* **Draggable canvas.** Nodes render on a Vue Flow canvas and can be repositioned.
-* **Node details drawer.** Nodes open through a nested route, `/flow/node/:id`, so the canvas stays mounted while a node is being edited.
-* **Optimistic mutations.** Create, edit, delete and move operations update the UI immediately and roll back on failure.
-* **Keyboard navigation.** Arrow keys walk the nodes in reading order, `Ctrl+Z` undoes changes, and `?` opens the shortcut reference.
-* **Automatic layout.** `layoutTree` places nodes based on their relationships and depth while preserving manually dragged positions.
-* **Light and dark themes.** The interface follows the system preference until explicitly changed.
-* **Local persistence.** The mock backend persists changes to `localStorage`, so edits survive a reload.
-* **Attachments.** Attachments are read as data URLs and capped at 2 MB because there is no upload endpoint.
+- **Draggable canvas.** Nodes render on a Vue Flow canvas and can be repositioned.
+- **Node details drawer.** Nodes open through a nested route, `/flow/node/:id`, so the canvas stays mounted while a node is being edited.
+- **Optimistic mutations.** Create, edit, delete and move operations update the UI immediately and roll back on failure.
+- **Keyboard navigation.** Arrow keys walk the nodes in reading order, `Ctrl+Z` undoes changes, and `?` opens the shortcut reference.
+- **Connecting nodes.** Drag from one node to another to set its parent, and remove a connection from the control on the edge itself. Beyond the brief, which specifies only the three create fields.
+- **Undo and redo.** Every mutation is undoable, over whole-flow snapshots, from the toolbar or `Ctrl+Z`.
+- **Confirmations.** A save or a delete raises a short toast that also offers to undo it.
+- **Automatic layout.** `layoutTree` places nodes based on their relationships and depth while preserving manually dragged positions.
+- **Light and dark themes.** The interface follows the system preference until explicitly changed.
+- **Local persistence.** The mock backend persists changes to `localStorage`, so edits survive a reload.
+- **Attachments.** Attachments are read as data URLs and capped at 2 MB because there is no upload endpoint.
 
 ## Quick start
 
@@ -86,9 +88,9 @@ The domain layer also contains the payload adapter, tree layout, validation, tim
 
 State has three owners:
 
-* **TanStack Query** holds the flow.
-* **The URL** holds which node is open.
-* **Pinia** holds the viewport.
+- **TanStack Query** holds the flow.
+- **The URL** holds which node is open.
+- **Pinia** holds the viewport.
 
 Form edits live in a local draft until saved, so a refetch cannot overwrite typing.
 
@@ -118,12 +120,12 @@ Mutations use one shared factory:
 
 `layoutTree` places the nodes:
 
-* Leaves take a left-to-right cursor.
-* Parents centre over their children.
-* Depth maps to `y`.
-* Cycles are guarded.
-* Orphans are placed.
-* Connectors are anchored to the positioned parent.
+- Leaves take a left-to-right cursor.
+- Parents centre over their children.
+- Depth maps to `y`.
+- Cycles are guarded.
+- Orphans are placed.
+- Connectors are anchored to the positioned parent.
 
 Dragged positions persist and win over the automatic layout.
 
@@ -137,14 +139,14 @@ It is used by both the shortcut dialog and tooltips.
 
 Keyboard navigation includes:
 
-* Arrow keys
-* Home / End
-* Enter / Space
-* Escape
-* `Ctrl+Z` / `Cmd+Z`
-* `?` for the shortcut reference
+- Arrow keys
+- Home / End
+- Enter / Space
+- Escape
+- `Ctrl+Z` / `Cmd+Z`
+- `?` for the shortcut reference
 
-Dialogs and form fields stand down while keyboard navigation is active.
+Canvas navigation stands down while a dialog is open or a form field has focus, so those keys keep their usual meaning.
 
 ### Theme
 
@@ -158,11 +160,11 @@ The interface also respects `prefers-reduced-motion`.
 
 The payload has a few details that shape the implementation:
 
-* IDs are mixed types: the trigger is the number `1`, while the rest are hex strings.
-* IDs are normalised to strings at the adapter.
-* Edges come from `parentId` alone.
-* `data.connectors` repeats the same relationship.
-* `businessHours` in the create form is a `dateTime` node whose `data.action` is `businessHours`.
+- IDs are mixed types: the trigger is the number `1`, while the rest are hex strings.
+- IDs are normalised to strings at the adapter.
+- Edges come from `parentId` alone.
+- `data.connectors` repeats the same relationship.
+- `businessHours` in the create form is a `dateTime` node whose `data.action` is `businessHours`.
 
 The adapter keeps these payload-specific details out of the rest of the application.
 
@@ -176,12 +178,12 @@ Writes carry a small simulated latency, which is what makes an optimistic update
 
 The mock backend supports:
 
-* Fetch
-* Create
-* Update
-* Delete
-* Restore
-* Replace
+- Fetch
+- Create
+- Update
+- Delete
+- Restore
+- Replace
 
 Persistence is keyed by the payload source URL.
 
@@ -200,10 +202,10 @@ Attachments are read as data URLs and capped at 2 MB, since there is no upload e
 
 ## Tests
 
-| Level      | Count | Covers                                                                                      |
-| ---------- | ----- | ------------------------------------------------------------------------------------------- |
-| Unit       | 89    | Domain logic, composables, stores, components                                               |
-| End to end | 25    | Rendering, drag, zoom, deep links, create, edit, delete, keyboard, undo, theme, affordances |
+| Level      | Count | Covers                                                                                               |
+| ---------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| Unit       | 94    | Domain logic, composables, stores, components                                                        |
+| End to end | 29    | Rendering, drag, zoom, connect, deep links, create, edit, delete, keyboard, undo, theme, affordances |
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright covers the canvas.
 
@@ -248,16 +250,19 @@ The build is a static SPA, so a host needs two rules:
 1. Fall back to `index.html` for client routes.
 2. Proxy `/api/payload`.
 
-`docker/nginx.conf.template` does both.
+`docker/nginx.conf.template` does both for the container, and `vercel.json` does both for Vercel, where the app is deployed.
+
+Vercel reads `vercel.json` before the build, so unlike the dev server and nginx its rewrite cannot come from `.env`. Changing the payload source means changing it in both places.
 
 ## Known limits
 
-* Created nodes are standalone; the brief's create form has no parent field.
-* The mock backend is per browser, so two tabs do not see each other's edits.
-* The app needs the payload API to be reachable; there is no offline mode.
-* There is no write API; mutations currently run through the local mock backend.
-* Attachments are limited to 2 MB and stored as data URLs.
-* Connecting nodes is beyond the brief.
+- Created nodes are standalone; the brief's create form has no parent field.
+- The mock backend is per browser, so two tabs do not see each other's edits.
+- The app needs the payload API to be reachable; there is no offline mode.
+- There is no write API; mutations currently run through the local mock backend.
+- Attachments are limited to 2 MB and stored as data URLs.
+- Connecting a node moves it, since the payload gives each node a single `parentId` rather than a list of edges.
+- Undo history is held in memory, so it does not survive a reload, though the edits themselves do.
 
 ## License
 
