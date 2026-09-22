@@ -4,6 +4,7 @@ import { RouterView } from 'vue-router'
 
 import FlowCanvas from '@/components/canvas/FlowCanvas.vue'
 import CreateNodeDialog from '@/components/canvas/CreateNodeDialog.vue'
+import FlowToolbar from '@/components/canvas/FlowToolbar.vue'
 
 // The route view stays a composition surface: layout, and what is on screen.
 const isCreating = ref(false)
@@ -17,14 +18,7 @@ const isCreating = ref(false)
         <p class="text-xs text-muted">Click a node to open its details</p>
       </div>
 
-      <button
-        type="button"
-        class="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-hover"
-        title="Create a node and open its details"
-        @click="isCreating = true"
-      >
-        Create new node
-      </button>
+      <FlowToolbar @create="isCreating = true" />
     </header>
 
     <main class="relative min-h-0 flex-1">

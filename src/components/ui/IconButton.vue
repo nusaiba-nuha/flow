@@ -1,0 +1,36 @@
+<script setup>
+/**
+ * The title sits on the wrapper: Chrome and Safari show none on a disabled
+ * button, which is exactly when "Nothing to undo" needs reading.
+ */
+defineProps({
+  label: { type: String, required: true },
+  title: { type: String, default: '' },
+  disabled: { type: Boolean, default: false },
+})
+</script>
+
+<template>
+  <span class="inline-flex" :title="title || label">
+    <button
+      type="button"
+      class="rounded-lg border border-line bg-surface px-2.5 py-2 text-sm text-ink transition-colors hover:bg-hover disabled:opacity-30"
+      :disabled="disabled"
+      :aria-label="label"
+    >
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <slot />
+      </svg>
+    </button>
+  </span>
+</template>
