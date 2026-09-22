@@ -77,7 +77,7 @@ function save() {
       patch: { name: draft.name, data: { ...draft.data, description: draft.description } },
     },
     // The drawer stays open, so this is the only sign the write actually landed.
-    { onSuccess: () => toasts.push('Changes saved', { label: 'Undo', run: undo }) },
+    { onSuccess: () => toasts.push('Changes saved', { action: { label: 'Undo', run: undo } }) },
   )
 }
 
@@ -87,7 +87,7 @@ function remove() {
     {
       onSuccess() {
         close()
-        toasts.push('Node deleted', { label: 'Undo', run: undo })
+        toasts.push('Node deleted', { action: { label: 'Undo', run: undo } })
       },
     },
   )
@@ -140,7 +140,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
     </div>
 
     <template v-else>
-      <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
+      <div class="scroll-panel min-h-0 flex-1 space-y-5 px-5 py-4">
         <div ref="titleField">
           <TextField
             v-model="draft.name"

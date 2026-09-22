@@ -227,6 +227,17 @@ optgroup {
   color: var(--ink);
 }
 
+/*
+ * Reserve the scrollbar's width, so content does not jump sideways the moment a
+ * panel grows past its height.
+ */
+.scroll-panel {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
 /* One focus ring for the whole app, on keyboard focus only. */
 :focus-visible {
   outline: 2px solid var(--focus);
