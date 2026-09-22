@@ -19,6 +19,21 @@ const parentOf = (page, id) =>
     )
   }, id)
 
+/** The canvas eases into place, so coordinates are only safe once it stops. */
+async function whenStill(locator) {
+  let previous = null
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const box = await locator.boundingBox()
+    if (previous && Math.abs(box.x - previous.x) < 0.5 && Math.abs(box.y - previous.y) < 0.5) {
+      return box
+    }
+    previous = box
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+
+  return previous
+}
+
 /** The midpoint of an edge, which is where its remove control sits. */
 const edgeMidpoint = (page, edgeId) =>
   page.evaluate((id) => {
@@ -75,4 +90,28 @@ test('leaves the node where it was when its connection goes', async ({ page }) =
   const after = await node(page, 'b6a0c1').boundingBox()
   expect(Math.abs(after.y - before.y)).toBeLessThan(4)
   expect(Math.abs(after.x - before.x)).toBeLessThan(4)
+})
+
+test('draws the edge at once when a created node is connected', async ({ page }) => {
+  await page.getByRole('button', { name: 'Create new node' }).click()
+  await page.getByLabel('Title').fill('Standalone')
+  await page.getByLabel('Type of node').selectOption('sendMessage')
+  await page.getByRole('button', { name: 'Create node' }).click()
+  await page.waitForURL(/\/flow\/node\//)
+
+  const created = page.url().split('/').pop()
+  await page.getByRole('button', { name: 'Close details' }).click()
+  expect(await drawnEdges(page)).toBe(6)
+
+  await whenStill(node(page, created))
+  const from = await node(page, 'b6a0c1').locator('.vue-flow__handle-bottom').boundingBox()
+  const to = await node(page, created).boundingBox()
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + 6, { steps: 14 })
+  await page.mouse.up()
+
+  // No reload: the edge has to appear on its own.
+  await expect.poll(() => drawnEdges(page)).toBe(7)
+  await expect.poll(() => parentOf(page, created)).toBe('b6a0c1')
 })
