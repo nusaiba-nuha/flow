@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Light palette now; FL-26 adds the dark one without touching a component. */
+/* Light palette; FL-26 adds dark. */
 :root {
   --canvas: #f4f5f8;
   --surface: #ffffff;
@@ -45,7 +45,7 @@
   --shadow-panel: -8px 0 24px rgb(15 23 42 / 0.08);
 }
 
-/* Utilities map onto the variables, so `bg-surface` follows the active theme. */
+/* Mapped onto variables, so utilities follow the active theme. */
 @theme inline {
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);

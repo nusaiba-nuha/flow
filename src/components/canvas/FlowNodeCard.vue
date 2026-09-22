@@ -8,7 +8,7 @@ import { truncate } from '@/domain/format.js'
 import { NODE_SIZE } from '@/domain/constants.js'
 import { accentClasses } from './accents.js'
 
-/** One card for every node type: the registry supplies icon, label, accent and summary. */
+/** One card for every node type; the registry supplies the rest. */
 const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
@@ -19,7 +19,6 @@ const node = computed(() => props.data.node)
 const meta = computed(() => metaFor(node.value.type))
 const accent = computed(() => accentClasses(meta.value.accent))
 
-// A user supplied description wins over the type's generated summary.
 const description = computed(() =>
   node.value.data.description
     ? truncate(node.value.data.description)

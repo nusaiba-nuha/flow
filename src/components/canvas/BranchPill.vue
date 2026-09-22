@@ -4,7 +4,7 @@ import { Handle, Position } from '@vue-flow/core'
 
 import { connectorLabel } from '@/domain/graph.js'
 
-/** Display only per the brief, so this renders no affordances at all. */
+/** Display only per the brief. */
 const props = defineProps({
   data: { type: Object, required: true },
 })

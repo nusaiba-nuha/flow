@@ -1,5 +1,5 @@
 <script setup>
-/** Inline SVG keyed by the registry's `icon`: six icons do not justify a dependency. */
+/** Inline: six icons do not justify an icon package. */
 defineProps({
   name: { type: String, required: true },
   size: { type: Number, default: 16 },

@@ -1,8 +1,5 @@
 /**
- * Written out in full, not composed as `text-node-${accent}`: Tailwind scans for
- * complete class strings. Named by what the node is, so a palette change does not
- * leave an entry called "rose" that is no longer rose.
- *
+ * Written out, not composed: Tailwind only scans for complete class strings.
  * @type {Readonly<Record<string, { icon: string, ring: string, bar: string }>>}
  */
 export const ACCENT = Object.freeze({
