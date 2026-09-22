@@ -5,9 +5,13 @@ import { RouterView } from 'vue-router'
 import FlowCanvas from '@/components/canvas/FlowCanvas.vue'
 import CreateNodeDialog from '@/components/canvas/CreateNodeDialog.vue'
 import FlowToolbar from '@/components/canvas/FlowToolbar.vue'
+import HelpDialog from '@/components/ui/HelpDialog.vue'
+import { useHelpDialog } from '@/composables/useHelpDialog.js'
 
 // The route view stays a composition surface: layout, and what is on screen.
 const isCreating = ref(false)
+// Bound at the shell: a dialog that is not mounted cannot listen for its own key.
+const help = useHelpDialog()
 </script>
 
 <template>
@@ -18,7 +22,7 @@ const isCreating = ref(false)
         <p class="text-xs text-muted">Click a node to open its details</p>
       </div>
 
-      <FlowToolbar @create="isCreating = true" />
+      <FlowToolbar @create="isCreating = true" @help="help.open" />
     </header>
 
     <main class="relative min-h-0 flex-1">
@@ -32,6 +36,7 @@ const isCreating = ref(false)
       </RouterView>
 
       <CreateNodeDialog v-if="isCreating" @close="isCreating = false" />
+      <HelpDialog v-if="help.isOpen.value" @close="help.close" />
     </main>
   </div>
 </template>

@@ -1,0 +1,76 @@
+/**
+ * Every shortcut the app binds, as data, read by the help dialog so what is
+ * documented cannot drift from what works.
+ *
+ * Combos rather than keys, because several bindings have equivalents. `mod` is
+ * the platform modifier, rendered as Ctrl or Cmd; the handlers accept either.
+ *
+ * @typedef {{ combos: string[][], description: string }} Shortcut
+ * @typedef {{ title: string, note?: string, shortcuts: Shortcut[] }} ShortcutGroup
+ */
+
+/** @type {Readonly<ShortcutGroup[]>} */
+export const SHORTCUT_GROUPS = Object.freeze([
+  {
+    title: 'Canvas',
+    note: 'Display-only nodes are skipped, so focus only lands where something can happen.',
+    shortcuts: [
+      { combos: [['↓'], ['→']], description: 'Focus the next node, in reading order' },
+      { combos: [['↑'], ['←']], description: 'Focus the previous node' },
+      { combos: [['Home']], description: 'Focus the first node' },
+      { combos: [['End']], description: 'Focus the last node' },
+      { combos: [['Enter'], ['Space']], description: 'Open the focused node' },
+      { combos: [['Esc']], description: 'Clear the focused node' },
+    ],
+  },
+  {
+    title: 'History',
+    note: 'Inside a text field these stay with the browser, where they mean text undo.',
+    shortcuts: [
+      { combos: [['mod', 'Z']], description: 'Undo the last change' },
+      {
+        combos: [
+          ['mod', 'Shift', 'Z'],
+          ['mod', 'Y'],
+        ],
+        description: 'Redo',
+      },
+    ],
+  },
+  {
+    title: 'Node details',
+    shortcuts: [
+      { combos: [['Esc']], description: 'Close the drawer, or cancel a delete confirmation' },
+      { combos: [['Tab']], description: 'Move between fields' },
+    ],
+  },
+  {
+    title: 'Dialogs',
+    shortcuts: [
+      { combos: [['Esc']], description: 'Close' },
+      { combos: [['Tab']], description: 'Cycle within the dialog, which keeps focus inside it' },
+    ],
+  },
+  {
+    title: 'Help',
+    shortcuts: [{ combos: [['?']], description: 'Open this dialog' }],
+  },
+])
+
+export const HELP_KEY = '?'
+
+/**
+ * Only the platform's own modifier is shown: "Ctrl/Cmd+Z" is noise for everyone.
+ * @param {string} key @param {boolean} isMac @returns {string}
+ */
+export const keyLabel = (key, isMac) => (key === 'mod' ? (isMac ? 'Cmd' : 'Ctrl') : key)
+
+/** @param {string[]} combo @param {boolean} isMac @returns {string} */
+export const comboLabel = (combo, isMac) => combo.map((key) => keyLabel(key, isMac)).join('+')
+
+/** Named, so a tooltip cannot invent a combination the app does not bind. */
+export const COMBO = Object.freeze({
+  UNDO: ['mod', 'Z'],
+  REDO: ['mod', 'Shift', 'Z'],
+  HELP: ['?'],
+})
