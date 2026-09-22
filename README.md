@@ -27,10 +27,6 @@ https://github.com/user-attachments/assets/99048de2-753a-4d37-9012-1011bc2347ea
 * **Local persistence.** The mock backend persists changes to `localStorage`, so edits survive a reload.
 * **Attachments.** Attachments are read as data URLs and capped at 2 MB because there is no upload endpoint.
 
-| Flow canvas                                                                         | Node details                                                                                | Keyboard shortcuts                                                                            |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| <img src="docs/screenshots/canvas.webp" alt="Flow Builder flow canvas" width="280"> | <img src="docs/screenshots/drawer.webp" alt="Flow Builder node details drawer" width="280"> | <img src="docs/screenshots/shortcuts.webp" alt="Flow Builder keyboard shortcuts" width="280"> |
-
 ## Quick start
 
 ### Docker
