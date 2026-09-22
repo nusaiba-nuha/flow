@@ -36,3 +36,26 @@ test('closes on Escape without creating anything', async ({ page }) => {
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.locator('.vue-flow__node')).toHaveCount(before)
 })
+
+test('brings a created node into view, clear of the drawer', async ({ page }) => {
+  // Twice: the first creation happened to land in view before this was fixed.
+  for (const name of ['First', 'Second']) {
+    await page.goto('/flow')
+    await page.getByRole('button', { name: 'Create new node' }).click()
+    await page.getByLabel('Title').fill(name)
+    await page.getByLabel('Type of node').selectOption('sendMessage')
+    await page.getByRole('button', { name: 'Create node' }).click()
+    await page.waitForURL(/\/flow\/node\//)
+
+    const id = page.url().split('/').pop()
+    const card = page.locator(`.vue-flow__node[data-id="${id}"]`)
+    await expect(card).toBeVisible()
+
+    const box = await card.boundingBox()
+    const viewport = page.viewportSize()
+    expect(box.y).toBeGreaterThanOrEqual(0)
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
+    // 380 is the drawer, which opens over the right of the canvas.
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width - 380)
+  }
+})

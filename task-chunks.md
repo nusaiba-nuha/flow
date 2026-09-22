@@ -261,3 +261,10 @@
 - A tooltip on every control
 - Tooltips on wrappers, so a disabled control still shows one
 - An end to end audit for names, tooltips and parroted labels
+
+---
+
+## FL-29 · Bring a created node into view
+
+- Pan to a new node once Vue Flow has measured it, not before
+- Keep the node clear of the drawer that opens over it

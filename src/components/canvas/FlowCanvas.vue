@@ -1,5 +1,5 @@
 <script setup>
-import { computed, markRaw, nextTick, provide, ref, watch } from 'vue'
+import { computed, markRaw, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -20,7 +20,7 @@ const router = useRouter()
 const canvas = useCanvasStore()
 const { nodes, edges, isLoading, isError, error, refetch } = useFlowQuery()
 const moveNode = useMoveNode()
-const { fitView, setViewport, setNodes, setEdges, viewport } = useVueFlow()
+const { fitView, findNode, setViewport, setNodes, setEdges, viewport } = useVueFlow()
 
 // These are component definitions, not reactive data: without markRaw Vue walks
 // every component tree on each render.
@@ -29,6 +29,11 @@ const nodeTypes = /** @type {import('@vue-flow/core').NodeTypesObject} */ (
 )
 
 const hasFitted = ref(false)
+
+/** Matches the drawer width in NodeDetailsDrawer. */
+const DRAWER_WIDTH = 380
+
+const container = useTemplateRef('container')
 
 /** The drawer and the create dialog own the keyboard while they are open. */
 const {
@@ -110,20 +115,57 @@ function onNodesInitialized() {
   else fitView({ padding: 0.2, duration: 0 })
 }
 
+/**
+ * A created node is asked for by its server id, but the cache still holds the
+ * optimistic one until the refetch lands, so Vue Flow does not know the id yet
+ * and an immediate fitView is a silent no-op.
+ *
+ * @param {string} id
+ */
+async function waitForNode(id) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const node = findNode(id)
+    if (node?.dimensions?.width) return node
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+
+  return null
+}
+
+/**
+ * Centre a node in the space the drawer leaves. Computed rather than `fitView`,
+ * which does not move for a single node once the flow is already fitted.
+ *
+ * @param {import('@vue-flow/core').GraphNode} node
+ */
+function centreOn(node) {
+  const pane = container.value?.getBoundingClientRect()
+  if (!pane) return
+
+  const { zoom } = viewport.value
+  const visibleWidth = pane.width - (route.params.id ? DRAWER_WIDTH : 0)
+
+  setViewport({
+    x: visibleWidth / 2 - (node.position.x + (node.dimensions.width || 0) / 2) * zoom,
+    y: pane.height / 2 - (node.position.y + (node.dimensions.height || 0) / 2) * zoom,
+    zoom,
+  })
+}
+
 watch(
   () => canvas.focusNodeId,
   async (id) => {
     if (!id) return
-    // Wait for the node to exist and be measured before panning to it.
-    await nextTick()
-    fitView({ nodes: [id], padding: 0.6, duration: 400 })
+
+    const node = await waitForNode(id)
+    if (node) centreOn(node)
     canvas.clearFocus()
   },
 )
 </script>
 
 <template>
-  <div class="h-full w-full">
+  <div ref="container" class="h-full w-full">
     <CanvasState
       v-if="isLoading || isError || !nodes.length"
       :is-loading="isLoading"

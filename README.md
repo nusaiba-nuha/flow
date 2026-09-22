@@ -84,7 +84,7 @@ The brief's Query config is used as given, with one correction: `degaultOptions`
 | Level      | Count | Covers                                                                                      |
 | ---------- | ----- | ------------------------------------------------------------------------------------------- |
 | Unit       | 89    | Domain logic, composables, stores, components                                               |
-| End to end | 24    | Rendering, drag, zoom, deep links, create, edit, delete, keyboard, undo, theme, affordances |
+| End to end | 25    | Rendering, drag, zoom, deep links, create, edit, delete, keyboard, undo, theme, affordances |
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright
 covers the canvas. CI runs lint, typecheck, unit tests and the build in one job, Playwright in
