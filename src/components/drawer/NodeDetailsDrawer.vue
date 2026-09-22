@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 
 import TextField from '@/components/ui/TextField.vue'
@@ -7,6 +7,7 @@ import { useNode } from '@/composables/useFlowQuery.js'
 import { useDeleteNode, useUpdateNode } from '@/composables/useNodeMutations.js'
 import { useDraft } from '@/composables/useDraft.js'
 import { metaFor } from '@/domain/nodeMeta.js'
+import { validateNodeData } from '@/domain/nodeValidation.js'
 import { FIELD_LIMIT, maxLength, required } from '@/domain/validators.js'
 import { ROUTE } from '@/router/index.js'
 import DrawerHeader from './DrawerHeader.vue'
@@ -41,9 +42,18 @@ const { draft, errors, isValid, isDirty, touch, touchAll, reset } = useDraft(edi
   data: [],
 })
 
-const footerError = computed(() =>
-  updateNode.isError.value ? 'Could not save. Your changes were rolled back.' : null,
+const bodyError = computed(() =>
+  node.value ? validateNodeData(node.value.type, draft.data) : null,
 )
+const canSave = computed(() => isValid.value && bodyError.value === null)
+
+// Held back until a save is attempted, the way field errors wait for a touch.
+const showBodyError = ref(false)
+
+const footerError = computed(() => {
+  if (updateNode.isError.value) return 'Could not save. Your changes were rolled back.'
+  return showBodyError.value ? bodyError.value : null
+})
 
 const titleField = useTemplateRef('titleField')
 const footer = useTemplateRef('footer')
@@ -54,7 +64,8 @@ function close() {
 
 function save() {
   touchAll()
-  if (!isValid.value || !isDirty.value) return
+  showBodyError.value = true
+  if (!canSave.value || !isDirty.value) return
 
   updateNode.mutate({
     id: props.id,
