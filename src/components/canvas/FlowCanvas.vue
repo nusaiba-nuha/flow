@@ -1,6 +1,6 @@
 <script setup>
 import { markRaw, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 
@@ -12,6 +12,7 @@ import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
 import CanvasState from './CanvasState.vue'
 
+const route = useRoute()
 const router = useRouter()
 const canvas = useCanvasStore()
 const { nodes, edges, isLoading, isError, error, refetch } = useFlowQuery()
@@ -31,9 +32,10 @@ const hasFitted = ref(false)
  * unable to write a dragged position back, and the node does not move.
  */
 watch(
-  [nodes, edges],
-  ([nextNodes, nextEdges]) => {
-    setNodes(nextNodes)
+  [nodes, edges, () => route.params.id],
+  ([nextNodes, nextEdges, openId]) => {
+    // The open node is the highlighted one, so a shared link marks it too.
+    setNodes(nextNodes.map((node) => ({ ...node, selected: node.id === openId })))
     setEdges(nextEdges)
   },
   { immediate: true },
