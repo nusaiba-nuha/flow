@@ -3,32 +3,36 @@ import { computed } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
 
 import IconButton from '@/components/ui/IconButton.vue'
+import { nextZoom } from '@/domain/zoom.js'
 
 /**
  * Instead of `@vue-flow/controls`, whose buttons carry no accessible name or
  * tooltip and style themselves outside our tokens. Same `useVueFlow` API.
  */
-const { zoomIn, zoomOut, fitView, zoomTo, viewport } = useVueFlow()
+const { fitView, zoomTo, viewport } = useVueFlow()
 
 const percentage = computed(() => `${Math.round(viewport.value.zoom * 100)}%`)
 
 const ZOOM_STEP = { duration: 140 }
+
+/** @param {1 | -1} direction */
+const step = (direction) => zoomTo(nextZoom(viewport.value.zoom, direction), ZOOM_STEP)
 </script>
 
 <template>
   <div class="absolute bottom-4 left-4 z-10 flex flex-col items-stretch gap-1">
     <IconButton
       label="Zoom in"
-      title="Zoom in. Scrolling on the canvas zooms too"
-      @click="zoomIn(ZOOM_STEP)"
+      title="Zoom in to the next step. Scrolling on the canvas zooms freely"
+      @click="step(1)"
     >
       <path d="M12 5v14M5 12h14" />
     </IconButton>
 
     <IconButton
       label="Zoom out"
-      title="Zoom out. Scrolling on the canvas zooms too"
-      @click="zoomOut(ZOOM_STEP)"
+      title="Zoom out to the previous step. Scrolling on the canvas zooms freely"
+      @click="step(-1)"
     >
       <path d="M5 12h14" />
     </IconButton>
