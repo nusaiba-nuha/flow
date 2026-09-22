@@ -78,7 +78,7 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
     <button
       type="button"
       class="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-hover"
-      title="Create a node and open its details"
+      title="Create a node and open its details. It is not connected to the flow"
       @click="emit('create')"
     >
       Create new node
