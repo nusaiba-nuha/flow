@@ -36,7 +36,10 @@ export function buildEdges(nodes) {
   return nodes
     .filter((node) => node.parentId !== ROOT_PARENT_ID && ids.has(node.parentId))
     .map((node) => ({
-      id: `e-${node.parentId}-${node.id}`,
+      // Keyed by the child, which has exactly one parent, so a re-parent updates
+      // this edge instead of deleting one and inserting another.
+      id: `e-${node.id}`,
+      type: 'flow',
       source: node.parentId,
       target: node.id,
     }))
@@ -95,4 +98,59 @@ export function withNodeRemoved(flow, id) {
     .map((node) =>
       gone.has(toNodeId(node.parentId)) ? { ...node, parentId: inheritedParent } : node,
     )
+}
+
+/**
+ * Is `candidate` inside the subtree under `rootId`?
+ *
+ * @param {Record<string, any>[]} flow
+ * @param {string} rootId
+ * @param {string} candidate
+ * @returns {boolean}
+ */
+export function isDescendant(flow, rootId, candidate) {
+  const parentOf = new Map(flow.map((node) => [toNodeId(node.id), toNodeId(node.parentId)]))
+
+  let current = candidate
+  // Bounded by the node count, so a corrupt payload cannot spin here forever.
+  for (let step = 0; step < parentOf.size; step += 1) {
+    if (current === rootId) return true
+    const parent = parentOf.get(current)
+    if (!parent || parent === ROOT_PARENT_ID) return false
+    current = parent
+  }
+
+  return false
+}
+
+/**
+ * Whether one node may become another's parent.
+ *
+ * The payload gives a node a single `parentId`, so connecting re-parents the
+ * target rather than adding an edge beside its existing one.
+ *
+ * @param {Record<string, any>[]} flow
+ * @param {string} sourceId the new parent
+ * @param {string} targetId the node being moved
+ * @returns {string | null} why not, or null when it is allowed
+ */
+export function canConnect(flow, sourceId, targetId) {
+  if (sourceId === targetId) return 'A node cannot follow itself.'
+
+  const source = flow.find((node) => toNodeId(node.id) === sourceId)
+  const target = flow.find((node) => toNodeId(node.id) === targetId)
+  if (!source || !target) return 'That node no longer exists.'
+
+  // A dateTime node owns its branches, so neither end may be re-parented.
+  if (target.type === NODE_TYPE.DATE_TIME_CONNECTOR) {
+    return 'Success and failure branches belong to their business hours node.'
+  }
+
+  if (target.type === NODE_TYPE.TRIGGER) return 'The trigger starts the flow, so it has no parent.'
+
+  if (toNodeId(target.parentId) === sourceId) return 'These are already connected.'
+
+  if (isDescendant(flow, targetId, sourceId)) return 'That would make a loop.'
+
+  return null
 }
