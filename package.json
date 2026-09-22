@@ -13,7 +13,8 @@
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
     "typecheck": "vue-tsc --noEmit -p jsconfig.json",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.103.2",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vitest/coverage-v8": "^5.0.1",

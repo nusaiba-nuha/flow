@@ -7,6 +7,16 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
+  const payloadProxy = env.PAYLOAD_ORIGIN
+    ? {
+        '/api/payload': {
+          target: env.PAYLOAD_ORIGIN,
+          changeOrigin: true,
+          rewrite: () => env.PAYLOAD_PATH,
+        },
+      }
+    : undefined
+
   return {
     plugins: [vue(), tailwindcss()],
 
@@ -14,19 +24,10 @@ export default defineConfig(({ mode }) => {
       alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
     },
 
-    server: {
-      // The bucket sends no Access-Control-Allow-Origin, so the browser cannot
-      // call it directly. Dev requests go through the dev server instead.
-      proxy: env.PAYLOAD_ORIGIN
-        ? {
-            '/api/payload': {
-              target: env.PAYLOAD_ORIGIN,
-              changeOrigin: true,
-              rewrite: () => env.PAYLOAD_PATH,
-            },
-          }
-        : undefined,
-    },
+    // The bucket sends no Access-Control-Allow-Origin, so the browser cannot
+    // call it directly. Both servers proxy it instead; preview is what E2E runs against.
+    server: { proxy: payloadProxy },
+    preview: { proxy: payloadProxy },
 
     test: {
       environment: 'happy-dom',
