@@ -45,6 +45,105 @@
   --shadow-panel: -8px 0 24px rgb(15 23 42 / 0.08);
 }
 
+/*
+ * Two sources for dark: an explicit choice, and the system preference when none
+ * has been made. The `:not([data-theme='light'])` guard is what lets someone
+ * choose light on a machine set to dark.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --canvas: #0d1117;
+  --surface: #161b22;
+  --surface-raised: #1c2230;
+  --surface-sunken: #0f141b;
+  --hover: #232b38;
+
+  --ink: #e6edf3;
+  --muted: #9aa7b6;
+  --subtle: #6e7c8c;
+
+  --line: #2a323d;
+  --line-strong: #3d4757;
+
+  --brand: #e6edf3;
+  --brand-ink: #0d1117;
+  --brand-hover: #ffffff;
+
+  --danger: #fb7185;
+  --focus: #60a5fa;
+
+  --dots: #273040;
+  --edge: #fb8f7e;
+  --branch-bg: #232a45;
+  --branch-ink: #a5b4fc;
+
+  --node-trigger: #fb7185;
+  --node-trigger-soft: #4c1d29;
+  --node-hours: #fb923c;
+  --node-hours-soft: #4a2a12;
+  --node-message: #34d399;
+  --node-message-soft: #12392c;
+  --node-comment: #38bdf8;
+  --node-comment-soft: #12354a;
+  --node-branch: #a5b4fc;
+  --node-branch-soft: #2a2f55;
+  --node-unknown: #94a3b8;
+  --node-unknown-soft: #2a323d;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-raised: 0 4px 14px rgb(0 0 0 / 0.55);
+  --shadow-panel: -8px 0 28px rgb(0 0 0 / 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --canvas: #0d1117;
+    --surface: #161b22;
+    --surface-raised: #1c2230;
+    --surface-sunken: #0f141b;
+    --hover: #232b38;
+
+    --ink: #e6edf3;
+    --muted: #9aa7b6;
+    --subtle: #6e7c8c;
+
+    --line: #2a323d;
+    --line-strong: #3d4757;
+
+    --brand: #e6edf3;
+    --brand-ink: #0d1117;
+    --brand-hover: #ffffff;
+
+    --danger: #fb7185;
+    --focus: #60a5fa;
+
+    --dots: #273040;
+    --edge: #fb8f7e;
+    --branch-bg: #232a45;
+    --branch-ink: #a5b4fc;
+
+    --node-trigger: #fb7185;
+    --node-trigger-soft: #4c1d29;
+    --node-hours: #fb923c;
+    --node-hours-soft: #4a2a12;
+    --node-message: #34d399;
+    --node-message-soft: #12392c;
+    --node-comment: #38bdf8;
+    --node-comment-soft: #12354a;
+    --node-branch: #a5b4fc;
+    --node-branch-soft: #2a2f55;
+    --node-unknown: #94a3b8;
+    --node-unknown-soft: #2a323d;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
+    --shadow-raised: 0 4px 14px rgb(0 0 0 / 0.55);
+    --shadow-panel: -8px 0 28px rgb(0 0 0 / 0.45);
+  }
+}
+
 /* Mapped onto variables, so utilities follow the active theme. */
 @theme inline {
   --color-canvas: var(--canvas);
@@ -100,4 +199,91 @@ body {
     -apple-system,
     sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+/* A short transition rather than a hard flip when the theme changes. */
+body,
+body * {
+  transition-property: background-color, border-color;
+  transition-duration: 160ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  body * {
+    transition-duration: 0ms;
+    animation-duration: 0ms;
+  }
+}
+
+/*
+ * Tailwind's preflight makes form controls transparent. The native select popup
+ * is drawn by the platform from the element's own background, and a transparent
+ * one falls back to white, which opened a white dropdown on a dark page.
+ */
+option,
+optgroup {
+  background-color: var(--surface);
+  color: var(--ink);
+}
+
+/* One focus ring for the whole app, on keyboard focus only. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/*
+ * Third-party internals, so they cannot be scoped: a scoped rule is rewritten
+ * with an attribute the library's elements do not carry. They read our tokens,
+ * so both themes work without a second palette.
+ */
+.vue-flow__background pattern circle,
+.vue-flow__background pattern path {
+  fill: var(--dots);
+  stroke: var(--dots);
+}
+
+.vue-flow__edge-path {
+  stroke: var(--edge);
+}
+
+.vue-flow__handle {
+  background: var(--surface);
+  border-color: var(--line-strong);
+}
+
+/* v14 renamed `dp__*` to `dp--*` and applies its own theme class, so both are targeted. */
+.dp--theme-light,
+.dp--theme-dark {
+  --dp-background-color: var(--surface);
+  --dp-text-color: var(--ink);
+  --dp-border-color: var(--line);
+  --dp-border-color-hover: var(--line-strong);
+  --dp-border-color-focus: var(--focus);
+  --dp-hover-color: var(--hover);
+  --dp-hover-text-color: var(--ink);
+  --dp-primary-color: var(--focus);
+  --dp-primary-text-color: #ffffff;
+  --dp-secondary-color: var(--muted);
+  --dp-menu-border-color: var(--line);
+  --dp-icon-color: var(--muted);
+  --dp-disabled-color: var(--surface-sunken);
+  --dp-scroll-bar-background: var(--surface-sunken);
+  --dp-scroll-bar-color: var(--line-strong);
+}
+
+.dp--input {
+  border-radius: 0.5rem;
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  padding: 0.4rem 0.5rem 0.4rem 2rem;
+}
+
+.dp--input-icon,
+.dp--clear-btn {
+  color: var(--muted);
 }

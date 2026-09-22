@@ -12,6 +12,7 @@ import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
+import CanvasControls from './CanvasControls.vue'
 import CanvasState from './CanvasState.vue'
 
 const route = useRoute()
@@ -146,6 +147,7 @@ watch(
       @viewport-change="canvas.setViewport"
     >
       <Background :gap="18" :size="1.2" />
+      <CanvasControls />
 
       <!-- The canvas is a graph, so a screen reader has nothing else to go on. -->
       <div class="sr-only" role="status" aria-live="polite">{{ focusAnnouncement }}</div>
