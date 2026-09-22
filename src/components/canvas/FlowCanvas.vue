@@ -1,5 +1,5 @@
 <script setup>
-import { markRaw, nextTick, ref, watch } from 'vue'
+import { computed, markRaw, nextTick, provide, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -7,9 +7,11 @@ import { Background } from '@vue-flow/background'
 import { useFlowQuery } from '@/composables/useFlowQuery.js'
 import { useMoveNode } from '@/composables/useNodeMutations.js'
 import { useCanvasStore } from '@/stores/canvas.js'
-import { isOpenable } from '@/domain/nodeMeta.js'
+import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
+import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
+import { FOCUSED_NODE_ID } from './focusKey.js'
 import CanvasState from './CanvasState.vue'
 
 const route = useRoute()
@@ -17,7 +19,7 @@ const router = useRouter()
 const canvas = useCanvasStore()
 const { nodes, edges, isLoading, isError, error, refetch } = useFlowQuery()
 const moveNode = useMoveNode()
-const { fitView, setViewport, setNodes, setEdges } = useVueFlow()
+const { fitView, setViewport, setNodes, setEdges, viewport } = useVueFlow()
 
 // These are component definitions, not reactive data: without markRaw Vue walks
 // every component tree on each render.
@@ -26,6 +28,47 @@ const nodeTypes = /** @type {import('@vue-flow/core').NodeTypesObject} */ (
 )
 
 const hasFitted = ref(false)
+
+/** The drawer and the create dialog own the keyboard while they are open. */
+const {
+  focusedId,
+  focus,
+  clear: clearFocus,
+} = useCanvasKeyboard({
+  nodes,
+  onOpen: (id) => router.push({ name: ROUTE.NODE_DETAILS, params: { id } }),
+  isActive: () => !document.querySelector('[role="dialog"][aria-modal="true"]'),
+})
+
+provide(FOCUSED_NODE_ID, focusedId)
+
+const focusAnnouncement = computed(() => {
+  if (!focusedId.value) return ''
+  const node = nodes.value.find((candidate) => candidate.id === focusedId.value)?.data.node
+  return node ? `${node.name}, ${metaFor(node.type).label}. Press Enter to open details.` : ''
+})
+
+// However the drawer was opened, the open node is the focused node.
+watch(
+  () => route.params.id,
+  (id) => {
+    if (typeof id === 'string' && id) focus(id)
+    else clearFocus()
+  },
+  { immediate: true },
+)
+
+// Pan a focused node into view without changing the zoom.
+watch(focusedId, async (id) => {
+  if (!id) return
+  await nextTick()
+  fitView({
+    nodes: [id],
+    duration: 180,
+    minZoom: viewport.value.zoom,
+    maxZoom: viewport.value.zoom,
+  })
+})
 
 /**
  * Handed over with `setNodes`, not a `:nodes` prop: a one-way prop leaves Vue Flow
@@ -44,6 +87,7 @@ watch(
 /** @param {{ node: import('@vue-flow/core').GraphNode }} event */
 function onNodeClick({ node }) {
   if (!isOpenable(node.data.node)) return
+  focus(node.id)
   router.push({ name: ROUTE.NODE_DETAILS, params: { id: node.id } })
 }
 
@@ -102,6 +146,9 @@ watch(
       @viewport-change="canvas.setViewport"
     >
       <Background :gap="18" :size="1.2" />
+
+      <!-- The canvas is a graph, so a screen reader has nothing else to go on. -->
+      <div class="sr-only" role="status" aria-live="polite">{{ focusAnnouncement }}</div>
     </VueFlow>
   </div>
 </template>
