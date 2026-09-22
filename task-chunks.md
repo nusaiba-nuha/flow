@@ -277,3 +277,10 @@
 - `canConnect`: no self, no cycle, no connector branches
 - Select an edge and delete it to detach
 - Say in the README that connecting is beyond the brief
+
+---
+
+## FL-31 · Draw a new connection at once
+
+- Add the edge in the connect handler, with the id the adapter uses
+- Vue Flow refuses to add a connection it has just seen made
