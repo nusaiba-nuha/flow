@@ -14,7 +14,13 @@ const label = computed(() => connectorLabel(props.data.node))
 
 <template>
   <div class="flex justify-center">
-    <Handle type="target" :position="Position.Top" class="!h-2 !w-2 !border-line !bg-surface" />
+    <!-- End only: dragging from the top of a card moves it, not a connection. -->
+    <Handle
+      type="target"
+      :connectable-start="false"
+      :position="Position.Top"
+      class="!h-2 !w-2 !border-line !bg-surface"
+    />
 
     <span
       class="rounded-md bg-branch-bg px-2.5 py-1 text-xs font-medium text-branch-ink select-none"
@@ -22,6 +28,11 @@ const label = computed(() => connectorLabel(props.data.node))
       {{ label }}
     </span>
 
-    <Handle type="source" :position="Position.Bottom" class="!h-2 !w-2 !border-line !bg-surface" />
+    <Handle
+      type="source"
+      :connectable-end="false"
+      :position="Position.Bottom"
+      class="!h-2 !w-2 !border-line !bg-surface"
+    />
   </div>
 </template>
