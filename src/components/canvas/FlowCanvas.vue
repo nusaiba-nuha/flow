@@ -1,5 +1,5 @@
 <script setup>
-import { markRaw, ref, watch } from 'vue'
+import { markRaw, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -64,6 +64,17 @@ function onNodesInitialized() {
   if (canvas.viewport) setViewport(canvas.viewport)
   else fitView({ padding: 0.2, duration: 0 })
 }
+
+watch(
+  () => canvas.focusNodeId,
+  async (id) => {
+    if (!id) return
+    // Wait for the node to exist and be measured before panning to it.
+    await nextTick()
+    fitView({ nodes: [id], padding: 0.6, duration: 400 })
+    canvas.clearFocus()
+  },
+)
 </script>
 
 <template>
