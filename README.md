@@ -59,6 +59,9 @@ same-origin. `VITE_*` values are inlined at build time, so the production image 
   by both the dialog and the tooltips.
 - **Light and dark** follow the system until you choose otherwise. Colours are tokens that Vue Flow
   and the date picker read too, so neither ships a second palette.
+- **Nodes can be connected** by dragging from one to another, which sets the target's `parentId`.
+  Beyond the brief, which specifies only the three create fields. The payload gives a node one
+  parent, so connecting moves it rather than adding a second link.
 - **`layoutTree` places the nodes**: leaves take a left-to-right cursor, parents centre over their
   children, depth maps to `y`. Dragged positions persist and win over it.
 
@@ -81,10 +84,10 @@ The brief's Query config is used as given, with one correction: `degaultOptions`
 
 ## Tests
 
-| Level      | Count | Covers                                                                                      |
-| ---------- | ----- | ------------------------------------------------------------------------------------------- |
-| Unit       | 89    | Domain logic, composables, stores, components                                               |
-| End to end | 25    | Rendering, drag, zoom, deep links, create, edit, delete, keyboard, undo, theme, affordances |
+| Level      | Count | Covers                                                                                               |
+| ---------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| Unit       | 95    | Domain logic, composables, stores, components                                                        |
+| End to end | 28    | Rendering, drag, zoom, connect, deep links, create, edit, delete, keyboard, undo, theme, affordances |
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright
 covers the canvas. CI runs lint, typecheck, unit tests and the build in one job, Playwright in
