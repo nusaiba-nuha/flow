@@ -86,7 +86,7 @@ The brief's Query config is used as given, with one correction: `degaultOptions`
 
 | Level      | Count | Covers                                                                                               |
 | ---------- | ----- | ---------------------------------------------------------------------------------------------------- |
-| Unit       | 95    | Domain logic, composables, stores, components                                                        |
+| Unit       | 92    | Domain logic, composables, stores, components                                                        |
 | End to end | 28    | Rendering, drag, zoom, connect, deep links, create, edit, delete, keyboard, undo, theme, affordances |
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright
