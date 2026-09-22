@@ -293,3 +293,11 @@
 - Ease the pan, with a duration that follows the distance
 - Consistent transitions on cards, edges, the drawer and toasts
 - Honour `prefers-reduced-motion` everywhere
+
+---
+
+## FL-33 · Final pass
+
+- Add the licence the README promises
+- Correct the counts, the keyboard sentence and the missing features
+- Name Vercel in deployment, and make the CI badge real
