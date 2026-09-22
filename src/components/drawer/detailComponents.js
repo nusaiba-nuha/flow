@@ -1,6 +1,7 @@
 import { NODE_TYPE } from '@/domain/constants.js'
 import AddCommentBody from './bodies/AddCommentBody.vue'
 import SendMessageBody from './bodies/SendMessageBody.vue'
+import BusinessHoursBody from './bodies/BusinessHoursBody.vue'
 
 /**
  * Presentation half of the node registry, kept apart from `domain/nodeMeta.js`
@@ -12,6 +13,7 @@ import SendMessageBody from './bodies/SendMessageBody.vue'
 export const detailComponents = Object.freeze({
   [NODE_TYPE.SEND_MESSAGE]: SendMessageBody,
   [NODE_TYPE.ADD_COMMENT]: AddCommentBody,
+  [NODE_TYPE.DATE_TIME]: BusinessHoursBody,
 })
 
 /** @param {string} type */

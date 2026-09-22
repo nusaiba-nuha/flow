@@ -1,6 +1,6 @@
 import { NODE_TYPE } from './constants.js'
-import { FIELD_LIMIT, maxLength, required, validate } from './validators.js'
-import { attachmentParts, textParts } from './format.js'
+import { FIELD_LIMIT, maxLength, required, validate, validateTimeRange } from './validators.js'
+import { attachmentParts, dayLabel, textParts } from './format.js'
 
 /**
  * Per-type body rules as pure functions, so they test without mounting anything
@@ -28,6 +28,17 @@ const RULES = Object.freeze({
 
   [NODE_TYPE.ADD_COMMENT]: (data) =>
     validate(data.comment, [required('Comment'), maxLength('Comment', FIELD_LIMIT.COMMENT_MAX)]),
+
+  [NODE_TYPE.DATE_TIME]: (data) => {
+    if (!data.times?.length) return 'Add at least one day.'
+
+    for (const slot of data.times) {
+      const error = validateTimeRange(slot.startTime, slot.endTime)
+      if (error) return `${dayLabel(slot.day)}: ${error}`
+    }
+
+    return data.timezone ? null : 'Select a timezone.'
+  },
 })
 
 /**

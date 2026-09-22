@@ -1,5 +1,6 @@
 import { MESSAGE_PART, NODE_TYPE, WEEKDAYS } from './constants.js'
 import { firstLine, summariseHours, textParts, truncate } from './format.js'
+import { localTimezone } from './time.js'
 
 /**
  * @typedef {Object} NodeMeta
@@ -122,7 +123,8 @@ export const CREATABLE_NODES = Object.freeze([
     /** @param {string} description @returns {import('./types.js').FlowNodeData} */
     seed: (description) => ({
       action: 'businessHours',
-      timezone: 'UTC',
+      // Whoever creates it is usually configuring their own hours.
+      timezone: localTimezone(),
       times: WEEKDAYS.map((day) => ({ day, startTime: '09:00', endTime: '17:00' })),
       description,
     }),
