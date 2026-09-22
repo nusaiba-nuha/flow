@@ -18,9 +18,7 @@ export function createTestQueryClient() {
 }
 
 /**
- * Run a composable inside a real component, the only place `useQuery` and
- * `inject` work.
- *
+ * `useQuery` and `inject` only work inside a component instance.
  * @template T
  * @param {() => T} composable
  * @param {{ queryClient?: QueryClient }} [options]
@@ -48,8 +46,7 @@ export const flush = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms
 
 /**
  * Wait on real state rather than a guessed timeout.
- * @param {() => boolean} predicate
- * @param {number} [timeout]
+ * @param {() => boolean} predicate @param {number} [timeout]
  */
 export async function waitUntil(predicate, timeout = 2000) {
   const deadline = Date.now() + timeout

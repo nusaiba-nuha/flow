@@ -5,27 +5,14 @@ import { fetchFlow } from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { payloadToGraph, toNodeId } from '@/domain/graph.js'
 
-/**
- * Server state lives here and only here. Query owns the flow, Pinia owns state
- * with no server counterpart, so there is nothing to keep in sync.
- *
- * @returns {{
- *   nodes: import('vue').ComputedRef<import('@/domain/types.js').VueFlowNode[]>,
- *   edges: import('vue').ComputedRef<import('@/domain/types.js').VueFlowEdge[]>,
- *   isLoading: import('vue').Ref<boolean>,
- *   isError: import('vue').Ref<boolean>,
- *   error: import('vue').Ref<Error | null>,
- *   refetch: () => void,
- * }}
- */
+/** Query owns the flow. Pinia owns only state with no server counterpart. */
 export function useFlowQuery() {
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: flowKeys.list(),
     queryFn: fetchFlow,
   })
 
-  // Adapt once per payload change, not once per component: the cache entry is
-  // shared by reference.
+  // Once per payload change, not once per component: callers share the cache entry.
   const graph = computed(() => payloadToGraph(data.value ?? []))
 
   return {
@@ -39,11 +26,8 @@ export function useFlowQuery() {
 }
 
 /**
- * One node, read from the cache. The drawer never fetches, which is what makes
- * opening it instant.
- *
+ * Read from the cache, never fetch: opening the drawer costs no request.
  * @param {import('vue').Ref<string> | (() => string)} id
- * @returns {{ node: import('vue').ComputedRef<import('@/domain/types.js').FlowNode | null>, isLoading: import('vue').Ref<boolean> }}
  */
 export function useNode(id) {
   const { nodes, isLoading } = useFlowQuery()
