@@ -10,6 +10,7 @@ import { useCanvasStore } from '@/stores/canvas.js'
 import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
 import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
 import { canConnect, toNodeId } from '@/domain/graph.js'
+import { isInView, panDuration } from '@/domain/motion.js'
 import { ROOT_PARENT_ID } from '@/domain/constants.js'
 import { useToastStore } from '@/stores/toasts.js'
 import { ROUTE } from '@/router/index.js'
@@ -52,7 +53,6 @@ const hasFitted = ref(false)
 
 /** Matches the drawer width in NodeDetailsDrawer. */
 const DRAWER_WIDTH = 380
-const PAN_MS = 420
 
 const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
 
@@ -296,17 +296,30 @@ function centreOn(node) {
   const pane = container.value?.getBoundingClientRect()
   if (!pane) return
 
-  const { zoom } = viewport.value
-  const visibleWidth = pane.width - (route.params.id ? DRAWER_WIDTH : 0)
+  const { x, y, zoom } = viewport.value
+  const view = {
+    width: pane.width - (route.params.id ? DRAWER_WIDTH : 0),
+    height: pane.height,
+  }
 
-  setViewport(
-    {
-      x: visibleWidth / 2 - (node.position.x + (node.dimensions.width || 0) / 2) * zoom,
-      y: pane.height / 2 - (node.position.y + (node.dimensions.height || 0) / 2) * zoom,
-      zoom,
-    },
-    { duration: reducedMotion() ? 0 : PAN_MS },
-  )
+  const onScreen = {
+    x: node.position.x * zoom + x,
+    y: node.position.y * zoom + y,
+    width: (node.dimensions.width || 0) * zoom,
+    height: (node.dimensions.height || 0) * zoom,
+  }
+
+  // Clicking a node you can already see should not move the canvas at all.
+  if (isInView(onScreen, view)) return
+
+  const target = {
+    x: view.width / 2 - (node.position.x + (node.dimensions.width || 0) / 2) * zoom,
+    y: view.height / 2 - (node.position.y + (node.dimensions.height || 0) / 2) * zoom,
+    zoom,
+  }
+
+  const distance = Math.hypot(target.x - x, target.y - y)
+  setViewport(target, { duration: reducedMotion() ? 0 : panDuration(distance) })
 }
 
 watch(
