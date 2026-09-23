@@ -211,6 +211,16 @@ Attachments are read as data URLs and capped at 2 MB, since there is no upload e
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright covers the canvas.
 
+Where a test goes: domain logic and stores are unit tests, a component's own behaviour is a component test, and anything needing real layout, a real drag or a reload is Playwright.
+
+Playwright needs its browser once:
+
+```bash
+npx playwright install chromium
+```
+
+`npm run test:e2e` builds and serves the app itself, so nothing needs starting first. It will reuse a `vite preview` already on port 4173 rather than rebuilding, so stop one before a run or it tests the previous build.
+
 CI runs lint, typecheck, unit tests and the build in one job, with Playwright in another against the production build.
 
 ## Structure
