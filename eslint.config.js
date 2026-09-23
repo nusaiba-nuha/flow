@@ -12,7 +12,7 @@ export default [
 
   {
     // Node context: config files and Playwright specs run outside the browser.
-    files: ['*.config.js', 'e2e/**/*.js', '.claude/hooks/*.mjs'],
+    files: ['*.config.js', 'e2e/**/*.js', '.claude/hooks/*.mjs', 'scripts/*.mjs'],
     languageOptions: {
       globals: {
         process: 'readonly',

@@ -45,4 +45,5 @@ Vue Flow measures node handles after mount, and it owns its own graph:
 - Tests cover behaviour that can break, not coverage percentage.
 - Commits: imperative subject, `Add`/`Fix`/`Update`/`Remove`/`Refactor`/`Test`.
   Stage files by name. Never `git add -A`.
-- Never commit `.env`, secrets, or anything in `dist/` or `coverage/`.
+- Never commit `.env`, secrets, or anything in `dist/` or `coverage/`. The
+  pre-commit hook scans staged changes for credentials and will refuse.

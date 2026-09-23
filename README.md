@@ -248,7 +248,8 @@ Security notes are in [SECURITY.md](SECURITY.md).
 The rules an AI agent cannot infer from the code are in [AGENTS.md](AGENTS.md), which
 `CLAUDE.md` points at so every agent reads the same file. `.claude/settings.json` adds
 two committed hooks: one refuses writes to generated or secret paths, the other formats
-what was just edited. Both are a few lines of Node with no network access, so they can
+what was just edited. Before any commit, `scripts/check-secrets.mjs` scans the staged
+changes for credentials, so a leaked key is a fix rather than a rotation. Both are a few lines of Node with no network access, so they can
 be audited in a minute.
 
 ## Deployment
