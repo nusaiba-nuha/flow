@@ -301,3 +301,10 @@
 - Add the licence the README promises
 - Correct the counts, the keyboard sentence and the missing features
 - Name Vercel in deployment, and make the CI badge real
+
+---
+
+## FL-34 · Draw the branches of a created node
+
+- A node added in the same pass is not measured yet, so its edges were never drawn
+- Wait for both ends before adding, so business hours branches connect without a reload
