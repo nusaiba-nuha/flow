@@ -13,7 +13,9 @@ something the code cannot tell you.
 | Types      | `npm run typecheck` |
 | Lint       | `npm run lint`      |
 
-`npm run test:e2e` builds nothing: run `npm run build` first if the source changed.
+`npm run test:e2e` builds and serves the app itself, but it reuses a server already
+on port 4173 rather than rebuilding. Kill a running `vite preview` first, or the run
+tests the previous build.
 
 ## Boundaries
 
@@ -43,6 +45,10 @@ Vue Flow measures node handles after mount, and it owns its own graph:
 - A comment carries a reason the code cannot state. If it restates the next line,
   delete it.
 - Tests cover behaviour that can break, not coverage percentage.
+- Where a test goes: domain logic and stores are unit tests; a component's own
+  behaviour is a component test; anything needing real layout, a real drag or a
+  reload is Playwright. happy-dom has no layout, so the canvas cannot be unit
+  tested and is not worth mocking into submission.
 - Commits: imperative subject, `Add`/`Fix`/`Update`/`Remove`/`Refactor`/`Test`.
   Stage files by name. Never `git add -A`.
 - Never commit `.env`, secrets, or anything in `dist/` or `coverage/`. The
