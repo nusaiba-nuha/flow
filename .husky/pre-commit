@@ -1,6 +1,10 @@
-# Fast checks only: lint and format the staged files.
+# Fast checks only: scan for credentials, then lint and format the staged files.
 #
 # Anything slower belongs in pre-push or CI. A pre-commit hook that runs the
 # whole suite is a hook people start bypassing, and a bypassed hook protects
 # nothing.
+#
+# The secret scan is first: a credential that reaches a commit needs rotating,
+# not fixing, so this is the last point where it is still cheap.
+node scripts/check-secrets.mjs
 npx lint-staged

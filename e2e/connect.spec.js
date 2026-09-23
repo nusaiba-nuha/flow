@@ -34,17 +34,20 @@ async function whenStill(locator) {
   return previous
 }
 
-/** The midpoint of an edge, which is where its remove control sits. */
-const edgeMidpoint = (page, edgeId) =>
-  page.evaluate((id) => {
-    const path = document.querySelector(`.vue-flow__edge[data-id="${id}"] .vue-flow__edge-path`)
-    const at = path.getPointAtLength(path.getTotalLength() / 2)
-    const point = path.ownerSVGElement.createSVGPoint()
-    point.x = at.x
-    point.y = at.y
-    const screen = point.matrixTransform(path.getScreenCTM())
-    return { x: screen.x, y: screen.y }
-  }, edgeId)
+/**
+ * The remove control appears while the edge is hovered. Hovering the edge's own hit
+ * path lets Playwright wait for the element, rather than us computing a point on a
+ * canvas that may still be easing.
+ */
+async function removeControl(page, edgeId) {
+  // Forced: the control appears under the cursor, and Playwright would otherwise
+  // retry the hover forever because the button it just revealed is in the way.
+  await page
+    .locator(`.vue-flow__edge[data-id="${edgeId}"] [data-testid="edge-hit-area"]`)
+    .hover({ force: true })
+
+  return page.getByRole('button', { name: 'Remove this connection' }).first()
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/flow')
@@ -67,10 +70,7 @@ test('drags between nodes to set a parent, and keeps every other edge', async ({
 })
 
 test('removes a connection from the edge, and undo puts it back', async ({ page }) => {
-  const point = await edgeMidpoint(page, 'e-b6a0c1')
-  await page.mouse.click(point.x, point.y)
-
-  await page.getByRole('button', { name: 'Remove this connection' }).first().click()
+  await (await removeControl(page, 'e-b6a0c1')).click()
   await expect.poll(() => parentOf(page, 'b6a0c1')).toBe('-1')
   expect(await drawnEdges(page)).toBe(5)
 
@@ -82,9 +82,7 @@ test('removes a connection from the edge, and undo puts it back', async ({ page 
 test('leaves the node where it was when its connection goes', async ({ page }) => {
   const before = await node(page, 'b6a0c1').boundingBox()
 
-  const point = await edgeMidpoint(page, 'e-b6a0c1')
-  await page.mouse.click(point.x, point.y)
-  await page.getByRole('button', { name: 'Remove this connection' }).first().click()
+  await (await removeControl(page, 'e-b6a0c1')).click()
   await expect.poll(() => parentOf(page, 'b6a0c1')).toBe('-1')
 
   const after = await node(page, 'b6a0c1').boundingBox()

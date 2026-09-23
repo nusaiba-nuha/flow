@@ -42,3 +42,6 @@ pnpm-debug.log*
 
 # Vercel
 .vercel
+
+# Agents: the shared config is committed, personal overrides are not.
+.claude/settings.local.json

@@ -211,6 +211,16 @@ Attachments are read as data URLs and capped at 2 MB, since there is no upload e
 
 Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright covers the canvas.
 
+Where a test goes: domain logic and stores are unit tests, a component's own behaviour is a component test, and anything needing real layout, a real drag or a reload is Playwright.
+
+Playwright needs its browser once:
+
+```bash
+npx playwright install chromium
+```
+
+`npm run test:e2e` builds and serves the app itself, so nothing needs starting first. It will reuse a `vite preview` already on port 4173 rather than rebuilding, so stop one before a run or it tests the previous build.
+
 CI runs lint, typecheck, unit tests and the build in one job, with Playwright in another against the production build.
 
 ## Structure
@@ -244,6 +254,13 @@ Requirements are in [plan.md](plan.md).
 The branch-sized ticket breakdown is in [task-chunks.md](task-chunks.md).
 
 Security notes are in [SECURITY.md](SECURITY.md).
+
+The rules an AI agent cannot infer from the code are in [AGENTS.md](AGENTS.md), which
+`CLAUDE.md` points at so every agent reads the same file. `.claude/settings.json` adds
+two committed hooks: one refuses writes to generated or secret paths, the other formats
+what was just edited. Before any commit, `scripts/check-secrets.mjs` scans the staged
+changes for credentials, so a leaked key is a fix rather than a rotation. Both are a few lines of Node with no network access, so they can
+be audited in a minute.
 
 ## Deployment
 

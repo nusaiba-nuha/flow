@@ -58,6 +58,7 @@ import { DETACH_EDGE } from './connectKey.js'
     stroke="transparent"
     stroke-width="18"
     class="cursor-pointer"
+    data-testid="edge-hit-area"
     @mouseenter="hovered = true"
     @mouseleave="hovered = false"
   />
