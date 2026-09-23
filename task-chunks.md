@@ -315,3 +315,11 @@
 
 - `.env.example` shipped a placeholder bucket, so `cp .env.example .env` gave a 403
 - Fill in the real payload URL, which is public and unsigned
+
+---
+
+## FL-36 · Make the repo agent ready
+
+- `AGENTS.md` for the rules an agent cannot infer from the code, with `CLAUDE.md` pointing at it
+- Checked-in hooks: refuse writes to generated and secret paths, format what was edited
+- Keep both short, and keep the hooks readable enough to audit in a minute
