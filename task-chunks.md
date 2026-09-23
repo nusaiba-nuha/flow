@@ -308,3 +308,10 @@
 
 - A node added in the same pass is not measured yet, so its edges were never drawn
 - Wait for both ends before adding, so business hours branches connect without a reload
+
+---
+
+## FL-35 · Make the documented setup work
+
+- `.env.example` shipped a placeholder bucket, so `cp .env.example .env` gave a 403
+- Fill in the real payload URL, which is public and unsigned
