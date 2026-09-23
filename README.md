@@ -245,6 +245,12 @@ The branch-sized ticket breakdown is in [task-chunks.md](task-chunks.md).
 
 Security notes are in [SECURITY.md](SECURITY.md).
 
+The rules an AI agent cannot infer from the code are in [AGENTS.md](AGENTS.md), which
+`CLAUDE.md` points at so every agent reads the same file. `.claude/settings.json` adds
+two committed hooks: one refuses writes to generated or secret paths, the other formats
+what was just edited. Both are a few lines of Node with no network access, so they can
+be audited in a minute.
+
 ## Deployment
 
 The build is a static SPA, so a host needs two rules:
