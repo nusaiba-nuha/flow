@@ -54,19 +54,21 @@ Open http://localhost:8080.
 Node 22 or newer is required.
 
 ```bash
-cp .env.example .env
 npm install
 npm run dev
 ```
 
+The flow is served from `public/payload.json`, so no configuration is needed. To read
+the hosted copy instead, `cp .env.example .env` before starting.
+
 ## Configuration
 
-| Variable           | What it sets                                         |
-| ------------------ | ---------------------------------------------------- |
-| `VITE_PAYLOAD_URL` | The path the browser fetches, default `/api/payload` |
-| `PAYLOAD_ORIGIN`   | Where that path is proxied to                        |
-| `PAYLOAD_PATH`     | The upstream payload path                            |
-| `PAYLOAD_HOST`     | The `Host` header nginx sends upstream               |
+| Variable           | What it sets                                          |
+| ------------------ | ----------------------------------------------------- |
+| `VITE_PAYLOAD_URL` | The path the browser fetches, default `/payload.json` |
+| `PAYLOAD_ORIGIN`   | Where that path is proxied to                         |
+| `PAYLOAD_PATH`     | The upstream payload path                             |
+| `PAYLOAD_HOST`     | The `Host` header nginx sends upstream                |
 
 The bucket sends no `Access-Control-Allow-Origin`, so the browser cannot call it directly.
 
