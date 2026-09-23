@@ -153,7 +153,7 @@ function syncGraph(nextNodes, nextEdges, openId) {
     wantedEdges.delete(edge.id)
   }
 
-  if (wantedEdges.size) addEdges([...wantedEdges.values()].map((edge) => ({ ...edge })))
+  if (wantedEdges.size) drawFromData([...wantedEdges.values()].map((edge) => ({ ...edge })))
 }
 
 watch(
@@ -161,6 +161,22 @@ watch(
   ([nextNodes, nextEdges, openId]) => syncGraph(nextNodes, nextEdges, String(openId ?? '')),
   { immediate: true },
 )
+
+let fromData = false
+
+/**
+ * Vue Flow runs `isValidConnection` for `addEdges` too, and the rules that refuse
+ * a drag refuse most of the payload: a branch already has its parent, and nobody
+ * may draw into a connector. An edge that only depicts the data goes in with the
+ * gate open.
+ *
+ * @param {import('@/domain/types.js').VueFlowEdge[]} list
+ */
+function drawFromData(list) {
+  fromData = true
+  addEdges(list)
+  fromData = false
+}
 
 /** @param {{ node: import('@vue-flow/core').GraphNode }} event */
 function onNodeClick({ node }) {
@@ -197,6 +213,7 @@ function onConnectEnd() {
  * @returns {boolean}
  */
 function isValidConnection({ source, target }) {
+  if (fromData) return true
   if (!source || !target) return false
 
   return canConnect(flowNodes(), toNodeId(source), toNodeId(target)) === null

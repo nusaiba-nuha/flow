@@ -1,5 +1,14 @@
 import { expect, test } from '@playwright/test'
 
+/** Edges are hidden rather than removed, so count the drawn ones. */
+const drawnEdges = (page) =>
+  page.evaluate(
+    () =>
+      [...document.querySelectorAll('.vue-flow__edge')].filter(
+        (edge) => edge.style.display !== 'none',
+      ).length,
+  )
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/flow')
   await page.getByRole('button', { name: 'Create new node' }).click()
@@ -25,6 +34,9 @@ test('creates a business hours node with both branches', async ({ page }) => {
   await expect(page).toHaveURL(/\/flow\/node\//)
   await expect(page.locator('.vue-flow__node', { hasText: 'Success' })).toHaveCount(2)
   await expect(page.locator('.vue-flow__node', { hasText: 'Failure' })).toHaveCount(2)
+
+  // No reload: the branches have to be joined to their node on their own.
+  await expect.poll(() => drawnEdges(page)).toBe(8)
 })
 
 test('closes on Escape without creating anything', async ({ page }) => {
