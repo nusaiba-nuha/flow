@@ -5,8 +5,13 @@ import { creatableByValue } from '@/domain/nodeMeta.js'
 /** Writes only: it exists to make optimistic updates and rollbacks visible. */
 const LATENCY_MS = 220
 
-/** Read through a function, so tests can stub the environment. */
-export const payloadUrl = () => import.meta.env.VITE_PAYLOAD_URL || '/api/payload'
+/**
+ * The payload the brief supplied, served from `public/`, so a clone runs with no
+ * configuration. `VITE_PAYLOAD_URL` points it at the hosted copy instead.
+ *
+ * Read through a function, so tests can stub the environment.
+ */
+export const payloadUrl = () => import.meta.env.VITE_PAYLOAD_URL || '/payload.json'
 
 /** Keyed by source, or switching it would serve the previous source's copy. */
 export const storageKey = () => `flow-builder:flow:${payloadUrl()}`

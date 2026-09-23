@@ -45,7 +45,7 @@ describe('loading', () => {
 
 describe('payload source', () => {
   it('defaults to the local file and follows VITE_PAYLOAD_URL', async () => {
-    expect(payloadUrl()).toBe('/api/payload')
+    expect(payloadUrl()).toBe('/payload.json')
 
     vi.stubEnv('VITE_PAYLOAD_URL', 'https://example.test/flow.json')
     expect(payloadUrl()).toBe('https://example.test/flow.json')
