@@ -11,7 +11,7 @@ Nodes load from a payload API, render on a draggable canvas, and are edited thro
 [![CI](https://github.com/raj-khan/flow/actions/workflows/ci.yml/badge.svg)](https://github.com/raj-khan/flow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff5a2c.svg)](LICENSE)
 
-https://github.com/user-attachments/assets/99048de2-753a-4d37-9012-1011bc2347ea
+https://github.com/user-attachments/assets/cbfbc844-7373-4891-a985-50e2870fe1b5
 
 </div>
 
