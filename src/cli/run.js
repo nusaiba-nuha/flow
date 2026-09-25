@@ -7,6 +7,7 @@ export const USAGE = `Usage:
   isketch render <file.flow> [-o <out.svg>] [--dark]   Draw a diagram as SVG
   isketch check <file.flow>...                         Report errors, exit 1 if any
   isketch brief <file.flow>                            A Markdown brief for a coding agent
+  isketch mcp [folder]                                 An MCP server for the .flow files in a folder
   isketch diff <before.flow> <after.flow> [-o <out.svg>] [--dark]
                                                        List what changed, and draw it
 `

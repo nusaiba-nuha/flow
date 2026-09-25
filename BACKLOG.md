@@ -164,14 +164,14 @@ On a pull request that changes a `.flow` file, post the before and after as a co
   handle", a table lists its columns
 - `isketch brief diagram.flow` prints the same, for scripts and agents
 
-### FL-65 · MCP server ⏭️
+### FL-65 · MCP server ✅
 
 - `isketch mcp` runs a local MCP server over stdio, pointed at a folder of `.flow` files
 - Tools: list diagrams, read one as a brief or as text, write one (validated, with line errors
   back), render to SVG, diff two versions
 - A setup line for Claude Code and Claude Desktop in the README
 
-### FL-66 · Wireframe shapes ⬜
+### FL-66 · Wireframe shapes ⏭️
 
 Screen, button, input, card, list, image and navigation shapes, so a UI can be sketched and handed
 over as a component tree, not only boxes and arrows.
