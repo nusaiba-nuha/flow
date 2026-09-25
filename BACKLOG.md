@@ -80,7 +80,7 @@ add it at the centre. Replaces the create dialog.
 
 ## Milestone 2: The wedge
 
-### FL-44 · The `.flow` text format ⏭️
+### FL-44 · The `.flow` text format ✅
 
 - A small line based format: one node or edge per line, stable order, so a diff shows exactly
   what changed
@@ -88,7 +88,7 @@ add it at the centre. Replaces the create dialog.
 - Layout is kept apart from meaning: positions live in a block at the end, so moving a box never
   touches the lines that describe the system
 
-### FL-45 · Two way text editor ⬜
+### FL-45 · Two way text editor ⏭️
 
 A split pane: text on the left, canvas on the right. Typing re-renders the canvas as you type,
 keeping every position it can; editing the canvas rewrites the text. Parse errors are shown on the

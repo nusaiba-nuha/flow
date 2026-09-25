@@ -55,7 +55,41 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Automatic layout** for anything you have not placed by hand.
 - **Light and dark themes**, following the system until you choose.
 - **Saved locally.** Edits are kept in `localStorage` and survive a reload.
+- **Plain text format.** Every diagram round trips through the [`.flow` format](#the-flow-format).
 - **Works offline.** The samples are bundled, so the app makes no network requests.
+
+## The `.flow` format
+
+Every diagram can be written as plain text that reads well and diffs cleanly:
+
+```text
+title: Web app architecture
+
+browser = terminal "Browser" -- Single page app
+api = process "API" -- REST, documented with OpenAPI
+db = database "PostgreSQL"
+
+browser -> api : HTTPS
+api -> db : SQL
+
+@layout
+browser 276,0
+api 276,176
+db 276,352
+```
+
+- `id = shape "Name" -- description` declares a node. The name and description are optional.
+  Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `text`.
+- `a -> b : label` connects two nodes. The label is optional, and a line may refer to a node
+  defined further down.
+- `@layout` starts the positions, one `id x,y` per line. A node with no position is laid out
+  automatically, so a hand-written diagram needs no layout block at all.
+- `#` starts a comment. A newline inside a description or label is written `\n`.
+
+One node or edge per line, in a stable order, with the layout kept apart: moving a box changes
+one line at the end, and never the lines that say what the system is. `parseFlow` and
+`serialiseFlow` in `src/domain/flowText.js` read and write it, reporting every error with its
+line number. The editor, import and file support build on it; see the [backlog](BACKLOG.md).
 
 ## Where it is going
 
