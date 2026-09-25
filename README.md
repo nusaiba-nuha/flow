@@ -2,10 +2,10 @@
 
 # Flow
 
-**An open source diagram editor for the browser, in the spirit of draw.io.**
+**Diagrams that live next to your code.**
 
-Draw shapes, connect them, and edit them on an infinite canvas. No account, no server, no
-configuration: your diagrams live in your browser.
+An open source diagram editor for software engineers: edit on a canvas or as text, keep diagrams
+in git where they can be reviewed, and generate them from the files you already have.
 
 [Backlog](BACKLOG.md) · [Security](SECURITY.md) · [Agent rules](AGENTS.md)
 
@@ -16,9 +16,26 @@ https://github.com/user-attachments/assets/cbfbc844-7373-4891-a985-50e2870fe1b5
 
 </div>
 
-> **Status: early.** Flow started as a flow chart exercise and is being turned into a general
-> diagram tool. The editor, canvas, undo and persistence below work today; general shapes, free
-> connectors, many documents and export are next. See the [backlog](BACKLOG.md) for the plan.
+## Why not just draw.io?
+
+draw.io is free and great at drawing. The problem it does not solve is that architecture diagrams
+**rot**: a `.drawio` file is an XML blob nobody reviews, so the picture drifts from the code until
+it is wrong. Text tools like Mermaid fix the review problem but take away the canvas.
+
+Flow aims at the gap between them:
+
+- **Text and canvas, both ways.** Edit either; the other follows, and your layout survives.
+- **Git native.** Line based files that diff cleanly, SVG rendering from the command line, and a
+  visual diff on pull requests.
+- **Generated from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with
+  re-import that keeps your layout.
+- **Local first.** No account, no server, works offline, shareable as a link.
+
+The full reasoning, and how we will know if it is working, is at the top of the
+[backlog](BACKLOG.md).
+
+> **Status: early.** Flow started as a flow chart exercise. The canvas, editing, undo and local
+> persistence below work today; the diagram model, text format and importers are being built now.
 
 ## What works today
 
@@ -36,13 +53,12 @@ https://github.com/user-attachments/assets/cbfbc844-7373-4891-a985-50e2870fe1b5
 
 ## Where it is going
 
-| Milestone             | Highlights                                                         |
-| --------------------- | ------------------------------------------------------------------ |
-| 1. Make it a product  | Own document format, general shapes, shape palette, format panel   |
-| 2. Editing essentials | Multi-select, inline text, resize, styled connectors, clipboard    |
-| 3. Files              | Many documents, JSON import and export, PNG and SVG, `.drawio` I/O |
-| 4. Canvas at scale    | Minimap, graph layout, pages, a 1,000 shape performance budget     |
-| 5. Backend and collab | NestJS and PostgreSQL API, accounts, share links, live editing     |
+| Milestone               | Highlights                                                          |
+| ----------------------- | ------------------------------------------------------------------- |
+| 1. A real diagram model | Nodes and edges, general shapes, new diagram, shape palette         |
+| 2. The wedge            | `.flow` text format, two way editor, Mermaid, compose, OpenAPI, SQL |
+| 3. Git native           | Open and save files, CLI rendering, visual diff, GitHub Action      |
+| 4. Editing essentials   | Multi-select, inline text, resize, connectors, clipboard, export    |
 
 Every ticket, with what "done" means, is in [BACKLOG.md](BACKLOG.md).
 
@@ -150,10 +166,10 @@ to `index.html`. `docker/nginx.conf` does that for the container and `vercel.jso
 
 ## Known limits
 
-- One document per browser, and a node has a single incoming connection. Both go in
-  [Milestone 1](BACKLOG.md#milestone-1-make-it-a-product).
+- One document per browser, and a node has a single incoming connection. The second goes in
+  [FL-40](BACKLOG.md).
 - Node types are still the ones the project started with: Send Message, Add Comment and Business
-  Hours. General shapes are [FL-41](BACKLOG.md#fl-41--general-shapes-replace-the-chat-bot-node-types).
+  Hours. General shapes are [FL-41](BACKLOG.md).
 - Storage is per browser, so two tabs do not see each other's edits and nothing syncs between
   devices.
 - Attachments are stored as data URLs and capped at 2 MB.

@@ -1,188 +1,160 @@
 # Backlog
 
-Flow is becoming a general purpose diagram editor in the spirit of draw.io: shapes, connectors,
-many documents, import and export, and eventually a backend and live collaboration.
+## Why Flow, when draw.io is free
 
-One ticket, one branch, one pull request. Tickets carry on from the original build, which ran
-FL-00 to FL-36 and is in the git history.
+draw.io is excellent at drawing. It is not why diagrams go wrong. Diagrams go wrong because they
+**rot**: someone draws the architecture once, the code moves on, and the picture quietly becomes a
+lie. That happens because a draw.io file is an XML blob that nobody can review in a pull request,
+and redrawing it by hand is a chore nobody schedules.
+
+The text tools (Mermaid, D2, PlantUML) fix the review problem but lose the canvas: you cannot drag
+a box where you want it, and the layout is whatever the engine decides.
+
+**Flow is diagrams that live next to your code.** It is for software engineers, and it bets on
+four things together, which no free tool does today:
+
+1. **Text and canvas, both ways.** Every diagram is readable text. Edit the text and the canvas
+   follows; drag on the canvas and the text follows. Your manual layout survives text edits.
+2. **Git native.** Files diff line by line, a CLI renders them to SVG with no browser, and a GitHub
+   Action posts a visual before and after on every pull request that changes a diagram.
+3. **Generated from what you already have.** Import `docker-compose.yml`, an OpenAPI spec or SQL
+   DDL, and re-import after it changes without losing the layout you gave it.
+4. **Local first.** No account, no server, works offline, keyboard first, and shareable as a link
+   that carries the whole diagram.
+
+What Flow does **not** try to do: beat draw.io at shape count, whiteboarding, or diagrams for
+non-engineers. Staying narrow is the point.
+
+**How we will know.** Ship milestones 1 and 2, post them where engineers talk about diagrams, and
+watch two numbers: how many people import a real file, and how many come back within a week. If
+nobody imports, the wedge is wrong and the plan changes before milestone 3.
+
+## How we work
+
+One ticket, one branch, one pull request, merged when CI is green. Tickets carry on from the
+original build (FL-00 to FL-36, in the git history).
 
 **Status:** ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started
 
-## Milestone 1: Make it a product
+## Milestone 0: Own the codebase ✅
 
-The app still thinks like the assessment it came from: a single chat-bot flow, loaded from a
-remote payload, with node types like Send Message and Business Hours. This milestone makes it a
-standalone diagram tool with its own document format.
+| Ticket | What                                                                     | Status |
+| ------ | ------------------------------------------------------------------------ | ------ |
+| FL-37  | Remove the payload dependency: bundled starter, no proxies, no config    | ✅     |
+| FL-38  | Product README and backlog                                               | ✅     |
+| FL-39  | Rename to Flow, `flow:` storage keys, one time migration of the old ones | ✅     |
 
-### FL-37 · Remove the payload dependency ✅
+## Milestone 1: A real diagram model
 
-- Bundle the starter diagram in `src/api/starterDiagram.json` instead of fetching it
-- Delete `VITE_PAYLOAD_URL`, `PAYLOAD_*`, `.env.example` and every proxy: Vite, nginx, Vercel
-- Version the storage key
-- Tests seed from the bundle, not a stubbed `fetch`
-
-**Done when** the app, the tests and the container run with no network and no configuration.
-
-### FL-38 · Product README and backlog ✅
-
-- Rewrite the README for the product, not the assessment
-- Replace `plan.md` and `task-chunks.md` with this file
-
-### FL-39 · Rename to Flow ✅
-
-- One product name everywhere: page title, header, help dialog, `package.json`
-- Storage keys under a `flow:` prefix, migrating the `flow-builder:` ones once
+The app still stores a bare array of chat-bot nodes whose one edge comes from `parentId`. Nothing
+in milestone 2 is possible until diagrams are nodes and edges.
 
 ### FL-40 · Document model v2 ⏭️
 
-The stored shape is still a bare array of nodes whose edges come from `parentId`, so a node can
-have one incoming connection. Diagrams need any number, in either direction.
-
-- `{ version: 2, id, title, nodes: [], edges: [] }` with explicit edges `{ id, source, target, sourceHandle, targetHandle, label }`
-- A pure `migrate(document)` in `src/domain/` that lifts a v1 array into v2
+- `{ version: 2, title, nodes: [], edges: [] }` with explicit edges
+  `{ id, source, target, label? }`
+- A pure `migrate()` in `src/domain/` lifts a v1 array into v2, including what is already saved
 - `graph.js` builds from `edges`; deleting a node deletes its edges, nothing is re-parented
-- `canConnect` drops the single parent and loop rules; self loops and duplicates stay refused
+- Any number of incoming and outgoing edges; self loops and exact duplicates are refused
+- Connecting adds an edge instead of moving the target
 
-**Done when** a v1 document from `localStorage` opens unchanged as v2, and two nodes can both
-point at a third.
+**Done when** a saved v1 document opens unchanged, and two nodes can both point at a third.
 
-### FL-41 · General shapes replace the chat-bot node types ⬜
+### FL-41 · General shapes ⬜
 
-- `nodeMeta` entries for: rectangle, rounded rectangle, ellipse, diamond, parallelogram,
-  cylinder, document, text, sticky note
-- Each shape is an SVG outline plus a text label, sized by the node rather than fixed
-- Retire Trigger, Send Message, Business Hours, Branch and Add Comment, with a migration that maps
-  them onto shapes so nothing already drawn is lost
-- Drop `@vuepic/vue-datepicker` once nothing uses it
+- Registry entries for process (rectangle), terminal (rounded), decision (diamond), data
+  (parallelogram), database (cylinder), document, note, and text
+- One card component draws any shape as an SVG outline with a label and an optional description
+- The chat-bot types migrate onto shapes so nothing drawn is lost; their drawer bodies, the
+  business hours logic and `@vuepic/vue-datepicker` are removed
 
-### FL-42 · Blank canvas and templates ⬜
+### FL-42 · New diagram, blank canvas and samples ⬜
 
-- A new document starts empty, with a hint to drag a shape in
-- Templates: basic flowchart, swimlane process, org chart, and the old support flow as a sample
-- "Reset flow" becomes "New diagram"
+- "Reset flow" becomes "New diagram", which starts empty with a hint
+- The old support flow and a small architecture diagram become samples
 
 ### FL-43 · Shape palette ⬜
 
-- Left sidebar listing every shape from the registry, grouped, with a search box
-- Drag a shape onto the canvas to create it where it is dropped; click to add it at the centre
-- Replaces the create dialog
+A left sidebar lists every shape; drag one onto the canvas to create it where it lands, or click to
+add it at the centre. Replaces the create dialog.
 
-### FL-44 · Format panel ⬜
+## Milestone 2: The wedge
 
-- The drawer becomes a right-hand panel for the selection: fill, stroke colour, stroke width,
-  dash, corner radius, opacity, font size, text alignment
-- Works on several selected shapes at once
-- Values come from theme tokens so a diagram reads in both themes
+### FL-44 · The `.flow` text format ⬜
 
-## Milestone 2: Editing essentials
+- A small line based format: one node or edge per line, stable order, so a diff shows exactly
+  what changed
+- `parse()` and `serialise()` in `src/domain/`, round trip exact, errors with line numbers
+- Layout is kept apart from meaning: positions live in a block at the end, so moving a box never
+  touches the lines that describe the system
 
-### FL-45 · Multi-select ⬜
+### FL-45 · Two way text editor ⬜
 
-Box select, Shift+click, Ctrl+A; move and delete a selection as one undoable step.
+A split pane: text on the left, canvas on the right. Typing re-renders the canvas as you type,
+keeping every position it can; editing the canvas rewrites the text. Parse errors are shown on the
+line, and the canvas keeps the last good diagram.
 
-### FL-46 · Inline text editing ⬜
+### FL-46 · Mermaid import and export ⬜
 
-Double-click a shape or an edge label to edit it in place. Enter commits, Escape cancels.
+Flowchart subset: nodes, shapes, labelled edges, direction. Paste Mermaid, get an editable diagram;
+export any diagram as Mermaid to drop into a README.
 
-### FL-47 · Resize and rotate ⬜
+### FL-47 · Import `docker-compose.yml` ⬜
 
-Vue Flow's `NodeResizer` on the selected shape, with Shift to keep the aspect ratio. Size is stored
-on the node.
+Services become nodes, `depends_on` and shared networks become edges, ports and images become
+descriptions. Re-importing updates the diagram and keeps the layout.
 
-### FL-48 · Connectors ⬜
+### FL-48 · Import OpenAPI ⬜
 
-- Handles on all four sides; drop on a shape's body to take the nearest side
-- Edge type per edge: straight, orthogonal, curved
-- Arrowheads at either end, dashed lines, labels
-- Reconnect an edge by dragging its end
+Tags or path groups become nodes, schemas referenced between them become edges.
 
-### FL-49 · Clipboard ⬜
+### FL-49 · Import SQL DDL as an entity diagram ⬜
 
-Copy, cut, paste and duplicate (`Ctrl+C`, `Ctrl+X`, `Ctrl+V`, `Ctrl+D`), including the edges
-between the copied shapes. Pasting offsets so the copy is visible.
+`CREATE TABLE` becomes a table node listing its columns; foreign keys become edges.
 
-### FL-50 · Grid, snapping and alignment ⬜
+### FL-50 · Share as a link ⬜
 
-- Toggleable grid and snap to grid
-- Smart guides while dragging
-- Align and distribute for a selection
+The whole diagram compressed into the URL hash. Opening the link opens a copy; nothing touches a
+server.
 
-### FL-51 · Z-order and grouping ⬜
+## Milestone 3: Git native
 
-Bring forward, send backward, to front, to back. Group and ungroup; containers that move their
-children.
+### FL-51 · Open and save files ⬜
 
-## Milestone 3: Files
+Open a `.flow` file from disk and save back to it (File System Access API, with download and upload
+as the fallback), so a diagram lives in a repository rather than in the browser.
 
-### FL-52 · Many documents ⬜
+### FL-52 · Render without a browser ⬜
 
-- A home page listing documents, with create, rename, duplicate and delete
-- Each document at `/d/:documentId`, the node drawer at `/d/:documentId/node/:nodeId`
-- `flowApi` keyed by document id
+A pure SVG renderer in `src/domain/`, and `npx flow render diagram.flow -o diagram.svg`, so CI and
+docs sites can build images.
 
-### FL-53 · Import and export JSON ⬜
+### FL-53 · Visual diff ⬜
 
-Download a document as `.flow.json`; open one by file picker or by dropping it on the page.
-Validate on the way in and say what was wrong.
+Compare two versions of a diagram: added, removed and changed nodes and edges highlighted, on the
+canvas and as an SVG.
 
-### FL-54 · Export images ⬜
+### FL-54 · GitHub Action ⬜
 
-PNG and SVG of the whole diagram or the selection, with a transparent background option.
+On a pull request that changes a `.flow` file, post the before and after as a comment.
 
-### FL-55 · draw.io interoperability ⬜
+## Milestone 4: Editing essentials
 
-Import and export the `.drawio` XML format for the shapes and edges Flow supports, and say which
-parts of a file were skipped.
+| Ticket | What                                                                     | Status |
+| ------ | ------------------------------------------------------------------------ | ------ |
+| FL-55  | Multi-select: box, Shift+click, Ctrl+A; move and delete as one undo step | ⬜     |
+| FL-56  | Inline text editing on double-click, for shapes and edge labels          | ⬜     |
+| FL-57  | Resize shapes, stored on the node                                        | ⬜     |
+| FL-58  | Connectors: four sides, straight, orthogonal or curved, arrows, dashes   | ⬜     |
+| FL-59  | Copy, cut, paste and duplicate, with the edges between copied shapes     | ⬜     |
+| FL-60  | Grid, snapping, align and distribute                                     | ⬜     |
+| FL-61  | Automatic layout for any graph, not only trees                           | ⬜     |
+| FL-62  | Export PNG and SVG from the app                                          | ⬜     |
 
-### FL-56 · IndexedDB storage ⬜
+## Later, if the wedge holds
 
-Move documents and attachments out of `localStorage`, which caps at about 5 MB, into IndexedDB.
-Migrate what is already saved.
-
-## Milestone 4: Canvas at scale
-
-### FL-57 · Minimap and zoom to selection ⬜
-
-### FL-58 · Automatic layout for graphs ⬜
-
-`layoutTree` only handles trees. Use ELK or dagre for arbitrary graphs, top-down or left-right,
-applied as one undoable step.
-
-### FL-59 · Pages ⬜
-
-Several pages in one document, as tabs along the bottom.
-
-### FL-60 · Performance budget ⬜
-
-A 1,000 shape document stays at 60 fps while panning. A Playwright benchmark guards it in CI.
-
-## Milestone 5: Backend and collaboration
-
-### FL-61 · API ⬜
-
-A NestJS service on PostgreSQL behind an OpenAPI contract. `src/api/flowApi.js` gets a second
-implementation that calls it, chosen by configuration.
-
-### FL-62 · Accounts ⬜
-
-Sign in, and documents owned by a user.
-
-### FL-63 · Share links ⬜
-
-View-only and edit links per document.
-
-### FL-64 · Real-time collaboration ⬜
-
-Yjs for concurrent edits, with presence: other people's cursors and selections.
-
-### FL-65 · Version history ⬜
-
-Named versions and restore, on the server.
-
-## Later
-
-- Comments pinned to shapes
-- Mermaid import
-- Offline support as a PWA
-- Custom shape libraries
-- Accessibility audit with a screen reader
+- Many documents with a home page, and IndexedDB storage
+- `.drawio` import, so people can bring what they already have
+- Terraform and Kubernetes import
+- Describe a diagram in words and get one, built on the text format
+- A backend, accounts and live collaboration
