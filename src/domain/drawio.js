@@ -564,35 +564,38 @@ export function toDrawio(document) {
   const sketch = document.style === 'sketch' ? SKETCH_STYLE : ''
   const cell = (/** @type {string} */ id) => `n-${id}`
 
-  const shapes = document.nodes.flatMap((node) => {
-    const type = isKnownShape(node.type) ? node.type : SHAPE.PROCESS
-    const at = positions.get(node.id) ?? { x: 0, y: 0 }
-    const width = node.size?.width || NODE_SIZE.WIDTH
-    const description = String(node.data?.description ?? '')
-    const isTable = type === SHAPE.TABLE
-    const rows = isTable ? description.split(/,\s*/).filter(Boolean) : []
-    const height = isTable
-      ? Math.max(node.size?.height || 0, ROW_HEIGHT * (rows.length + 1))
-      : node.size?.height || NODE_SIZE.HEIGHT
+  // draw.io has no freehand shape to carry a pen stroke.
+  const shapes = document.nodes
+    .filter((node) => node.type !== SHAPE.INK)
+    .flatMap((node) => {
+      const type = isKnownShape(node.type) ? node.type : SHAPE.PROCESS
+      const at = positions.get(node.id) ?? { x: 0, y: 0 }
+      const width = node.size?.width || NODE_SIZE.WIDTH
+      const description = String(node.data?.description ?? '')
+      const isTable = type === SHAPE.TABLE
+      const rows = isTable ? description.split(/,\s*/).filter(Boolean) : []
+      const height = isTable
+        ? Math.max(node.size?.height || 0, ROW_HEIGHT * (rows.length + 1))
+        : node.size?.height || NODE_SIZE.HEIGHT
 
-    const name = escapeHtml(node.name ?? '')
-    const value =
-      isTable || !description
-        ? name
-        : `<b>${name}</b><br>${escapeHtml(description).replace(/\n/g, '<br>')}`
-    const style = `${EXPORT_STYLE[type]}${sketch}${STYLE_KEY}=${type};`
+      const name = escapeHtml(node.name ?? '')
+      const value =
+        isTable || !description
+          ? name
+          : `<b>${name}</b><br>${escapeHtml(description).replace(/\n/g, '<br>')}`
+      const style = `${EXPORT_STYLE[type]}${sketch}${STYLE_KEY}=${type};`
 
-    return [
-      `        <mxCell id="${escapeAttribute(cell(node.id))}" value="${escapeAttribute(value)}" style="${style}" vertex="1" parent="1">`,
-      `          <mxGeometry x="${Math.round(at.x)}" y="${Math.round(at.y)}" width="${Math.round(width)}" height="${Math.round(height)}" as="geometry" />`,
-      '        </mxCell>',
-      ...rows.flatMap((row, index) => [
-        `        <mxCell id="${escapeAttribute(`${cell(node.id)}-row-${index + 1}`)}" value="${escapeAttribute(escapeHtml(row))}" style="text;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;${sketch}" vertex="1" parent="${escapeAttribute(cell(node.id))}">`,
-        `          <mxGeometry y="${ROW_HEIGHT * (index + 1)}" width="${Math.round(width)}" height="${ROW_HEIGHT}" as="geometry" />`,
+      return [
+        `        <mxCell id="${escapeAttribute(cell(node.id))}" value="${escapeAttribute(value)}" style="${style}" vertex="1" parent="1">`,
+        `          <mxGeometry x="${Math.round(at.x)}" y="${Math.round(at.y)}" width="${Math.round(width)}" height="${Math.round(height)}" as="geometry" />`,
         '        </mxCell>',
-      ]),
-    ]
-  })
+        ...rows.flatMap((row, index) => [
+          `        <mxCell id="${escapeAttribute(`${cell(node.id)}-row-${index + 1}`)}" value="${escapeAttribute(escapeHtml(row))}" style="text;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;${sketch}" vertex="1" parent="${escapeAttribute(cell(node.id))}">`,
+          `          <mxGeometry y="${ROW_HEIGHT * (index + 1)}" width="${Math.round(width)}" height="${ROW_HEIGHT}" as="geometry" />`,
+          '        </mxCell>',
+        ]),
+      ]
+    })
 
   const lineStyle =
     document.lines === 'curved'

@@ -17,6 +17,7 @@ export const SHAPE = Object.freeze({
   CARD: 'card',
   LIST: 'list',
   IMAGE: 'image',
+  INK: 'ink',
 })
 
 /** Shared by the layout function and the node card. */

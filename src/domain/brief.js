@@ -68,10 +68,14 @@ export function toBrief(document) {
   const count = (/** @type {number} */ n, /** @type {string} */ noun) =>
     `${n} ${noun}${n === 1 ? '' : 's'}`
 
+  // Pen strokes are marks on the picture, not parts of the design.
+  const shapes = document.nodes.filter((node) => node.type !== SHAPE.INK)
+  const strokes = document.nodes.length - shapes.length
+
   const lines = [
     `# ${oneLine(document.title) || 'Untitled diagram'}`,
     '',
-    `A design sketched in isketch: ${count(document.nodes.length, 'shape')} and ${count(document.edges.length, 'connection')}. ` +
+    `A design sketched in isketch: ${count(shapes.length, 'shape')} and ${count(document.edges.length, 'connection')}. ` +
       'Build from it, and refer to shapes by their ids. To change the diagram, edit the source at ' +
       'the end and hand it back.',
   ]
@@ -82,9 +86,9 @@ export function toBrief(document) {
     notes.forEach((note) => lines.push(`- ${note}`))
   }
 
-  if (document.nodes.length) {
+  if (shapes.length) {
     lines.push('', '## Shapes', '')
-    document.nodes.forEach((node) => {
+    shapes.forEach((node) => {
       const description = oneLine(node.data?.description)
       const detail =
         node.type === SHAPE.TABLE && description ? `Columns: ${description}` : description
@@ -93,6 +97,13 @@ export function toBrief(document) {
         ...noteLines(node.data?.notes).map((note) => `  - Note: ${note}`),
       )
     })
+  }
+
+  if (strokes) {
+    lines.push(
+      '',
+      `The sketch also has ${count(strokes, 'pen stroke')} drawn over it by hand, left out here.`,
+    )
   }
 
   if (document.edges.length) {

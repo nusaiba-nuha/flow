@@ -215,6 +215,38 @@ describe('sizes', () => {
     )
   })
 
+  it('keeps pen strokes in an @ink block at the end, unnamed unless named', () => {
+    const text = [
+      'title: T',
+      '',
+      'api = process "API"',
+      'ink-1 = ink',
+      '',
+      '@layout',
+      'ink-1 10,20 120x40',
+      '',
+      '@ink',
+      'ink-1 0,0 50.5,100 100,0',
+      '',
+    ].join('\n')
+    const { document, errors } = parseFlow(text)
+
+    expect(errors).toEqual([])
+    expect(document.nodes[1]).toEqual({
+      id: 'ink-1',
+      type: 'ink',
+      name: '',
+      data: { points: '0,0 50.5,100 100,0' },
+      position: { x: 10, y: 20 },
+      size: { width: 120, height: 40 },
+    })
+    expect(serialiseFlow(document)).toBe(text)
+    expect(parseFlow('api = process\n@ink\napi 0,0 1,1').errors[0].message).toMatch(
+      /not an ink shape/,
+    )
+    expect(parseFlow('@ink\nink-1 zigzag').errors[0].message).toMatch(/Expected a pen stroke/)
+  })
+
   it('keep a resized node size on its layout line, and read it back', () => {
     const sized = structuredClone(small)
     sized.nodes[1].size = { width: 300, height: 140 }

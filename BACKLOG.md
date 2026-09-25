@@ -183,7 +183,7 @@ A free-text note on the diagram (`note: ...`) and on each shape (`id note: ...`,
 the builder" in its details), such as "paginate this" or "must be idempotent". Noted shapes are
 marked on the canvas, and notes travel with the brief, the `.flow` file and MCP.
 
-## Milestone 6: Sketch feel
+## Milestone 6: Sketch feel ✅
 
 ### FL-68 · Hand-drawn style ✅
 
@@ -191,10 +191,12 @@ A sketch or clean switch per diagram (`style: sketch`): outlines and edges redra
 seeded by id so they hold still, and a handwritten font (Patrick Hand, bundled, embedded in
 exported SVGs). The same diagram underneath, in the app and in SVG.
 
-### FL-69 · Freehand pen and arrows ⏭️
+### FL-69 · Freehand pen ✅
 
-Draw freely, and draw an arrow between two shapes by dragging from one to the other anywhere, not
-only from a handle.
+A pen (`P`) that draws strokes over the diagram, each an `ink` shape that moves, resizes and undoes
+like any other, with its points in an `@ink` block. Clicks pass through a stroke's box to the shape
+it circles. Strokes stay out of the brief, Mermaid and draw.io. Freehand arrows are left for later:
+a connection already says "this goes there" in a way an agent can read.
 
 ### FL-70 · draw.io XML import and export ✅
 
@@ -204,7 +206,7 @@ pages are listed. Export plain XML, marked with an `isketch` style key so a roun
 
 ## Milestone 7: Links an agent can read
 
-### FL-71 · Hosted diagrams ⬜
+### FL-71 · Hosted diagrams ⏭️
 
 A small service (NestJS and PostgreSQL) that stores a diagram behind a short link, serving the page
 to people and the brief as plain Markdown to agents (`/d/:id.md`). Private by default.

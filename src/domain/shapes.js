@@ -50,7 +50,9 @@ export function shapePath(shape, width, height, inset = 1) {
       const band = t + Math.min(h * 0.32, 30)
       return `M${l},${t} H${r} V${b} H${l} Z M${l},${band} H${r}`
     }
+    // Text has no outline, and a stroke draws itself from its own points.
     case SHAPE.TEXT:
+    case SHAPE.INK:
       return ''
     case SHAPE.SCREEN: {
       // A browser window: a title bar with three dots.

@@ -9,6 +9,7 @@ import { useShiftKey } from '@/composables/useShiftKey.js'
 import { RESIZE_NODE } from './resizeKey.js'
 import { SKETCH } from './sketchKey.js'
 import { sketchPath } from '@/domain/sketch.js'
+import { inkPath } from '@/domain/ink.js'
 import { shapePath, textInset } from '@/domain/shapes.js'
 import { accentClasses } from './accents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
@@ -85,6 +86,11 @@ function onResizeEnd({ params }) {
 const isText = computed(() => node.value.type === SHAPE.TEXT)
 const isDecision = computed(() => node.value.type === SHAPE.DECISION)
 const isTable = computed(() => node.value.type === SHAPE.TABLE)
+/** A pen stroke: just its line, with no text, outline or connections. */
+const isInk = computed(() => node.value.type === SHAPE.INK)
+const inkD = computed(() =>
+  isInk.value ? inkPath(node.value.data?.points, size.value.width, size.value.height) : '',
+)
 /** Notes are for the builder, so the canvas only marks that there are some. */
 const notes = computed(() => node.value.data?.notes?.trim() ?? '')
 
@@ -114,7 +120,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     }"
     :aria-label="`${meta.label}: ${node.name}${notes ? ', has notes for the builder' : ''}`"
     :data-shape="node.type"
-    @dblclick="edit?.start(id)"
+    @dblclick="isInk || edit?.start(id)"
   >
     <NodeResizer
       :is-visible="selected && !isEditing"
@@ -126,7 +132,35 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     />
 
     <svg
-      v-if="outline"
+      v-if="isInk"
+      class="pointer-events-none absolute inset-0 overflow-visible text-ink"
+      :width="size.width"
+      :height="size.height"
+      :viewBox="`0 0 ${size.width} ${size.height}`"
+      aria-hidden="true"
+      data-testid="ink-stroke"
+    >
+      <path
+        :d="inkD"
+        fill="none"
+        stroke="currentColor"
+        :stroke-width="selected ? 3.5 : 2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <!-- Wide and clear, so the line is easy to pick up; see .ink-hit in style.css. -->
+      <path
+        :d="inkD"
+        class="ink-hit"
+        fill="none"
+        stroke="transparent"
+        stroke-width="14"
+        stroke-linecap="round"
+      />
+    </svg>
+
+    <svg
+      v-else-if="outline"
       class="pointer-events-none absolute inset-0 overflow-visible"
       :class="acceptsDrop ? 'text-node-message' : accent.icon"
       :width="size.width"
@@ -154,6 +188,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
 
     <!-- End only: dragging from the top of a shape moves it, not a connection. -->
     <Handle
+      v-if="!isInk"
       type="target"
       :connectable-start="false"
       :position="Position.Top"
@@ -161,7 +196,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     />
 
     <InlineText
-      v-if="isEditing"
+      v-if="isEditing && !isInk"
       class="relative"
       :class="isText ? 'text-base font-semibold' : 'text-sm font-semibold'"
       :value="node.name"
@@ -171,7 +206,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
       @cancel="edit?.stop()"
     />
     <h3
-      v-else
+      v-else-if="!isInk"
       class="relative w-full break-words"
       :class="[titleSize, isTable ? 'truncate' : 'line-clamp-2']"
     >
@@ -179,7 +214,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     </h3>
 
     <p
-      v-if="description"
+      v-if="description && !isInk"
       class="relative w-full leading-snug text-muted"
       :style="{ fontSize: sketch ? '0.875rem' : '0.75rem' }"
       :class="
@@ -213,6 +248,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     </span>
 
     <Handle
+      v-if="!isInk"
       type="source"
       :connectable-end="false"
       :position="Position.Bottom"

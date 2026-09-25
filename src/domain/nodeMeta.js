@@ -6,7 +6,7 @@ import { truncate } from './format.js'
  * @property {string} label
  * @property {string} hint      what the shape conventionally means
  * @property {string} accent    token name, resolved to classes by the canvas
- * @property {'diagram' | 'wireframe'} group where the palette lists it
+ * @property {'diagram' | 'wireframe' | 'ink'} group where the palette lists it; ink is drawn with the pen, not picked
  * @property {boolean} openable can the drawer be opened
  * @property {boolean} editable
  * @property {boolean} deletable
@@ -57,6 +57,7 @@ export const NODE_META = Object.freeze({
   [SHAPE.CARD]: shape('Card', 'A panel that groups content', 'comment', 'wireframe'),
   [SHAPE.LIST]: shape('List', 'Repeated items, such as rows or results', 'hours', 'wireframe'),
   [SHAPE.IMAGE]: shape('Image', 'A picture, video or chart', 'comment', 'wireframe'),
+  [SHAPE.INK]: shape('Pen stroke', 'A mark drawn by hand', 'unknown', 'ink'),
 })
 
 /**
@@ -79,14 +80,16 @@ export const isDeletable = (node) => metaFor(node.type).deletable
 /** @param {string} type */
 export const isKnownShape = (type) => Object.hasOwn(NODE_META, type)
 
-/** Every shape, in palette order, for pickers. */
+/** Every shape a picker offers, in palette order. A stroke is drawn, not picked. */
 export const SHAPE_OPTIONS = Object.freeze(
-  Object.entries(NODE_META).map(([value, meta]) => ({
-    value,
-    label: meta.label,
-    hint: meta.hint,
-    group: meta.group,
-  })),
+  Object.entries(NODE_META)
+    .filter(([, meta]) => meta.group !== 'ink')
+    .map(([value, meta]) => ({
+      value,
+      label: meta.label,
+      hint: meta.hint,
+      group: meta.group,
+    })),
 )
 
 /**

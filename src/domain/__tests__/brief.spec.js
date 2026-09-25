@@ -69,6 +69,16 @@ describe('toBrief', () => {
     expect(brief).toContain('- **B** → **C**: later (dashed: optional or asynchronous)\n')
   })
 
+  it('leaves pen strokes out, saying how many there are', () => {
+    const brief = toBrief(flow('api = process "API"\nink-1 = ink\n@ink\nink-1 0,0 100,100'))
+
+    expect(brief).toContain('1 shape and 0 connections')
+    expect(brief).not.toContain('`ink-1`:')
+    expect(brief).toContain(
+      'The sketch also has 1 pen stroke drawn over it by hand, left out here.',
+    )
+  })
+
   it('ends with the .flow source, so an agent can edit it and hand it back', () => {
     const brief = toBrief(flow('a = process "A"\nb = database "B"\na -> b\n'))
     const source = brief.slice(brief.indexOf('```text\n') + 8, brief.lastIndexOf('```'))

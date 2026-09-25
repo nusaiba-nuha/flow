@@ -1,6 +1,7 @@
 import { DEFAULT_TITLE, DOCUMENT_VERSION, edgeIdFor } from './document.js'
 import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
 import { LINE, LINES } from './routes.js'
+import { SHAPE } from './constants.js'
 
 /**
  * The `.flow` text format: a diagram as lines a person can read, write and
@@ -40,6 +41,8 @@ const DIAGRAM_NOTE = 'note:'
 const STYLE_LINE = /^style:\s*(\S*)\s*$/
 const STYLES = ['clean', 'sketch']
 const LAYOUT_HEADER = '@layout'
+const INK_HEADER = '@ink'
+const INK_LINE = new RegExp(String.raw`^(${ID})((?:\s+-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?)+)$`)
 const DESCRIPTION_MARK = '--'
 
 /**
@@ -93,8 +96,13 @@ export function serialiseFlow(document) {
     const description = node.data?.description
     const name = JSON.stringify(node.name ?? '')
     const tail = description ? ` ${DESCRIPTION_MARK} ${escapeRest(description)}` : ''
+    // A stroke needs no name, so an unnamed one is written without.
+    const head =
+      node.type === SHAPE.INK && !node.name
+        ? `${node.id} = ${node.type}`
+        : `${node.id} = ${node.type} ${name}`
     return [
-      `${node.id} = ${node.type} ${name}${tail}`,
+      `${head}${tail}`,
       ...noteLines(node.data?.notes).map((line) => `${node.id} note: ${line}`),
     ].join('\n')
   })
@@ -119,6 +127,12 @@ export function serialiseFlow(document) {
         ),
       ].join('\n'),
     )
+  }
+
+  // Strokes last: long runs of numbers no reader needs, kept out of the way.
+  const inked = document.nodes.filter((node) => node.type === SHAPE.INK && node.data?.points)
+  if (inked.length) {
+    sections.push([INK_HEADER, ...inked.map((node) => `${node.id} ${node.data.points}`)].join('\n'))
   }
 
   return `${sections.join('\n\n')}\n`
@@ -156,6 +170,9 @@ export function parseFlow(text) {
   /** @type {string} */
   let lines = LINE.STEP
   let inLayout = false
+  let inInk = false
+  /** @type {{ line: number, id: string, points: string }[]} */
+  const inks = []
 
   String(text ?? '')
     .split(/\r?\n/)
@@ -169,6 +186,20 @@ export function parseFlow(text) {
 
       if (content === LAYOUT_HEADER) {
         inLayout = true
+        inInk = false
+        return
+      }
+
+      if (content === INK_HEADER) {
+        inInk = true
+        inLayout = false
+        return
+      }
+
+      if (inInk) {
+        const match = INK_LINE.exec(content)
+        if (!match) return fail('Expected a pen stroke, like `m1 0,0 40,20 100,0`.')
+        inks.push({ line, id: match[1], points: match[2].trim().split(/\s+/).join(' ') })
         return
       }
 
@@ -252,7 +283,7 @@ export function parseFlow(text) {
       const record = {
         id,
         type: shape,
-        name: parsed.name ?? id,
+        name: parsed.name ?? (shape === SHAPE.INK ? '' : id),
         data: parsed.description ? { description: parsed.description } : {},
       }
       nodes.push(record)
@@ -284,6 +315,15 @@ export function parseFlow(text) {
     const node = byId.get(id)
     if (!node) return errors.push({ line, message: `No node called "${id}".` })
     node.data.notes = node.data.notes ? `${node.data.notes}\n${text}` : text
+  })
+
+  inks.forEach(({ line, id, points }) => {
+    const node = byId.get(id)
+    if (!node) return errors.push({ line, message: `No node called "${id}".` })
+    if (node.type !== SHAPE.INK) {
+      return errors.push({ line, message: `"${id}" is not an ink shape, so it has no stroke.` })
+    }
+    node.data.points = points
   })
 
   const positioned = new Set()

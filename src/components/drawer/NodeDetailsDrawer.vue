@@ -14,6 +14,7 @@ import { FIELD_LIMIT, maxLength, required } from '@/domain/validators.js'
 import { ROUTE } from '@/router/index.js'
 import DrawerHeader from './DrawerHeader.vue'
 import DrawerFooter from './DrawerFooter.vue'
+import { SHAPE } from '@/domain/constants.js'
 
 const props = defineProps({ id: { type: String, required: true } })
 
@@ -173,7 +174,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           @blur="touch('notes')"
         />
 
-        <SelectField v-model="draft.type" label="Shape" :options="shapeOptions" />
+        <!-- A pen stroke is only its line: it cannot become a box. -->
+        <SelectField
+          v-if="draft.type !== SHAPE.INK"
+          v-model="draft.type"
+          label="Shape"
+          :options="shapeOptions"
+        />
       </div>
 
       <DrawerFooter

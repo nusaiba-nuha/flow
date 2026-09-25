@@ -27,6 +27,13 @@ export const useCanvasStore = defineStore('canvas', () => {
     isTextOpen.value = !isTextOpen.value
   }
 
+  /** Whether the pen is down: dragging on the canvas draws instead of panning. */
+  const pen = ref(false)
+
+  function togglePen() {
+    pen.value = !pen.value
+  }
+
   /** Whether dragged shapes snap to the grid of dots. On unless turned off. */
   const snap = ref(savedSnap())
 
@@ -81,6 +88,8 @@ export const useCanvasStore = defineStore('canvas', () => {
     toggleText,
     snap,
     toggleSnap,
+    pen,
+    togglePen,
     setViewport,
     forgetViewport,
     requestFocus,

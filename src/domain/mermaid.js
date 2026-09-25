@@ -95,10 +95,13 @@ export function toMermaid(document, { highlight = new Map() } = {}) {
 
   const lines = ['---', `title: ${document.title || DEFAULT_TITLE}`, '---', 'flowchart TD']
 
-  document.nodes.forEach((node) => {
-    const [open, close] = BRACKETS[node.type] ?? BRACKETS[SHAPE.PROCESS]
-    lines.push(`  ${safe.get(node.id)}${open}"${escapeLabel(node.name ?? '')}"${close}`)
-  })
+  // Mermaid has nothing to draw a pen stroke with.
+  document.nodes
+    .filter((node) => node.type !== SHAPE.INK)
+    .forEach((node) => {
+      const [open, close] = BRACKETS[node.type] ?? BRACKETS[SHAPE.PROCESS]
+      lines.push(`  ${safe.get(node.id)}${open}"${escapeLabel(node.name ?? '')}"${close}`)
+    })
 
   document.edges.forEach((edge) => {
     const label = edge.label ? `|"${escapeLabel(edge.label)}"|` : ''

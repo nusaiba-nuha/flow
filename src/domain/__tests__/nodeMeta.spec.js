@@ -32,8 +32,12 @@ describe('metaFor', () => {
 })
 
 describe('SHAPE_OPTIONS', () => {
-  it('offers every shape once, each with an outline except text', () => {
-    expect(SHAPE_OPTIONS.map((option) => option.value).sort()).toEqual(Object.values(SHAPE).sort())
+  it('offers every shape but a pen stroke once, each with an outline except text', () => {
+    expect(SHAPE_OPTIONS.map((option) => option.value).sort()).toEqual(
+      Object.values(SHAPE)
+        .filter((shape) => shape !== SHAPE.INK)
+        .sort(),
+    )
 
     SHAPE_OPTIONS.forEach(({ value }) => {
       if (value === SHAPE.TEXT) expect(shapePath(value, 100, 50)).toBe('')
