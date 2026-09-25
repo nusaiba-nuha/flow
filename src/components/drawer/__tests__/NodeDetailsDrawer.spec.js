@@ -68,6 +68,24 @@ describe('NodeDetailsDrawer', () => {
     )
   })
 
+  it('saves notes for the builder with the rest of the node', async () => {
+    const update = vi.spyOn(flowApi, 'updateNode')
+    const wrapper = await renderDrawer('b6a0c1')
+
+    const notes = wrapper.findAll('textarea').at(-1)
+    await notes.setValue('Must be idempotent')
+    await buttonWith(wrapper, 'Save changes').trigger('click')
+    await waitUntil(() => update.mock.calls.length > 0)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        patch: expect.objectContaining({
+          data: expect.objectContaining({ notes: 'Must be idempotent' }),
+        }),
+      }),
+    )
+  })
+
   it('changes the shape of a node', async () => {
     const update = vi.spyOn(flowApi, 'updateNode')
     const wrapper = await renderDrawer('b6a0c1')

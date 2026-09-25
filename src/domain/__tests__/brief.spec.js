@@ -45,6 +45,21 @@ describe('toBrief', () => {
     expect(brief).toContain('- **Create account** `go`: a button.\n')
   })
 
+  it('passes on notes for the diagram and for each shape as instructions', () => {
+    const brief = toBrief(
+      flow(
+        'title: Shop\nnote: Use NestJS\n\napi = process "API"\napi note: Paginate lists\napi note: Idempotent writes\n',
+      ),
+    )
+
+    expect(brief).toContain(
+      '## Notes\n\nFrom whoever sketched this; follow them.\n\n- Use NestJS\n',
+    )
+    expect(brief).toContain(
+      '- **API** `api`: a component or step.\n  - Note: Paginate lists\n  - Note: Idempotent writes\n',
+    )
+  })
+
   it('ends with the .flow source, so an agent can edit it and hand it back', () => {
     const brief = toBrief(flow('a = process "A"\nb = database "B"\na -> b\n'))
     const source = brief.slice(brief.indexOf('```text\n') + 8, brief.lastIndexOf('```'))

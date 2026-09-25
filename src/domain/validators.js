@@ -7,6 +7,7 @@
 export const FIELD_LIMIT = Object.freeze({
   TITLE_MAX: 60,
   DESCRIPTION_MAX: 280,
+  NOTES_MAX: 1000,
 })
 
 /** @type {(label: string) => Validator} */

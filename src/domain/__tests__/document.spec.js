@@ -107,7 +107,8 @@ describe('migrate', () => {
     const current = {
       version: DOCUMENT_VERSION,
       title: 'Mine',
-      nodes: [{ id: 'a', type: 'somethingNew', name: 'A', data: {} }],
+      notes: 'Use NestJS',
+      nodes: [{ id: 'a', type: 'somethingNew', name: 'A', data: { notes: 'Paginate' } }],
       edges: [],
     }
     expect(migrate(current)).toEqual(current)

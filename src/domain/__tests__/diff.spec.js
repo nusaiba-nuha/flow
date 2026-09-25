@@ -38,12 +38,13 @@ describe('diffDocuments', () => {
     expect(isUnchanged(diffDocuments(before, structuredClone(before)))).toBe(true)
   })
 
-  it('counts a change of shape or description as a change', () => {
+  it('counts a change of shape, description or notes as a change', () => {
     const after = structuredClone(before)
     after.nodes.find((node) => node.id === 'db').type = 'table'
     after.nodes.find((node) => node.id === 'lb').data.description = 'TLS and rate limits'
+    after.nodes.find((node) => node.id === 'api').data.notes = 'Paginate lists'
 
-    expect(diffDocuments(before, after).nodes.changed).toEqual(['lb', 'db'])
+    expect(diffDocuments(before, after).nodes.changed).toEqual(['lb', 'api', 'db'])
   })
 })
 

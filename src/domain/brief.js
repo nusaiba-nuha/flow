@@ -34,6 +34,13 @@ const oneLine = (text) =>
     .replace(/\s*\n\s*/g, '; ')
     .trim()
 
+/** @param {string | undefined} text */
+const noteLines = (text) =>
+  String(text ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+
 /** @param {string} text */
 const escapeMarkdown = (text) => text.replace(/([\\`*_[\]])/g, '\\$1')
 
@@ -69,6 +76,12 @@ export function toBrief(document) {
       'the end and hand it back.',
   ]
 
+  const notes = noteLines(document.notes)
+  if (notes.length) {
+    lines.push('', '## Notes', '', 'From whoever sketched this; follow them.', '')
+    notes.forEach((note) => lines.push(`- ${note}`))
+  }
+
   if (document.nodes.length) {
     lines.push('', '## Shapes', '')
     document.nodes.forEach((node) => {
@@ -77,6 +90,7 @@ export function toBrief(document) {
         node.type === SHAPE.TABLE && description ? `Columns: ${description}` : description
       lines.push(
         `- ${label(node.id)} \`${node.id}\`: ${intentOf(node.type)}.${detail ? ` ${detail}` : ''}`,
+        ...noteLines(node.data?.notes).map((note) => `  - Note: ${note}`),
       )
     })
   }
@@ -96,7 +110,7 @@ export function toBrief(document) {
     '## Source',
     '',
     'The same diagram in the `.flow` format: `id = shape "Name" -- description`, ' +
-      '`a -> b : label`, and positions under `@layout`.',
+      '`id note: ...`, `a -> b : label`, and positions under `@layout`.',
     '',
     `${marks}text`,
     source,

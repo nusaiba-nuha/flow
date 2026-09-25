@@ -34,6 +34,7 @@ const editable = computed(() =>
         name: node.value.name,
         type: node.value.type,
         description: node.value.data.description ?? '',
+        notes: node.value.data.notes ?? '',
       }
     : null,
 )
@@ -42,6 +43,7 @@ const { draft, errors, isValid, isDirty, touch, touchAll, reset } = useDraft(edi
   name: [required('Title'), maxLength('Title', FIELD_LIMIT.TITLE_MAX)],
   type: [],
   description: [maxLength('Description', FIELD_LIMIT.DESCRIPTION_MAX)],
+  notes: [maxLength('Notes', FIELD_LIMIT.NOTES_MAX)],
 })
 
 const shapeOptions = SHAPE_OPTIONS.map(({ value, label }) => ({ value, label }))
@@ -64,7 +66,11 @@ function save() {
   updateNode.mutate(
     {
       id: props.id,
-      patch: { name: draft.name, type: draft.type, data: { description: draft.description } },
+      patch: {
+        name: draft.name,
+        type: draft.type,
+        data: { description: draft.description, notes: draft.notes },
+      },
     },
     // The drawer stays open, so this is the only sign the write actually landed.
     { onSuccess: () => toasts.push('Changes saved', { action: { label: 'Undo', run: undo } }) },
@@ -154,6 +160,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           :error="errors.description"
           :maxlength="FIELD_LIMIT.DESCRIPTION_MAX"
           @blur="touch('description')"
+        />
+
+        <TextField
+          v-model="draft.notes"
+          label="Notes for the builder"
+          multiline
+          placeholder="Paginate the list. Writes must be idempotent."
+          hint="Instructions for whoever builds this, person or agent. They go with Copy for AI."
+          :error="errors.notes"
+          :maxlength="FIELD_LIMIT.NOTES_MAX"
+          @blur="touch('notes')"
         />
 
         <SelectField v-model="draft.type" label="Shape" :options="shapeOptions" />

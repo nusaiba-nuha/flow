@@ -34,7 +34,7 @@ isketch aims at that gap:
 - **Built for the hand-off.** _Copy for AI_ puts a Markdown brief on the clipboard: every shape by
   what it means for the code, every connection in words, and the source to edit and hand back. An
   [MCP server](#connect-your-agent-mcp) lets an agent list, read, update and draw your diagrams
-  itself. Notes an agent can act on are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
+  itself, and notes on the diagram and its shapes travel as instructions to follow.
 - **Git native.** Files diff cleanly, a CLI renders SVG with no browser, and pull requests get a
   visual diff, so the design and the code stop drifting apart.
 - **Start from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with re-import that keeps
@@ -53,6 +53,9 @@ over the `.flow` file or its text.
 
 - **Shapes.** Process, start / end, decision, input / output, database, document, note, table and text,
   each drawn as its own outline. Change a shape's type at any time.
+- **Notes for the builder.** Give a shape notes ("paginate this", "must be idempotent") in its
+  details, or the whole diagram notes in the text. The canvas marks noted shapes, and the notes
+  go with Copy for AI, the `.flow` file and MCP as instructions to follow.
 - **Wireframes.** Screen, button, input, card, list and image, to sketch an interface next to the
   architecture behind it. The brief reads them as a UI to build: "a screen", "a form field", "a button".
 - **Canvas.** Pan, zoom and drag shapes on a Vue Flow canvas. Dragged positions are kept.
@@ -122,6 +125,8 @@ db 276,352
 - `id = shape "Name" -- description` declares a node. The name and description are optional.
   Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `table`, `text`,
   and for wireframes `screen`, `button`, `input`, `card`, `list`, `image`.
+- `note: ...` under the title is a note for the whole diagram, and `id note: ...` a note for one
+  shape, one line each: instructions for whoever builds from it, person or agent.
 - `a -> b : label` connects two nodes. The label is optional, and a line may refer to a node
   defined further down.
 - `@layout` starts the positions, one `id x,y` per line, with ` WxH` after it for a resized shape. A node with no position is laid out
