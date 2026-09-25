@@ -3,10 +3,10 @@ import { describeDiff, diffDocuments, isUnchanged, mergeForDiff } from '../domai
 import { renderSvg } from '../domain/renderSvg.js'
 
 export const USAGE = `Usage:
-  flow render <file.flow> [-o <out.svg>] [--dark]   Draw a diagram as SVG
-  flow check <file.flow>...                         Report errors, exit 1 if any
-  flow diff <before.flow> <after.flow> [-o <out.svg>] [--dark]
-                                                    List what changed, and draw it
+  isketch render <file.flow> [-o <out.svg>] [--dark]   Draw a diagram as SVG
+  isketch check <file.flow>...                         Report errors, exit 1 if any
+  isketch diff <before.flow> <after.flow> [-o <out.svg>] [--dark]
+                                                       List what changed, and draw it
 `
 
 /**

@@ -49,7 +49,7 @@ export function migrate(raw) {
     return document.version >= DOCUMENT_VERSION ? document : toV3(document)
   }
 
-  throw new Error('This is not a Flow document.')
+  throw new Error('This is not an isketch document.')
 }
 
 /**

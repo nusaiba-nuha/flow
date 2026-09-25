@@ -46,7 +46,7 @@ const groups = SHORTCUT_GROUPS
 
       <section class="mt-6 border-t border-line pt-4">
         <h3 class="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">About</h3>
-        <p class="text-sm text-ink">Flow</p>
+        <p class="text-sm text-ink">isketch</p>
         <p class="mt-1 text-xs text-muted">
           A diagram editor built with Vue 3, Vue Flow and TanStack Query. Nodes render on a
           draggable canvas and are edited through a drawer that lives at its own URL, so every node

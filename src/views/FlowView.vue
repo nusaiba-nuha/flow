@@ -30,7 +30,7 @@ const help = useHelpDialog()
     <header class="flex items-center justify-between border-b border-line bg-surface px-5 py-3">
       <div>
         <h1 class="text-sm font-semibold">
-          Flow<span v-if="file.name" class="font-normal text-muted"> · {{ file.name }}</span>
+          isketch<span v-if="file.name" class="font-normal text-muted"> · {{ file.name }}</span>
         </h1>
         <p class="text-xs text-muted">Drag a shape in, click one to open its details</p>
       </div>

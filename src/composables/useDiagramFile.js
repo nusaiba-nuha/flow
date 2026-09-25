@@ -10,7 +10,9 @@ import { useCanvasStore } from '@/stores/canvas.js'
 import { useFileStore } from '@/stores/file.js'
 import { useToastStore } from '@/stores/toasts.js'
 
-const PICKER_TYPES = [{ description: 'Flow diagram', accept: { 'text/plain': [FLOW_EXTENSION] } }]
+const PICKER_TYPES = [
+  { description: 'isketch diagram', accept: { 'text/plain': [FLOW_EXTENSION] } },
+]
 
 /**
  * Open and save `.flow` files. Where the browser has the File System Access

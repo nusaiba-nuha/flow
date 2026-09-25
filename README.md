@@ -1,11 +1,12 @@
 <div align="center">
 
-# Flow
+# isketch
 
-**Diagrams that live next to your code.**
+**Sketch it, hand it to your agent.**
 
-An open source diagram editor for software engineers: edit on a canvas or as text, keep diagrams
-in git where they can be reviewed, and generate them from the files you already have.
+A sketchpad for software engineers whose output is exact, agent-ready text. Sketch an
+architecture, a database or a flow on a canvas; every sketch is also a readable `.flow` file that
+Claude, Copilot or any coding agent reads without guessing, and can edit back.
 
 [Backlog](BACKLOG.md) · [Security](SECURITY.md) · [Agent rules](AGENTS.md)
 
@@ -16,26 +17,33 @@ https://github.com/user-attachments/assets/cbfbc844-7373-4891-a985-50e2870fe1b5
 
 </div>
 
-## Why not just draw.io?
+## Why not draw.io or Excalidraw?
 
-draw.io is free and great at drawing. The problem it does not solve is that architecture diagrams
-**rot**: a `.drawio` file is an XML blob nobody reviews, so the picture drifts from the code until
-it is wrong. Text tools like Mermaid fix the review problem but take away the canvas.
+Both are free and good at drawing. Neither is good at the step that now matters most: getting the
+design in your head into a coding agent. A screenshot makes the agent guess at boxes and arrows
+from pixels; names get misread, arrows lose their direction, and nothing it writes back can go on
+the diagram. A `.drawio` file is an XML blob nobody reviews, so the picture also drifts from the
+code until it is wrong.
 
-Flow aims at the gap between them:
+isketch aims at that gap:
 
-- **Text and canvas, both ways.** Edit either; the other follows, and your layout survives.
-- **Git native.** Line based files that diff cleanly, SVG rendering from the command line, and a
-  visual diff on pull requests.
-- **Generated from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with
-  re-import that keeps your layout.
+- **Every sketch is exact text.** Ids, kinds, directions and notes, in a line-based `.flow` file
+  an agent reads without guessing. Edit the canvas or the text; the other follows.
+- **Built for the hand-off.** Copy as Mermaid today; a Markdown brief, an MCP server and wireframe
+  shapes are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
+- **Git native.** Files diff cleanly, a CLI renders SVG with no browser, and pull requests get a
+  visual diff, so the design and the code stop drifting apart.
+- **Start from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with re-import that keeps
+  your layout.
 - **Local first.** No account, no server, works offline, shareable as a link.
 
-The full reasoning, and how we will know if it is working, is at the top of the
-[backlog](BACKLOG.md).
+What is honestly not there yet: a share link keeps the diagram after the `#`, which browsers never
+send to a server, so an AI that fetches the link sees nothing. Links an agent can read need a small
+server, planned in [Milestone 7](BACKLOG.md#milestone-7-links-an-agent-can-read). Until then, hand
+over the `.flow` file or its text.
 
-> **Status: early.** Flow started as a flow chart exercise. The canvas, editing, undo and local
-> persistence below work today; the diagram model, text format and importers are being built now.
+> **Status: early.** isketch started as a flow chart exercise called Flow. The canvas, text
+> format, importers, CLI and pull request diffs below work today.
 
 ## What works today
 
@@ -110,7 +118,7 @@ db 276,352
 - `#` starts a comment. A newline inside a description or label is written `\n`.
 
 The full example, [`examples/architecture.flow`](examples/architecture.flow), drawn by
-`flow render` with no browser. CI fails if this picture falls out of date:
+`isketch render` with no browser. CI fails if this picture falls out of date:
 
 ![The web app architecture example, rendered to SVG](examples/architecture.svg)
 
@@ -127,6 +135,9 @@ line number; the text pane, files, share links and the command line all go throu
 | 2. The wedge            | `.flow` text format, two way editor, Mermaid, compose, OpenAPI, SQL |
 | 3. Git native           | Open and save files, CLI rendering, visual diff, GitHub Action      |
 | 4. Editing essentials   | Multi-select, inline text, resize, connectors, clipboard, export    |
+| 5. Built for agents     | Copy for AI brief, MCP server, wireframe shapes, actionable notes   |
+| 6. Sketch feel          | Hand-drawn style, freehand pen, draw.io XML import and export       |
+| 7. Links an agent reads | Hosted diagrams with plain-text URLs, remote MCP                    |
 
 Every ticket, with what "done" means, is in [BACKLOG.md](BACKLOG.md).
 
@@ -153,10 +164,10 @@ docker compose --profile prod up    # production build on http://localhost:8080
 ## Command line
 
 ```bash
-npm run flow -- render diagram.flow -o diagram.svg   # draw it, add --dark for the dark theme
-npm run flow -- check docs/*.flow                    # file:line errors, exit 1 if any
-npm run flow -- diff old.flow new.flow -o diff.svg   # what changed, listed and drawn
-npm run examples                                     # redraw every SVG in examples/
+npm run isketch -- render diagram.flow -o diagram.svg   # draw it, add --dark for the dark theme
+npm run isketch -- check docs/*.flow                    # file:line errors, exit 1 if any
+npm run isketch -- diff old.flow new.flow -o diff.svg   # what changed, listed and drawn
+npm run examples                                        # redraw every SVG in examples/
 ```
 
 It needs only Node: the renderer is the same pure code the app uses, so a docs build or CI can

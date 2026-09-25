@@ -114,8 +114,8 @@ describe('migrate', () => {
   })
 
   it('refuses anything that is not a document', () => {
-    expect(() => migrate('nope')).toThrow(/not a flow document/i)
-    expect(() => migrate({ nodes: 'nope' })).toThrow(/not a flow document/i)
-    expect(() => migrate(null)).toThrow(/not a flow document/i)
+    expect(() => migrate('nope')).toThrow(/not an isketch document/i)
+    expect(() => migrate({ nodes: 'nope' })).toThrow(/not an isketch document/i)
+    expect(() => migrate(null)).toThrow(/not an isketch document/i)
   })
 })
