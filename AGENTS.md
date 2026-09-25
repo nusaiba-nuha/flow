@@ -21,7 +21,9 @@ tests the previous build.
 ## Boundaries
 
 - `src/domain/` has no Vue imports. It is plain JavaScript so it can be tested
-  without mounting anything. Keep it that way.
+  without mounting anything. Keep it that way. The CLI, the MCP server and `server/` all
+  run it in Node, so it also uses no browser globals, no `@/` alias, and only packages listed
+  under `dependencies`.
 - `src/api/flowApi.js` is the only module that touches persistence. It is shaped
   like a real API so it can be swapped for one.
 - Per shape behaviour lives in `src/domain/nodeMeta.js`, and each outline in

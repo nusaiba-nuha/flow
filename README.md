@@ -44,9 +44,9 @@ isketch aims at that gap:
 - **Local first.** No account, no server, works offline, shareable as a link.
 
 What is honestly not there yet: a share link keeps the diagram after the `#`, which browsers never
-send to a server, so an AI that fetches the link sees nothing. Links an agent can read need a small
-server, planned in [Milestone 7](BACKLOG.md#milestone-7-links-an-agent-can-read). Until then, hand
-over the `.flow` file or its text.
+send to a server, so an AI that fetches it sees nothing. The [server](#hosted-links-for-agents)
+for links an agent can read is built, but nobody hosts it yet, and the app does not publish to it
+yet. Until then, hand over the `.flow` file, the brief, or run the server yourself.
 
 > **Status: early.** isketch started as a flow chart exercise called Flow. The canvas, text
 > format, importers, CLI and pull request diffs below work today.
@@ -266,6 +266,38 @@ For Claude Desktop, or any client with a JSON config:
 Then ask: _"Read docs/architecture.flow and scaffold the services it shows"_, or _"Add the cache
 you just built to the architecture diagram"_.
 
+## Hosted links for agents
+
+`server/` is a small NestJS and PostgreSQL service that stores a diagram behind an unguessable link
+and serves it in every form a reader wants:
+
+| URL           | What it returns                                                       |
+| ------------- | --------------------------------------------------------------------- |
+| `/d/:id`      | A page with the drawing and the brief as text, so AI fetchers read it |
+| `/d/:id.md`   | The brief, as Markdown                                                |
+| `/d/:id.flow` | The `.flow` source                                                    |
+| `/d/:id.svg`  | The drawing, sketch font embedded                                     |
+| `/d/:id.json` | The document                                                          |
+
+`POST /api/diagrams` with `.flow` text (or JSON `{ "text": … }`) publishes it and returns the link and
+an edit token, shown once and stored only as a hash. `PUT` and `DELETE` on `/api/diagrams/:id` with
+`Authorization: Bearer <token>` update or unpublish it. There are no accounts: anyone with the link
+can read, only the token can change it. Invalid text is refused with line numbers.
+
+It reads, briefs and draws with the app's own `src/domain` code, so a link shows exactly what the
+editor and the CLI do.
+
+```bash
+docker compose --profile server up        # the server on :3000, with PostgreSQL
+curl -X POST -H 'content-type: text/plain' --data-binary @examples/architecture.flow \
+  localhost:3000/api/diagrams
+```
+
+To run it without Docker: `cd server && npm ci && npm run build`, then
+`DATABASE_URL=postgres://… npm start`. Settings are `PORT`, `DATABASE_URL`, `PUBLIC_URL` (the
+links' origin), `APP_URL` (for "Open in isketch"), `CORS_ORIGINS` and `MAX_BYTES`. Its tests run
+against a real PostgreSQL: `DATABASE_URL=… npm test` in `server/`.
+
 ## Diagrams in pull requests
 
 When a pull request changes a `.flow` file, a comment lists what changed and draws it, with
@@ -324,6 +356,7 @@ src/
   router/        Routes, including the nested node route
   cli/           The command line, with its I/O handed in
   mcp/           The MCP server's protocol and tools; bin/mcp.mjs is its stdio side
+server/          Hosted links: NestJS and PostgreSQL, TypeScript, reusing src/domain
 e2e/             Playwright specs
 ```
 
