@@ -30,3 +30,20 @@ test('undoes an edit with the keyboard', async ({ page }) => {
 
   await expect(nodeAt(page, 'b6a0c1')).toContainText('Away Message')
 })
+
+test('undoes one change per Ctrl+Z, even with the drawer open', async ({ page }) => {
+  await page.goto('/flow/node/b6a0c1')
+
+  for (const [index, name] of ['First', 'Second'].entries()) {
+    await page.getByLabel('Title').fill(name)
+    await page.getByRole('button', { name: 'Save changes' }).click()
+    // The card updates at once; history only once the write lands, which the toast marks.
+    await expect(page.getByText('Changes saved')).toHaveCount(index + 1)
+  }
+
+  // A drawer control that is not a text field, so the shortcut is ours.
+  await page.getByRole('button', { name: 'Close details' }).focus()
+  await page.keyboard.press('Control+z')
+
+  await expect(nodeAt(page, 'b6a0c1')).toContainText('First')
+})

@@ -6,8 +6,15 @@ import { flowKeys } from '@/api/queryKeys.js'
 import { emptyDocument } from '@/domain/document.js'
 import { useHistoryStore } from '@/stores/history.js'
 
-/** Applying a snapshot is a mutation, so the cache and the backend stay in step. */
-export function useFlowHistory() {
+/**
+ * Applying a snapshot is a mutation, so the cache and the backend stay in step.
+ *
+ * Only one caller may bind the keys. Every component that offers an Undo calls
+ * this, and each binding its own listener made one Ctrl+Z undo once per caller.
+ *
+ * @param {{ bindKeys?: boolean }} [options]
+ */
+export function useFlowHistory({ bindKeys = false } = {}) {
   const history = useHistoryStore()
   const queryClient = useQueryClient()
 
@@ -65,9 +72,11 @@ export function useFlowHistory() {
     }
   }
 
-  // Capture phase: Vue Flow stops keys on the pane before they reach window.
-  onMounted(() => window.addEventListener('keydown', onKeydown, true))
-  onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown, true))
+  if (bindKeys) {
+    // Capture phase: Vue Flow stops keys on the pane before they reach window.
+    onMounted(() => window.addEventListener('keydown', onKeydown, true))
+    onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown, true))
+  }
 
   return { undo, redo, history, isApplying: applyFlow.isPending }
 }

@@ -58,6 +58,8 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Edit as text.** Open the text pane beside the canvas and edit the diagram in the
   [`.flow` format](#the-flow-format): typing redraws the canvas, and changes on the canvas rewrite
   the text. Errors are listed by line, and the canvas keeps the last valid diagram meanwhile.
+- **Mermaid in and out.** Paste a Mermaid flowchart to edit it here, with a list of anything
+  skipped, or copy any diagram as Mermaid for a README.
 - **Works offline.** The samples are bundled, so the app makes no network requests.
 
 ## The `.flow` format
