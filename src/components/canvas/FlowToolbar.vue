@@ -13,7 +13,8 @@ import { useCanvasStore } from '@/stores/canvas.js'
 /** Owns its composables, so the route view stays a composition surface. */
 const emit = defineEmits(['help'])
 
-const { undo, redo, history } = useFlowHistory()
+// The one place the shortcut is bound: the toolbar is always mounted.
+const { undo, redo, history } = useFlowHistory({ bindKeys: true })
 const { start, isPending: isStarting } = useStartDiagram()
 const toasts = useToastStore()
 const canvas = useCanvasStore()
