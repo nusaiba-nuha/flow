@@ -45,17 +45,16 @@ function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true, label
         apply(current ?? emptyDocument(), variables),
       )
 
-      return { previous }
-    },
-
-    onSuccess(_data, _variables, context) {
-      // On success only: an undo entry for a change that was rolled back would
-      // take the user somewhere they have never been.
-      const previous = /** @type {FlowDocument | undefined} */ (context?.previous)
-      if (label) history.record(label, previous)
+      // Recorded now, so entries stack in the order changes were made; a change
+      // that saves quickly must not land on top of one made before it.
+      const entry = label
+        ? history.record(label, /** @type {FlowDocument | undefined} */ (previous))
+        : null
+      return { previous, entry }
     },
 
     onError(_error, _variables, context) {
+      history.discard(context?.entry)
       // Restore the whole document rather than reversing the change: one rollback
       // path, and it cannot drift out of step with `apply`.
       if (context?.previous) queryClient.setQueryData(flowKeys.list(), context.previous)

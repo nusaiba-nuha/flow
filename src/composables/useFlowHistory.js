@@ -6,6 +6,10 @@ import { flowKeys } from '@/api/queryKeys.js'
 import { emptyDocument } from '@/domain/document.js'
 import { useHistoryStore } from '@/stores/history.js'
 
+/** How often, and for how long at most, undo waits for a change still being saved. */
+const SETTLE_POLL_MS = 20
+const SETTLE_LIMIT_MS = 5000
+
 /**
  * Applying a snapshot is a mutation, so the cache and the backend stay in step.
  *
@@ -42,15 +46,16 @@ export function useFlowHistory({ bindKeys = false } = {}) {
    * change before it instead.
    * @returns {Promise<void>}
    */
-  function settled() {
-    if (!queryClient.isMutating()) return Promise.resolve()
-    return new Promise((resolve) => {
-      const unsubscribe = queryClient.getMutationCache().subscribe(() => {
-        if (queryClient.isMutating()) return
-        unsubscribe()
-        resolve()
-      })
-    })
+  async function settled() {
+    // Polled rather than subscribed: the cache can announce a finished change
+    // before it stops counting it, and a missed announcement would hang undo.
+    for (
+      let waited = 0;
+      queryClient.isMutating() && waited < SETTLE_LIMIT_MS;
+      waited += SETTLE_POLL_MS
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, SETTLE_POLL_MS))
+    }
   }
 
   /** @param {'undo' | 'redo'} direction */
