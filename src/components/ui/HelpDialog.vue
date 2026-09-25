@@ -53,8 +53,8 @@ const groups = SHORTCUT_GROUPS
           can be linked to directly.
         </p>
         <p class="mt-2 text-xs text-muted">
-          Changes are saved in this browser. <span class="text-ink">Reset flow</span> restores the
-          starter diagram.
+          Changes are saved in this browser. <span class="text-ink">New diagram</span> starts over,
+          and undo brings the previous one back.
         </p>
       </section>
     </div>

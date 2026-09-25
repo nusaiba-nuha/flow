@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import starter from '@/api/starterDiagram.json'
+import starter from '@/domain/samples/support.json'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { edgeIdFor } from '@/domain/graph.js'
@@ -10,6 +10,7 @@ import {
   useDeleteNode,
   useDisconnect,
   useMoveNode,
+  useNewDiagram,
 } from '../useNodeMutations.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
 
@@ -103,5 +104,14 @@ describe('applied changes', () => {
 
     expect(edgesIn(queryClient).some((edge) => edge.id === id)).toBe(false)
     expect(flowIn(queryClient)).toHaveLength(starter.nodes.length)
+  })
+  it('replaces the whole diagram in one step', async () => {
+    const { result, queryClient } = withFlow(() => useNewDiagram())
+
+    result.mutate({ version: 3, title: 'Blank', nodes: [], edges: [] })
+    await waitUntil(() => result.isSuccess.value)
+
+    expect(flowIn(queryClient)).toEqual([])
+    expect((await flowApi.fetchFlow()).title).toBe('Blank')
   })
 })

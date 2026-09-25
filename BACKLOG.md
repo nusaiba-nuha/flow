@@ -68,12 +68,12 @@ in milestone 2 is possible until diagrams are nodes and edges.
 - The chat-bot types migrate onto shapes so nothing drawn is lost; their drawer bodies, the
   business hours logic and `@vuepic/vue-datepicker` are removed
 
-### FL-42 · New diagram, blank canvas and samples ⏭️
+### FL-42 · New diagram, blank canvas and samples ✅
 
 - "Reset flow" becomes "New diagram", which starts empty with a hint
 - The old support flow and a small architecture diagram become samples
 
-### FL-43 · Shape palette ⬜
+### FL-43 · Shape palette ⏭️
 
 A left sidebar lists every shape; drag one onto the canvas to create it where it lands, or click to
 add it at the centre. Replaces the create dialog.

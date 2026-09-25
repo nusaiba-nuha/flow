@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import starter from '../starterDiagram.json'
+import starter from '@/domain/samples/support.json'
 import { SHAPE } from '@/domain/constants.js'
 import {
   createNode,
@@ -9,7 +9,7 @@ import {
   disconnect,
   fetchFlow,
   resetFlow,
-  restoreFlow,
+  replaceFlow,
   STORAGE_KEY,
   updateNode,
 } from '../flowApi.js'
@@ -129,13 +129,12 @@ describe('migration', () => {
   })
 })
 
-describe('restoreFlow', () => {
-  it('discards local changes and clears the saved copy', async () => {
-    await updateNode({ id: 'b6a0c1', patch: { name: 'Renamed' } })
-    await restoreFlow()
+describe('replaceFlow', () => {
+  it('replaces the whole document, and a reload serves the replacement', async () => {
+    await replaceFlow({ version: 3, title: 'Blank', nodes: [], edges: [] })
 
     resetFlow({ clearStorage: false })
     const flow = await fetchFlow()
-    expect(flow.nodes.find((node) => node.id === 'b6a0c1').name).toBe('Away Message')
+    expect(flow).toEqual({ version: 3, title: 'Blank', nodes: [], edges: [] })
   })
 })

@@ -3,16 +3,24 @@ import { computed } from 'vue'
 
 import IconButton from '@/components/ui/IconButton.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
-import { useRestoreFlow } from '@/composables/useNodeMutations.js'
+import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { usePlatform } from '@/composables/usePlatform.js'
 import { COMBO, comboLabel } from '@/domain/shortcuts.js'
+import { useToastStore } from '@/stores/toasts.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
 const emit = defineEmits(['create', 'help'])
 
 const { undo, redo, history } = useFlowHistory()
-const restoreFlow = useRestoreFlow()
+const { start, isPending: isStarting } = useStartDiagram()
+const toasts = useToastStore()
+
+function startEmpty() {
+  start(undefined, {
+    onSuccess: () => toasts.push('Started a new diagram', { action: { label: 'Undo', run: undo } }),
+  })
+}
 
 // Tooltips read the same combinations the handlers bind, resolved for this
 // platform, so a Mac never sees Ctrl in a hint for a key it does not use.
@@ -55,13 +63,15 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
     </div>
 
     <IconButton
-      label="Reset flow"
-      title="Discard every change and start again from the starter diagram"
-      :disabled="restoreFlow.isPending.value"
-      @click="restoreFlow.mutate()"
+      label="New diagram"
+      title="Start an empty diagram. Undo brings this one back"
+      :disabled="isStarting"
+      @click="startEmpty"
     >
-      <path d="M3 12a9 9 0 1 0 3-6.7" />
-      <path d="M3 4v5h5" />
+      <path
+        d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8l-5-5Z"
+      />
+      <path d="M14 3v5h5M12 11v6M9 14h6" />
     </IconButton>
 
     <IconButton

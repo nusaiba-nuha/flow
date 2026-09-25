@@ -1,0 +1,161 @@
+{
+  "version": 3,
+  "title": "Web app architecture",
+  "nodes": [
+    {
+      "id": "browser",
+      "type": "terminal",
+      "name": "Browser",
+      "data": {
+        "description": "Single page app"
+      },
+      "position": {
+        "x": 276,
+        "y": 0
+      }
+    },
+    {
+      "id": "cdn",
+      "type": "process",
+      "name": "CDN",
+      "data": {
+        "description": "Static assets, cached at the edge"
+      },
+      "position": {
+        "x": 0,
+        "y": 176
+      }
+    },
+    {
+      "id": "lb",
+      "type": "process",
+      "name": "Load balancer",
+      "data": {
+        "description": "TLS termination"
+      },
+      "position": {
+        "x": 276,
+        "y": 176
+      }
+    },
+    {
+      "id": "api",
+      "type": "process",
+      "name": "API",
+      "data": {
+        "description": "REST, documented with OpenAPI"
+      },
+      "position": {
+        "x": 276,
+        "y": 352
+      }
+    },
+    {
+      "id": "queue",
+      "type": "data",
+      "name": "Job queue",
+      "data": {
+        "description": "Emails, exports, webhooks"
+      },
+      "position": {
+        "x": 552,
+        "y": 528
+      }
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "name": "PostgreSQL",
+      "data": {
+        "description": "Primary data"
+      },
+      "position": {
+        "x": 0,
+        "y": 528
+      }
+    },
+    {
+      "id": "cache",
+      "type": "database",
+      "name": "Redis",
+      "data": {
+        "description": "Sessions and cache"
+      },
+      "position": {
+        "x": 276,
+        "y": 528
+      }
+    },
+    {
+      "id": "worker",
+      "type": "process",
+      "name": "Worker",
+      "data": {
+        "description": "Runs queued jobs"
+      },
+      "position": {
+        "x": 552,
+        "y": 704
+      }
+    },
+    {
+      "id": "files",
+      "type": "document",
+      "name": "Object storage",
+      "data": {
+        "description": "Uploads and exports"
+      },
+      "position": {
+        "x": 552,
+        "y": 880
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-browser-cdn",
+      "source": "browser",
+      "target": "cdn",
+      "label": "assets"
+    },
+    {
+      "id": "e-browser-lb",
+      "source": "browser",
+      "target": "lb",
+      "label": "HTTPS"
+    },
+    {
+      "id": "e-lb-api",
+      "source": "lb",
+      "target": "api"
+    },
+    {
+      "id": "e-api-db",
+      "source": "api",
+      "target": "db",
+      "label": "SQL"
+    },
+    {
+      "id": "e-api-cache",
+      "source": "api",
+      "target": "cache"
+    },
+    {
+      "id": "e-api-queue",
+      "source": "api",
+      "target": "queue",
+      "label": "enqueue"
+    },
+    {
+      "id": "e-queue-worker",
+      "source": "queue",
+      "target": "worker"
+    },
+    {
+      "id": "e-worker-files",
+      "source": "worker",
+      "target": "files",
+      "label": "write"
+    }
+  ]
+}
