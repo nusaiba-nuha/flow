@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/payload.json'
+import payload from '@/tests/fixtures/diagram.json'
 import { WEEKDAYS } from '../constants.js'
 import {
   attachmentName,

@@ -48,13 +48,13 @@ const groups = SHORTCUT_GROUPS
         <h3 class="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">About</h3>
         <p class="text-sm text-ink">Flow Builder</p>
         <p class="mt-1 text-xs text-muted">
-          A flow chart editor built with Vue 3, Vue Flow and TanStack Query. Nodes load from a
-          payload, render on a draggable canvas, and are edited through a drawer that lives at its
-          own URL, so every node can be linked to directly.
+          A diagram editor built with Vue 3, Vue Flow and TanStack Query. Nodes render on a
+          draggable canvas and are edited through a drawer that lives at its own URL, so every node
+          can be linked to directly.
         </p>
         <p class="mt-2 text-xs text-muted">
           Changes are saved in this browser. <span class="text-ink">Reset flow</span> restores the
-          original payload.
+          starter diagram.
         </p>
       </section>
     </div>

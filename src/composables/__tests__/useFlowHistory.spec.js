@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
-import payload from '@/tests/fixtures/payload.json'
+import starter from '@/api/starterDiagram.json'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { useDeleteNode } from '../useNodeMutations.js'
@@ -14,11 +14,6 @@ beforeEach(() => {
   setActivePinia(createPinia())
   flowApi.resetFlow()
   vi.restoreAllMocks()
-  vi.stubEnv('VITE_PAYLOAD_URL', '')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => ({ ok: true, status: 200, json: async () => structuredClone(payload) })),
-  )
 })
 
 /** One setup, so the mutation and the history share a query client. */
@@ -27,7 +22,7 @@ function setup() {
     remove: useDeleteNode(),
     history: useFlowHistory(),
   }))
-  queryClient.setQueryData(flowKeys.list(), structuredClone(payload))
+  queryClient.setQueryData(flowKeys.list(), structuredClone(starter))
   return { result, queryClient }
 }
 
@@ -37,13 +32,13 @@ describe('useFlowHistory', () => {
 
     result.remove.mutate({ id: 'b6a0c1' })
     await waitUntil(() => result.history.history.canUndo)
-    expect(flowIn(queryClient)).toHaveLength(payload.length - 1)
+    expect(flowIn(queryClient)).toHaveLength(starter.length - 1)
 
     result.history.undo()
-    await waitUntil(() => flowIn(queryClient).length === payload.length)
+    await waitUntil(() => flowIn(queryClient).length === starter.length)
 
     result.history.redo()
-    await waitUntil(() => flowIn(queryClient).length === payload.length - 1)
+    await waitUntil(() => flowIn(queryClient).length === starter.length - 1)
   })
 
   it('names the change it would take back', async () => {

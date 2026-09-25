@@ -2,19 +2,16 @@ import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from '@/domain/constants.js
 import { toNodeId, withNodeRemoved } from '@/domain/graph.js'
 import { creatableByValue } from '@/domain/nodeMeta.js'
 
+import starterDiagram from './starterDiagram.json'
+
 /** Writes only: it exists to make optimistic updates and rollbacks visible. */
 const LATENCY_MS = 220
 
 /**
- * The payload the brief supplied, served from `public/`, so a clone runs with no
- * configuration. `VITE_PAYLOAD_URL` points it at the hosted copy instead.
- *
- * Read through a function, so tests can stub the environment.
+ * One document per browser for now. Versioned, so a change to the stored shape
+ * can migrate rather than misread an older copy.
  */
-export const payloadUrl = () => import.meta.env.VITE_PAYLOAD_URL || '/payload.json'
-
-/** Keyed by source, or switching it would serve the previous source's copy. */
-export const storageKey = () => `flow-builder:flow:${payloadUrl()}`
+export const STORAGE_KEY = 'flow-builder:document:v1'
 
 /** @type {Record<string, any>[] | null} */
 let flow = null
@@ -41,35 +38,35 @@ const safely = (action) => {
   }
 }
 
-const save = () => safely(() => localStorage.setItem(storageKey(), JSON.stringify(flow)))
+const save = () => safely(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(flow)))
 
-/** Six hex characters, to match the payload's own ids. */
+/** Six hex characters, to match the starter diagram's ids. */
 export const generateNodeId = () => Math.random().toString(16).slice(2, 8).padEnd(6, '0')
 
 /** @param {{ clearStorage?: boolean }} [options] keep the saved flow to simulate a reload */
 export function resetFlow({ clearStorage = true } = {}) {
   flow = null
-  if (clearStorage) safely(() => localStorage.removeItem(storageKey()))
+  if (clearStorage) safely(() => localStorage.removeItem(STORAGE_KEY))
 }
 
-/** @returns {Promise<Record<string, any>[]>} */
+/**
+ * Bundled rather than fetched, so the app has no server to reach and nothing
+ * to configure. Async anyway, so a real backend can replace this module.
+ * @returns {Promise<Record<string, any>[]>}
+ */
 async function ensureLoaded() {
   if (flow) return flow
 
-  const saved = safely(() => localStorage.getItem(storageKey()))
+  const saved = safely(() => localStorage.getItem(STORAGE_KEY))
   const parsed = saved ? safely(() => JSON.parse(saved)) : null
   if (Array.isArray(parsed)) {
     flow = parsed
     return flow
   }
 
-  const response = await fetch(payloadUrl())
-  if (!response.ok) throw new Error(`Could not load the flow (${response.status}).`)
-
-  const seeded = await response.json()
-  flow = seeded
+  flow = clone(starterDiagram)
   save()
-  return seeded
+  return flow
 }
 
 /** @returns {Promise<Record<string, any>[]>} */
@@ -166,7 +163,7 @@ export async function deleteNode({ id }) {
   return { id }
 }
 
-/** Discard local changes and re-seed from the shipped payload. */
+/** Discard local changes and start again from the starter diagram. */
 export async function restoreFlow() {
   resetFlow()
   return fetchFlow()

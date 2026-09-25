@@ -4,7 +4,6 @@ import { createPinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { createRouter, createWebHistory } from 'vue-router'
 
-import payload from '@/tests/fixtures/payload.json'
 import * as flowApi from '@/api/flowApi.js'
 import { createTestQueryClient, waitUntil } from '@/tests/utils.js'
 import NodeDetailsDrawer from '../NodeDetailsDrawer.vue'
@@ -35,11 +34,6 @@ const buttonWith = (wrapper, text) =>
 beforeEach(async () => {
   flowApi.resetFlow()
   vi.restoreAllMocks()
-  vi.stubEnv('VITE_PAYLOAD_URL', '')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => ({ ok: true, status: 200, json: async () => structuredClone(payload) })),
-  )
   await router.push('/flow/node/b6a0c1')
 })
 

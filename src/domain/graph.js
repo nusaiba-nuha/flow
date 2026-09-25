@@ -2,7 +2,7 @@ import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from './constants.js'
 import { layoutTree } from './layout.js'
 
 /**
- * The payload mixes a numeric id with hex strings; route params are strings.
+ * Stored ids mix a numeric id with hex strings; route params are strings.
  * @param {unknown} id
  * @returns {string}
  */
@@ -56,11 +56,11 @@ export function connectorLabel(node) {
 
 /**
  * A dragged node keeps where it was put; everything else is laid out.
- * @param {Record<string, any>[]} payload
+ * @param {Record<string, any>[]} document
  * @returns {{ nodes: import('./types.js').VueFlowNode[], edges: import('./types.js').VueFlowEdge[] }}
  */
-export function payloadToGraph(payload) {
-  const nodes = (payload ?? []).map(normaliseNode)
+export function documentToGraph(document) {
+  const nodes = (document ?? []).map(normaliseNode)
   const positions = layoutTree(nodes)
 
   return {
@@ -112,7 +112,7 @@ export function isDescendant(flow, rootId, candidate) {
   const parentOf = new Map(flow.map((node) => [toNodeId(node.id), toNodeId(node.parentId)]))
 
   let current = candidate
-  // Bounded by the node count, so a corrupt payload cannot spin here forever.
+  // Bounded by the node count, so a corrupt document cannot spin here forever.
   for (let step = 0; step < parentOf.size; step += 1) {
     if (current === rootId) return true
     const parent = parentOf.get(current)
@@ -126,7 +126,7 @@ export function isDescendant(flow, rootId, candidate) {
 /**
  * Whether one node may become another's parent.
  *
- * The payload gives a node a single `parentId`, so connecting re-parents the
+ * A node has a single `parentId`, so connecting re-parents the
  * target rather than adding an edge beside its existing one.
  *
  * @param {Record<string, any>[]} flow

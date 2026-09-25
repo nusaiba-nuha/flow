@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import payload from '@/tests/fixtures/payload.json'
+import payload from '@/tests/fixtures/diagram.json'
 import { normaliseNode } from '@/domain/graph.js'
 import FlowNodeCard from '../FlowNodeCard.vue'
 import BranchPill from '../BranchPill.vue'

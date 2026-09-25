@@ -1,18 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 
-import payload from '@/tests/fixtures/payload.json'
-import { resetFlow } from '@/api/flowApi.js'
+import starter from '@/api/starterDiagram.json'
+import * as flowApi from '@/api/flowApi.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
 import { useFlowQuery, useNode } from '../useFlowQuery.js'
 
 beforeEach(() => {
-  resetFlow()
-  vi.stubEnv('VITE_PAYLOAD_URL', '')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => ({ ok: true, status: 200, json: async () => structuredClone(payload) })),
-  )
+  vi.restoreAllMocks()
+  flowApi.resetFlow()
 })
 
 describe('useFlowQuery', () => {
@@ -21,15 +17,12 @@ describe('useFlowQuery', () => {
     expect(result.nodes.value).toEqual([])
 
     await waitUntil(() => result.nodes.value.length > 0)
-    expect(result.nodes.value).toHaveLength(payload.length)
-    expect(result.edges.value).toHaveLength(payload.length - 1)
+    expect(result.nodes.value).toHaveLength(starter.length)
+    expect(result.edges.value).toHaveLength(starter.length - 1)
   })
 
   it('reports a failed load instead of hanging on loading', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => ({ ok: false, status: 500 })),
-    )
+    vi.spyOn(flowApi, 'fetchFlow').mockRejectedValue(new Error('Could not load the flow.'))
     const { result } = withSetup(() => useFlowQuery())
     await waitUntil(() => result.isError.value)
 

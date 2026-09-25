@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import payload from '@/tests/fixtures/payload.json'
+import payload from '@/tests/fixtures/diagram.json'
 import SendMessageBody from '../SendMessageBody.vue'
 
 const welcome = payload.find((node) => node.id === 'b0653a')

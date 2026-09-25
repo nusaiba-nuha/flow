@@ -133,7 +133,7 @@ export function useMoveNode() {
   })
 }
 
-/** Discard local changes and re-seed from the payload. */
+/** Discard local changes and re-seed from the starter diagram. */
 export function useRestoreFlow() {
   const queryClient = useQueryClient()
   const history = useHistoryStore()
