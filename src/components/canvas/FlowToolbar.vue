@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
+import { useShareLink } from '@/composables/useShareLink.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { usePlatform } from '@/composables/usePlatform.js'
 import { COMBO, comboLabel } from '@/domain/shortcuts.js'
@@ -18,6 +19,7 @@ const { undo, redo, history } = useFlowHistory({ bindKeys: true })
 const { start, isPending: isStarting } = useStartDiagram()
 const toasts = useToastStore()
 const canvas = useCanvasStore()
+const { share } = useShareLink()
 
 function startEmpty() {
   start(undefined, {
@@ -76,6 +78,17 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
       @click="canvas.toggleText"
     >
       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+    </IconButton>
+
+    <IconButton
+      label="Share"
+      title="Copy a link that carries this whole diagram. Nothing is uploaded"
+      @click="share"
+    >
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4" />
     </IconButton>
 
     <IconButton
