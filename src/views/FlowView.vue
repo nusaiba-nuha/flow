@@ -12,11 +12,13 @@ import ToastHost from '@/components/ui/ToastHost.vue'
 import { useHelpDialog } from '@/composables/useHelpDialog.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 import { useOpenSharedLink } from '@/composables/useShareLink.js'
+import { useFileStore } from '@/stores/file.js'
 
 // The route view stays a composition surface: layout, and what is on screen.
 const canvas = useCanvasStore()
 const isImporting = ref(false)
 useOpenSharedLink()
+const file = useFileStore()
 // Bound at the shell: a dialog that is not mounted cannot listen for its own key.
 const help = useHelpDialog()
 </script>
@@ -25,7 +27,9 @@ const help = useHelpDialog()
   <div class="flex h-full w-full flex-col bg-canvas">
     <header class="flex items-center justify-between border-b border-line bg-surface px-5 py-3">
       <div>
-        <h1 class="text-sm font-semibold">Flow</h1>
+        <h1 class="text-sm font-semibold">
+          Flow<span v-if="file.name" class="font-normal text-muted"> · {{ file.name }}</span>
+        </h1>
         <p class="text-xs text-muted">Drag a shape in, click one to open its details</p>
       </div>
 

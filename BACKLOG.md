@@ -119,12 +119,12 @@ server.
 
 ## Milestone 3: Git native
 
-### FL-51 · Open and save files ⏭️
+### FL-51 · Open and save files ✅
 
 Open a `.flow` file from disk and save back to it (File System Access API, with download and upload
 as the fallback), so a diagram lives in a repository rather than in the browser.
 
-### FL-52 · Render without a browser ⬜
+### FL-52 · Render without a browser ⏭️
 
 A pure SVG renderer in `src/domain/`, and `npx flow render diagram.flow -o diagram.svg`, so CI and
 docs sites can build images.

@@ -5,6 +5,7 @@ import IconButton from '@/components/ui/IconButton.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useShareLink } from '@/composables/useShareLink.js'
+import { useDiagramFile } from '@/composables/useDiagramFile.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { usePlatform } from '@/composables/usePlatform.js'
 import { COMBO, comboLabel } from '@/domain/shortcuts.js'
@@ -20,6 +21,8 @@ const { start, isPending: isStarting } = useStartDiagram()
 const toasts = useToastStore()
 const canvas = useCanvasStore()
 const { share } = useShareLink()
+// The one place Ctrl+S and Ctrl+O are bound, like undo.
+const { open, save } = useDiagramFile({ bindKeys: true })
 
 function startEmpty() {
   start(undefined, {
@@ -33,6 +36,8 @@ const { isMac } = usePlatform()
 const undoHint = computed(() => comboLabel(COMBO.UNDO, isMac.value))
 const redoHint = computed(() => comboLabel(COMBO.REDO, isMac.value))
 const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
+const openHint = computed(() => comboLabel(COMBO.OPEN, isMac.value))
+const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
 </script>
 
 <template>
@@ -78,6 +83,19 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
       @click="canvas.toggleText"
     >
       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+    </IconButton>
+
+    <IconButton label="Open file" :title="`Open a .flow file (${openHint})`" @click="open">
+      <path
+        d="M3 7.5V18a1.5 1.5 0 0 0 1.5 1.5h15A1.5 1.5 0 0 0 21 18V9a1.5 1.5 0 0 0-1.5-1.5H12L10 5H4.5A1.5 1.5 0 0 0 3 6.5Z"
+      />
+    </IconButton>
+
+    <IconButton label="Save" :title="`Save as a .flow file (${saveHint})`" @click="save">
+      <path
+        d="M5 3h11l3 3v13.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19.5v-15A1.5 1.5 0 0 1 5 3Z"
+      />
+      <path d="M8 3v5h7V3M8 21v-6h8v6" />
     </IconButton>
 
     <IconButton
