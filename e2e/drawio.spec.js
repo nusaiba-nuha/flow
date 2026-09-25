@@ -30,9 +30,11 @@ test('imports a draw.io file, and downloads the diagram as one', async ({ page }
   )
   await expect(page.getByTestId('edge-label').filter({ hasText: 'pay' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Edit as text' }).click()
+  await page.getByRole('banner').getByRole('button', { name: 'Export' }).click()
+  const exporting = page.getByRole('dialog', { name: 'Export' })
+  await exporting.getByText('draw.io', { exact: true }).click()
   const download = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Download .drawio' }).click()
+  await exporting.getByRole('button', { name: 'Download checkout.drawio' }).click()
   const file = await download
   expect(file.suggestedFilename()).toBe('checkout.drawio')
   const xml = await readFile(await file.path(), 'utf8')

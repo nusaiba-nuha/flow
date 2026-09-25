@@ -94,12 +94,14 @@ over the `.flow` file or its text.
   hand. Anything skipped is listed by line.
 - **draw.io, both ways.** Import a `.drawio` file, compressed or not, or the XML from Extras > Edit
   Diagram: shapes map to the nearest one here, entity tables keep their rows, and lanes are
-  flattened with their shapes kept. _Download .drawio_ in the text pane writes a file draw.io
+  flattened with their shapes kept. _Export_ writes a file draw.io
   opens as it is, sketch style included, and that comes back into isketch unchanged.
 - **Copy for AI.** One button copies a Markdown brief for Claude, Copilot or any coding agent: each
   shape with its id and what it means ("a data store", "a branch the code must handle"), each
   connection in words, and the `.flow` source at the end so the agent can change the diagram and
   hand it back. `isketch brief` prints the same from the command line.
+- **Export** as PNG (at twice the size, for slides and chat), SVG or a draw.io file, light or
+  dark, with a preview. Sketches carry their handwriting font inside the file.
 - **Copy as Mermaid** from the text pane, for a README.
 - **Open and save `.flow` files** (`Ctrl+O`, `Ctrl+S`). In Chrome and Edge, Save writes back to
   the file you opened, so a diagram can live in a repository next to the code it describes.

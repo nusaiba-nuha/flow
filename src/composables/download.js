@@ -6,7 +6,15 @@
  * @param {string} [type]
  */
 export function downloadText(name, text, type = 'text/plain') {
-  const url = URL.createObjectURL(new Blob([text], { type }))
+  downloadBlob(name, new Blob([text], { type }))
+}
+
+/**
+ * @param {string} name
+ * @param {Blob} blob
+ */
+export function downloadBlob(name, blob) {
+  const url = URL.createObjectURL(blob)
   const link = window.document.createElement('a')
   link.href = url
   link.download = name

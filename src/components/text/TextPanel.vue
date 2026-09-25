@@ -4,9 +4,6 @@ import { computed, ref, useId, useTemplateRef } from 'vue'
 import { useDiagramText } from '@/composables/useDiagramText.js'
 import { useFlowQuery } from '@/composables/useFlowQuery.js'
 import { toMermaid } from '@/domain/mermaid.js'
-import { toDrawio } from '@/domain/drawio.js'
-import { flowFileName } from '@/domain/flowText.js'
-import { downloadText } from '@/composables/download.js'
 
 /** The diagram as `.flow` text, beside the canvas. Either side can be edited. */
 const { text, errors, input, focus, blur } = useDiagramText()
@@ -47,12 +44,6 @@ async function copy(format) {
     // Clipboard access can be refused; the text is still there to select.
   }
 }
-
-/** A .drawio file, for anyone who wants to carry on in draw.io. */
-function downloadDrawio() {
-  const name = flowFileName(document.value.title).replace(/\.flow$/, '.drawio')
-  downloadText(name, toDrawio(document.value), 'application/xml')
-}
 </script>
 
 <template>
@@ -82,14 +73,6 @@ function downloadDrawio() {
           @click="copy('mermaid')"
         >
           {{ copied === 'mermaid' ? 'Copied' : 'Copy as Mermaid' }}
-        </button>
-        <button
-          type="button"
-          class="rounded-lg border border-line px-2.5 py-1 text-xs transition-colors hover:bg-hover"
-          title="Download the diagram as a .drawio file, to open in draw.io or diagrams.net"
-          @click="downloadDrawio"
-        >
-          Download .drawio
         </button>
       </div>
     </header>
