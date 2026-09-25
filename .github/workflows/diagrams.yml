@@ -1,0 +1,27 @@
+name: Diagrams
+
+on:
+  pull_request:
+    paths:
+      - '**/*.flow'
+      - '.github/actions/diagram-report/**'
+      - 'src/cli/prReport.js'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    name: Report diagram changes
+    runs-on: ubuntu-latest
+    # A fork's token cannot comment, so there is nothing useful to do there.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The base commit has to be here to read the old versions.
+          fetch-depth: 0
+
+      - uses: ./.github/actions/diagram-report

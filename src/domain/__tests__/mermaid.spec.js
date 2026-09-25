@@ -143,3 +143,21 @@ graph LR
     expect(warnings[2].message).toMatch(/skipped/i)
   })
 })
+
+describe('toMermaid with a highlight', () => {
+  it('styles changed nodes by class and changed edges by their position', () => {
+    const text = toMermaid(architecture, {
+      highlight: new Map([
+        ['cache', 'removed'],
+        ['api', 'changed'],
+        ['e-lb-api', 'added'],
+      ]),
+    })
+
+    expect(text).toContain('  class cache removed')
+    expect(text).toContain('  class api changed')
+    const index = architecture.edges.findIndex((edge) => edge.id === 'e-lb-api')
+    expect(text).toContain(`  linkStyle ${index} stroke:#16a34a,stroke-width:3px`)
+    expect(toMermaid(architecture)).not.toContain('classDef')
+  })
+})

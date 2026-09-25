@@ -157,6 +157,34 @@ npm run examples                                     # redraw every SVG in examp
 It needs only Node: the renderer is the same pure code the app uses, so a docs build or CI can
 draw diagrams that match the editor.
 
+## Diagrams in pull requests
+
+When a pull request changes a `.flow` file, a comment lists what changed and draws it, with
+additions green, removals dashed red and edits amber. The drawing is Mermaid, which GitHub renders
+in the comment, so nothing needs hosting. Later pushes update the same comment.
+
+This repository runs it from [`.github/workflows/diagrams.yml`](.github/workflows/diagrams.yml).
+Any repository can do the same:
+
+```yaml
+on:
+  pull_request:
+    paths: ['**/*.flow']
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: raj-khan/flow/.github/actions/diagram-report@main
+```
+
+The action needs only git and Node, with nothing to install.
+
 ## Scripts
 
 | Command             | What it does                      |
