@@ -1,5 +1,15 @@
 <script setup>
-import { computed, markRaw, nextTick, provide, ref, useTemplateRef, watch } from 'vue'
+import {
+  computed,
+  markRaw,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -8,9 +18,12 @@ import { useFlowQuery } from '@/composables/useFlowQuery.js'
 import {
   useConnectNodes,
   useCreateNode,
+  useDeleteNodes,
   useDisconnect,
   useMoveNode,
+  useMoveNodes,
 } from '@/composables/useNodeMutations.js'
+import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
@@ -37,6 +50,9 @@ const moveNode = useMoveNode()
 const connectNodes = useConnectNodes()
 const disconnect = useDisconnect()
 const createNode = useCreateNode()
+const moveNodes = useMoveNodes()
+const deleteNodes = useDeleteNodes()
+const { undo } = useFlowHistory()
 const { start } = useStartDiagram()
 const toasts = useToastStore()
 const {
@@ -51,6 +67,10 @@ const {
   setViewport,
   updateNode: updateFlowNode,
   viewport,
+  getSelectedNodes,
+  getSelectedEdges,
+  addSelectedNodes,
+  removeSelectedNodes,
 } = useVueFlow()
 
 // These are component definitions, not reactive data: without markRaw Vue walks
@@ -129,8 +149,9 @@ watch(focusedId, async (id) => {
  * @param {import('@/domain/types.js').VueFlowNode[]} nextNodes
  * @param {import('@/domain/types.js').VueFlowEdge[]} nextEdges
  * @param {string} openId
+ * @param {boolean} openChanged
  */
-function syncGraph(nextNodes, nextEdges, openId) {
+function syncGraph(nextNodes, nextEdges, openId, openChanged) {
   const known = new Map(getNodes.value.map((node) => [node.id, node]))
   const wanted = new Set(nextNodes.map((node) => node.id))
 
@@ -144,8 +165,11 @@ function syncGraph(nextNodes, nextEdges, openId) {
     const current = known.get(node.id)
     if (!current) continue
 
-    // The open node is the highlighted one, so a shared link marks it too.
-    const update = { data: node.data, selected: node.id === openId }
+    // The open node is the highlighted one, so a shared link marks it too. Only
+    // when it changes: on every save this would undo a selection made by hand.
+    const update = openChanged
+      ? { data: node.data, selected: node.id === openId }
+      : { data: node.data }
     const moved =
       Math.abs(current.position.x - node.position.x) > 0.5 ||
       Math.abs(current.position.y - node.position.y) > 0.5
@@ -178,7 +202,8 @@ function syncGraph(nextNodes, nextEdges, openId) {
 
 watch(
   [nodes, edges, () => route.params.id],
-  ([nextNodes, nextEdges, openId]) => syncGraph(nextNodes, nextEdges, String(openId ?? '')),
+  ([nextNodes, nextEdges, openId], previous) =>
+    syncGraph(nextNodes, nextEdges, String(openId ?? ''), !previous || previous[2] !== openId),
   { immediate: true },
 )
 
@@ -197,8 +222,10 @@ function drawFromData(list) {
   fromData = false
 }
 
-/** @param {{ node: import('@vue-flow/core').GraphNode }} event */
-function onNodeClick({ node }) {
+/** @param {{ node: import('@vue-flow/core').GraphNode, event: MouseEvent | TouchEvent }} event */
+function onNodeClick({ node, event }) {
+  // A modifier click adds to the selection; opening the drawer would drop it.
+  if (event && 'shiftKey' in event && (event.shiftKey || event.ctrlKey || event.metaKey)) return
   if (!isOpenable(node.data.node)) return
   focus(node.id)
   router.push({ name: ROUTE.NODE_DETAILS, params: { id: node.id } })
@@ -276,17 +303,70 @@ function detach(edgeId) {
 
 provide(DETACH_EDGE, detach)
 
-/** Removes the line, never the node it points at. */
-/** @param {{ edges: { id: string }[] }} event */
-function onEdgesDelete({ edges: removed }) {
-  for (const edge of removed) detach(edge.id)
-}
-
-/** @param {{ node: import('@vue-flow/core').GraphNode }} event */
-function onNodeDragStop({ node }) {
-  // A plain object, not Vue Flow's reactive position.
+/** @param {{ node: import('@vue-flow/core').GraphNode, nodes: import('@vue-flow/core').GraphNode[] }} event */
+function onNodeDragStop({ node, nodes: dragged }) {
+  // Plain objects, not Vue Flow's reactive positions.
+  if (dragged?.length > 1) {
+    moveNodes.mutate({
+      positions: Object.fromEntries(
+        dragged.map((each) => [each.id, { x: each.position.x, y: each.position.y }]),
+      ),
+    })
+    return
+  }
   moveNode.mutate({ id: node.id, position: { x: node.position.x, y: node.position.y } })
 }
+
+/**
+ * Select all, and delete a selection as one undoable step. Vue Flow's own
+ * delete key is off: it removed shapes from the canvas without touching the
+ * diagram. The drawer's button confirms; the key does not, and the toast's Undo
+ * is the safety net, as in every drawing tool.
+ *
+ * @param {KeyboardEvent} event
+ */
+function onSelectionKeys(event) {
+  const target = /** @type {HTMLElement | null} */ (event.target)
+  if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return
+  if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
+    event.preventDefault()
+    addSelectedNodes(getNodes.value)
+    return
+  }
+
+  if (event.key === 'Escape' && getSelectedNodes.value.length > 1) {
+    removeSelectedNodes(getSelectedNodes.value)
+    return
+  }
+
+  if (event.key !== 'Delete' && event.key !== 'Backspace') return
+  const ids = getSelectedNodes.value.map((node) => node.id)
+  const edgeIds = getSelectedEdges.value.map((edge) => edge.id)
+  if (!ids.length && !edgeIds.length) return
+  event.preventDefault()
+
+  // A shape's edges go with it, so only lone edges are removed on their own.
+  if (!ids.length) {
+    edgeIds.forEach(detach)
+    return
+  }
+
+  router.push({ name: ROUTE.FLOW })
+  deleteNodes.mutate(
+    { ids },
+    {
+      onSuccess: () =>
+        toasts.push(ids.length === 1 ? 'Deleted a shape' : `Deleted ${ids.length} shapes`, {
+          action: { label: 'Undo', run: undo },
+        }),
+    },
+  )
+}
+
+onMounted(() => window.addEventListener('keydown', onSelectionKeys))
+onBeforeUnmount(() => window.removeEventListener('keydown', onSelectionKeys))
 
 /**
  * Vue Flow measures nodes after they mount, and `fitView` needs those dimensions.
@@ -464,8 +544,10 @@ watch(
       :is-valid-connection="isValidConnection"
       :connection-radius="28"
       :nodes-deletable="false"
-      :delete-key-code="['Delete', 'Backspace']"
+      :delete-key-code="null"
       :elevate-nodes-on-select="true"
+      selection-key-code="Shift"
+      :multi-selection-key-code="['Shift', 'Meta', 'Control']"
       class="h-full w-full"
       @nodes-initialized="onNodesInitialized"
       @node-click="onNodeClick"
@@ -473,7 +555,6 @@ watch(
       @connect="onConnect"
       @connect-start="onConnectStart"
       @connect-end="onConnectEnd"
-      @edges-delete="onEdgesDelete"
       @viewport-change="canvas.setViewport"
     >
       <Background :gap="18" :size="1.2" />

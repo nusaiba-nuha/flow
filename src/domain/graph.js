@@ -86,6 +86,30 @@ export function withNodeRemoved(document, id) {
 }
 
 /**
+ * Several nodes, as one change.
+ * @param {import('./types.js').FlowDocument} document
+ * @param {string[]} ids
+ * @returns {import('./types.js').FlowDocument}
+ */
+export const withNodesRemoved = (document, ids) =>
+  ids.reduce((next, id) => withNodeRemoved(next, id), document)
+
+/**
+ * @param {import('./types.js').FlowDocument} document
+ * @param {Record<string, { x: number, y: number }>} positions
+ * @returns {import('./types.js').FlowDocument}
+ */
+export function withPositions(document, positions) {
+  return {
+    ...document,
+    nodes: document.nodes.map((node) => {
+      const position = positions[toNodeId(node.id)]
+      return position ? { ...node, position: { ...position } } : node
+    }),
+  }
+}
+
+/**
  * @param {import('./types.js').FlowDocument} document
  * @param {string} source
  * @param {string} target

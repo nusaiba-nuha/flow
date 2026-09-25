@@ -23,6 +23,25 @@ export const SHORTCUT_GROUPS = Object.freeze([
     ],
   },
   {
+    title: 'Selection',
+    shortcuts: [
+      {
+        combos: [
+          ['Shift', 'click'],
+          ['mod', 'click'],
+        ],
+        description: 'Add a shape to the selection',
+      },
+      { combos: [['Shift', 'drag']], description: 'Select everything inside a box' },
+      { combos: [['mod', 'A']], description: 'Select every shape' },
+      {
+        combos: [['Delete'], ['Backspace']],
+        description: 'Delete the selection, or a selected connection',
+      },
+      { combos: [['Esc']], description: 'Clear a selection of several shapes' },
+    ],
+  },
+  {
     title: 'History',
     note: 'Inside a text field these stay with the browser, where they mean text undo.',
     shortcuts: [

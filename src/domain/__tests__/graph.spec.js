@@ -9,7 +9,9 @@ import {
   edgeIdFor,
   withEdge,
   withNodeRemoved,
+  withNodesRemoved,
   withoutEdge,
+  withPositions,
 } from '../graph.js'
 
 describe('documentToGraph', () => {
@@ -87,5 +89,18 @@ describe('canConnect', () => {
 
   it('treats the reverse of an edge as a different edge', () => {
     expect(canConnect(diagram, 'e879e4', 'b6a0c1')).toBeNull()
+  })
+})
+
+describe('withNodesRemoved and withPositions', () => {
+  it('removes several nodes and their edges at once, and moves several at once', () => {
+    const removed = withNodesRemoved(diagram, ['b6a0c1', 'e879e4'])
+    expect(removed.nodes.map((node) => node.id)).not.toContain('b6a0c1')
+    expect(removed.nodes.map((node) => node.id)).not.toContain('e879e4')
+    expect(removed.edges.every((edge) => edge.target !== 'b6a0c1')).toBe(true)
+
+    const moved = withPositions(diagram, { b6a0c1: { x: 1, y: 2 }, ghost: { x: 0, y: 0 } })
+    expect(moved.nodes.find((node) => node.id === 'b6a0c1').position).toEqual({ x: 1, y: 2 })
+    expect(moved.nodes).toHaveLength(diagram.nodes.length)
   })
 })

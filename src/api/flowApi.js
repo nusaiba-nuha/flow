@@ -1,6 +1,14 @@
 import { migrate } from '@/domain/document.js'
 import { FIRST_RUN_SAMPLE, sampleById } from '@/domain/samples.js'
-import { canConnect, toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
+import {
+  canConnect,
+  toNodeId,
+  withEdge,
+  withNodeRemoved,
+  withNodesRemoved,
+  withoutEdge,
+  withPositions,
+} from '@/domain/graph.js'
 import { isKnownShape } from '@/domain/nodeMeta.js'
 
 import { STORAGE_KEYS } from './storageKeys.js'
@@ -131,6 +139,37 @@ export async function deleteNode({ id }) {
   save()
   await delay(LATENCY_MS)
   return { id }
+}
+
+/**
+ * A selection, deleted as one change.
+ * @param {{ ids: string[] }} input
+ * @returns {Promise<{ ids: string[] }>}
+ */
+export async function deleteNodes({ ids }) {
+  await ensureLoaded()
+  ids.forEach(requireNode)
+
+  flow = withNodesRemoved(current(), ids)
+  save()
+  await delay(LATENCY_MS)
+  return { ids }
+}
+
+/**
+ * A selection, moved as one change.
+ * @param {{ positions: Record<string, { x: number, y: number }> }} input
+ * @returns {Promise<{ ids: string[] }>}
+ */
+export async function moveNodes({ positions }) {
+  await ensureLoaded()
+  const ids = Object.keys(positions)
+  ids.forEach(requireNode)
+
+  flow = withPositions(current(), positions)
+  save()
+  await delay(LATENCY_MS)
+  return { ids }
 }
 
 /**
