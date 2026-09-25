@@ -48,8 +48,8 @@ jobs:
       - name: Examples
         if: '!cancelled()'
         run: |
-          npm run -s flow -- check examples/*.flow
-          for file in examples/*.flow; do npm run -s flow -- render "$file" -o "${file%.flow}.svg"; done
+          npm run -s isketch -- check examples/*.flow
+          for file in examples/*.flow; do npm run -s isketch -- render "$file" -o "${file%.flow}.svg"; done
           git diff --exit-code examples/
 
   e2e:

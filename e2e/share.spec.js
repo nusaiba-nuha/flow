@@ -35,7 +35,7 @@ test('a copied link opens the same diagram in another browser, as an undoable ch
 test('a damaged link says so and leaves the diagram alone', async ({ page }) => {
   await page.goto('/flow#flow=zthis-is-not-a-diagram')
 
-  await expect(page.getByText('This link does not hold a diagram Flow can read.')).toBeVisible()
+  await expect(page.getByText('This link does not hold a diagram isketch can read.')).toBeVisible()
   await expect(shapes(page)).toHaveCount(5)
   await expect(page).toHaveURL(/\/flow$/)
 })

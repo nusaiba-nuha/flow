@@ -63,7 +63,7 @@ export function useOpenSharedLink() {
       router.replace({ name: ROUTE.FLOW, hash: '' })
 
       if (!shared) {
-        toasts.push('This link does not hold a diagram Flow can read.', { tone: 'danger' })
+        toasts.push('This link does not hold a diagram isketch can read.', { tone: 'danger' })
         return
       }
 

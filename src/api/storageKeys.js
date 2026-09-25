@@ -1,4 +1,4 @@
-/** Every key Flow writes to `localStorage`, so a rename happens in one place. */
+/** Every key isketch writes to `localStorage`, so a rename happens in one place. */
 export const STORAGE_KEYS = Object.freeze({
   DOCUMENT: 'flow:document',
   THEME: 'flow:theme',

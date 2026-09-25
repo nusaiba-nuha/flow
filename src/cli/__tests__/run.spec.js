@@ -27,7 +27,7 @@ function fakeIo(files = {}) {
 
 const GOOD = 'a = process "A"\nb = database "B"\na -> b : reads\n'
 
-describe('flow render', () => {
+describe('isketch render', () => {
   it('writes SVG to a file, or to stdout', async () => {
     const toFile = fakeIo({ 'd.flow': GOOD })
     expect(await run(['render', 'd.flow', '-o', 'd.svg'], toFile.io)).toBe(0)
@@ -47,7 +47,7 @@ describe('flow render', () => {
   })
 })
 
-describe('flow check', () => {
+describe('isketch check', () => {
   it('passes good files and fails on any bad or missing one', async () => {
     const { io, err } = fakeIo({ 'good.flow': GOOD, 'bad.flow': 'x -> y' })
 
@@ -58,7 +58,7 @@ describe('flow check', () => {
   })
 })
 
-describe('flow diff', () => {
+describe('isketch diff', () => {
   it('lists what changed, and draws it', async () => {
     const after = `${GOOD}c = note "C"\nb -> c\n`.replace('"A"', '"Alpha"')
     const { io, out, written } = fakeIo({ 'before.flow': GOOD, 'after.flow': after })

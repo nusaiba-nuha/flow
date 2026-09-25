@@ -1,38 +1,48 @@
 # Backlog
 
-## Why Flow, when draw.io is free
+## isketch: sketch it, hand it to your agent
 
-draw.io is excellent at drawing. It is not why diagrams go wrong. Diagrams go wrong because they
-**rot**: someone draws the architecture once, the code moves on, and the picture quietly becomes a
-lie. That happens because a draw.io file is an XML blob that nobody can review in a pull request,
-and redrawing it by hand is a chore nobody schedules.
+**The honest problem.** A diagram editor on its own is a hard sell: draw.io and Excalidraw are free
+and good. What neither does well is the step that now matters most: getting what is in your head
+into a coding agent. Today people sketch in Excalidraw, screenshot it, and paste the picture into
+Claude or Copilot. The agent then guesses at boxes and arrows from pixels. Names get misread,
+arrows lose their direction, and nothing the agent writes back can be put on the diagram.
 
-The text tools (Mermaid, D2, PlantUML) fix the review problem but lose the canvas: you cannot drag
-a box where you want it, and the layout is whatever the engine decides.
+**isketch is a sketchpad whose output is agent-ready context.** Sketch loosely like Excalidraw,
+structure it like draw.io, and every sketch is also precise text that an agent reads exactly and
+can edit back: the `.flow` format, a Markdown brief, Mermaid, and an MCP server so an agent can
+open, change and redraw your diagrams itself.
 
-**Flow is diagrams that live next to your code.** It is for software engineers, and it bets on
-four things together, which no free tool does today:
+The loop it is built for, from a rough idea to production:
 
-1. **Text and canvas, both ways.** Every diagram is readable text. Edit the text and the canvas
-   follows; drag on the canvas and the text follows. Your manual layout survives text edits.
-2. **Git native.** Files diff line by line, a CLI renders them to SVG with no browser, and a GitHub
-   Action posts a visual before and after on every pull request that changes a diagram.
-3. **Generated from what you already have.** Import `docker-compose.yml`, an OpenAPI spec or SQL
-   DDL, and re-import after it changes without losing the layout you gave it.
-4. **Local first.** No account, no server, works offline, keyboard first, and shareable as a link
-   that carries the whole diagram.
+1. **Sketch** an architecture, a database, a UI screen or a flow in minutes, hand-drawn look and all.
+2. **Hand it over**: _Copy for AI_ puts a structured brief on the clipboard; or the agent reads the
+   `.flow` file in the repo; or it connects over MCP.
+3. **The agent builds from it**: services, tables, components, with names and relationships taken
+   from the sketch rather than guessed from a picture.
+4. **The diagram stays true**: the agent updates the `.flow` file as the code changes, and every pull
+   request shows the diagram diff (already shipped).
 
-What Flow does **not** try to do: beat draw.io at shape count, whiteboarding, or diagrams for
-non-engineers. Staying narrow is the point.
+**Why an agent benefits, concretely** (said by one): a picture costs me guesses; text with ids,
+kinds, directions and notes costs me nothing to read and lets me write back. Given a sketch as
+`.flow` or a brief, I can scaffold the tables, services and screens it names, and update the
+diagram when I change them, so the design and the code stop drifting apart.
 
-**How we will know.** Ship milestones 1 and 2, post them where engineers talk about diagrams, and
-watch two numbers: how many people import a real file, and how many come back within a week. If
-nobody imports, the wedge is wrong and the plan changes before milestone 3.
+**What is already true today:** the text format, two-way editing, Mermaid, imports from compose,
+OpenAPI and SQL, files in the repo, a CLI, and diagram diffs on pull requests. Those were built as
+"diagrams next to your code", and they are exactly the foundation an agent needs.
+
+**What is not true yet, and matters:** a share link today keeps the diagram in the part of the URL
+after `#`, which browsers never send to a server, so an AI that fetches the link sees nothing.
+Links an agent can read need a small server (Milestone 7).
+
+**How we will know.** People paste a brief into an agent, or connect the MCP server, and come back.
+Measure: briefs copied per sketch, and MCP installs.
 
 ## How we work
 
 One ticket, one branch, one pull request, merged when CI is green. Tickets carry on from the
-original build (FL-00 to FL-36, in the git history).
+original build (FL-00 to FL-36, in the git history). The product was called Flow until FL-63.
 
 **Status:** ✅ done · 🚧 in progress · ⏭️ next · ⬜ not started
 
@@ -138,7 +148,67 @@ canvas and as an SVG.
 
 On a pull request that changes a `.flow` file, post the before and after as a comment.
 
-## Milestone 4: Editing essentials
+## Milestone 5: Built for agents ⏭️
+
+### FL-63 · Become isketch ✅
+
+- The name everywhere in the app, the package and the docs; `isketch` as the command
+- The positioning above, in the README
+- The repository rename to `isketch.online` and the domain are the owner's to do
+
+### FL-64 · Copy for AI ⏭️
+
+- One button that puts a Markdown brief on the clipboard: what the diagram is, every shape with
+  its kind and notes, every connection in words, then the `.flow` source and Mermaid
+- Kinds read as intent: a database becomes "a data store", a decision "a branch the code must
+  handle", a table lists its columns
+- `isketch brief diagram.flow` prints the same, for scripts and agents
+
+### FL-65 · MCP server ⬜
+
+- `isketch mcp` runs a local MCP server over stdio, pointed at a folder of `.flow` files
+- Tools: list diagrams, read one as a brief or as text, write one (validated, with line errors
+  back), render to SVG, diff two versions
+- A setup line for Claude Code and Claude Desktop in the README
+
+### FL-66 · Wireframe shapes ⬜
+
+Screen, button, input, card, list, image and navigation shapes, so a UI can be sketched and handed
+over as a component tree, not only boxes and arrows.
+
+### FL-67 · Notes an agent can act on ⬜
+
+A free-text note on the diagram and on each shape ("paginate this", "must be idempotent") that
+travels with the brief, the `.flow` file and MCP.
+
+## Milestone 6: Sketch feel
+
+### FL-68 · Hand-drawn style ⬜
+
+A sketch or clean switch per diagram: rough outlines and a handwritten font in sketch mode, the
+same diagram underneath. Both render in the app, in SVG and in the brief's picture.
+
+### FL-69 · Freehand pen and arrows ⬜
+
+Draw freely, and draw an arrow between two shapes by dragging from one to the other anywhere, not
+only from a handle.
+
+### FL-70 · draw.io XML import and export ⬜
+
+Open a `.drawio` file, and save one, for the shapes isketch has, saying what was skipped.
+
+## Milestone 7: Links an agent can read
+
+### FL-71 · Hosted diagrams ⬜
+
+A small service (NestJS and PostgreSQL) that stores a diagram behind a short link, serving the page
+to people and the brief as plain Markdown to agents (`/d/:id.md`). Private by default.
+
+### FL-72 · Remote MCP ⬜
+
+The MCP tools over HTTP, so an agent in the cloud can read and update hosted diagrams.
+
+## Milestone 4: Editing essentials (continues alongside)
 
 | Ticket | What                                                                     | Status |
 | ------ | ------------------------------------------------------------------------ | ------ |
@@ -154,7 +224,6 @@ On a pull request that changes a `.flow` file, post the before and after as a co
 ## Later, if the wedge holds
 
 - Many documents with a home page, and IndexedDB storage
-- `.drawio` import, so people can bring what they already have
 - Terraform and Kubernetes import
 - Describe a diagram in words and get one, built on the text format
 - A backend, accounts and live collaboration

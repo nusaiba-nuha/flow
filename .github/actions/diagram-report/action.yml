@@ -1,4 +1,4 @@
-name: Flow diagram report
+name: isketch diagram report
 description: >
   Comment on a pull request with what changed in its .flow diagrams: a list,
   and a Mermaid drawing with additions, removals and edits coloured.
