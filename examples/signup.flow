@@ -1,0 +1,18 @@
+title: Sign up
+
+page = screen "Sign up page" -- /signup
+email = input "Email"
+password = input "Password"
+submit = button "Create account"
+hero = image "Product shot"
+plans = list "Plans" -- Free, Team, Business
+summary = card "Order summary" -- Plan and price
+done = screen "Welcome" -- /welcome
+
+page -> email
+page -> password
+page -> submit
+page -> hero
+page -> plans
+plans -> summary : pick
+submit -> done : on success

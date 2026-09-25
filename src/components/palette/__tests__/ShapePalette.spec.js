@@ -15,6 +15,15 @@ describe('ShapePalette', () => {
     buttons.forEach((button) => expect(button.attributes('title')).toMatch(/drag onto the canvas/i))
   })
 
+  it('lists the wireframe shapes in a section of their own', () => {
+    const sections = mount(ShapePalette).findAll('section')
+
+    expect(sections.map((section) => section.find('h2').text())).toEqual(['Shapes', 'Wireframe'])
+    expect(
+      sections[1].findAll('[data-shape]').map((button) => button.attributes('data-shape')),
+    ).toEqual(['screen', 'button', 'input', 'card', 'list', 'image'])
+  })
+
   it('asks for a shape on click, and carries it on a drag', async () => {
     const wrapper = mount(ShapePalette)
     const decision = wrapper.find('[data-shape="decision"]')

@@ -11,6 +11,12 @@ export const SHAPE = Object.freeze({
   NOTE: 'note',
   TABLE: 'table',
   TEXT: 'text',
+  SCREEN: 'screen',
+  BUTTON: 'button',
+  INPUT: 'input',
+  CARD: 'card',
+  LIST: 'list',
+  IMAGE: 'image',
 })
 
 /** Shared by the layout function and the node card. */

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="520" viewBox="-32 -32 1400 520" font-family="ui-sans-serif, system-ui, -apple-system, &apos;Segoe UI&apos;, Roboto, sans-serif">
+<title>Sign up</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f97362"/></marker></defs>
+<rect x="-32" y="-32" width="1400" height="520" fill="#ffffff"/>
+<path d="M668,104 V140 H116 V176" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M668,104 V140 H392 V176" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M668,104 V140 H668 V176" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M668,104 V140 H944 V176" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M668,104 V140 H1220 V176" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M1220,280 V316 H1220 V352" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="1198.6" y="306" width="42.9" height="20" rx="10" fill="#ffffff" stroke="#e3e7ee"/>
+<text x="1220" y="316" font-size="11" fill="#64748b" text-anchor="middle" dominant-baseline="central">pick</text>
+<path d="M668,280 V316 H668 V352" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="626.4" y="306" width="83.2" height="20" rx="10" fill="#ffffff" stroke="#e3e7ee"/>
+<text x="668" y="316" font-size="11" fill="#64748b" text-anchor="middle" dominant-baseline="central">on success</text>
+<g transform="translate(552,0)">
+<path d="M1.5,1.5 H230.5 V102.5 H1.5 Z M1.5,19.5 H230.5 M7.75,10.5 A2.5,2.5 0 1 0 12.75,10.5 A2.5,2.5 0 1 0 7.75,10.5 M16.5,10.5 A2.5,2.5 0 1 0 21.5,10.5 A2.5,2.5 0 1 0 16.5,10.5 M25.25,10.5 A2.5,2.5 0 1 0 30.25,10.5 A2.5,2.5 0 1 0 25.25,10.5" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Sign up page</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">/signup</text>
+</g>
+<g transform="translate(0,176)">
+<path d="M1.5,1.5 H230.5 V102.5 H1.5 Z M11.5,31.799999999999997 V72.2" fill="#ffffff" stroke="#4f46e5" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="56.8" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Email</text>
+</g>
+<g transform="translate(276,176)">
+<path d="M1.5,1.5 H230.5 V102.5 H1.5 Z M11.5,31.799999999999997 V72.2" fill="#ffffff" stroke="#4f46e5" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="56.8" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Password</text>
+</g>
+<g transform="translate(552,176)">
+<path d="M13.5,1.5 H218.5 Q230.5,1.5 230.5,13.5 V90.5 Q230.5,102.5 218.5,102.5 H13.5 Q1.5,102.5 1.5,90.5 V13.5 Q1.5,1.5 13.5,1.5 Z" fill="#ffffff" stroke="#059669" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="56.8" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Create account</text>
+</g>
+<g transform="translate(828,176)">
+<path d="M1.5,1.5 H230.5 V102.5 H1.5 Z M1.5,94.42 L58.75,80.28 L104.55,92.4 L161.79999999999998,77.25 L230.5,96.44 M202.22,22.71 A7.07,7.07 0 1 0 216.35999999999999,22.71 A7.07,7.07 0 1 0 202.22,22.71" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="56.8" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Product shot</text>
+</g>
+<g transform="translate(1104,176)">
+<path d="M1.5,1.5 H230.5 V102.5 H1.5 Z M9.5,31.799999999999997 H41.5 M9.5,52 H41.5 M9.5,72.19999999999999 H41.5" fill="#ffffff" stroke="#ea580c" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Plans</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">Free, Team, Business</text>
+</g>
+<g transform="translate(1104,352)">
+<path d="M9.5,1.5 H218.5 Q226.5,1.5 226.5,9.5 V90.5 Q226.5,98.5 218.5,98.5 H9.5 Q1.5,98.5 1.5,90.5 V9.5 Q1.5,1.5 9.5,1.5 Z M7.5,102.5 H224.5 Q230.5,102.5 230.5,96.5 V7.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Order summary</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">Plan and price</text>
+</g>
+<g transform="translate(552,352)">
+<path d="M1.5,1.5 H230.5 V102.5 H1.5 Z M1.5,19.5 H230.5 M7.75,10.5 A2.5,2.5 0 1 0 12.75,10.5 A2.5,2.5 0 1 0 7.75,10.5 M16.5,10.5 A2.5,2.5 0 1 0 21.5,10.5 A2.5,2.5 0 1 0 16.5,10.5 M25.25,10.5 A2.5,2.5 0 1 0 30.25,10.5 A2.5,2.5 0 1 0 25.25,10.5" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Welcome</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">/welcome</text>
+</g>
+</svg>
