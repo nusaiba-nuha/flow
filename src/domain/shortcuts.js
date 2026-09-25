@@ -19,6 +19,11 @@ export const SHORTCUT_GROUPS = Object.freeze([
       { combos: [['Home']], description: 'Focus the first shape' },
       { combos: [['End']], description: 'Focus the last shape' },
       { combos: [['Enter'], ['Space']], description: 'Open the focused shape' },
+      { combos: [['F2']], description: 'Rename the focused shape in place' },
+      {
+        combos: [['double-click']],
+        description: 'Rename a shape, or add or edit a connection label, in place',
+      },
       { combos: [['Esc']], description: 'Clear the focused shape' },
     ],
   },

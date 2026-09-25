@@ -22,6 +22,8 @@ import {
   useDisconnect,
   useMoveNode,
   useMoveNodes,
+  useUpdateEdge,
+  useUpdateNode,
 } from '@/composables/useNodeMutations.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
@@ -35,6 +37,7 @@ import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
 import { CONNECT_STATE, DETACH_EDGE } from './connectKey.js'
+import { EDIT_TEXT } from './editKey.js'
 import { SHAPE_DRAG_TYPE } from '@/components/palette/dragType.js'
 import { NODE_SIZE } from '@/domain/constants.js'
 import { freeSpotNear } from '@/domain/layout.js'
@@ -52,6 +55,21 @@ const disconnect = useDisconnect()
 const createNode = useCreateNode()
 const moveNodes = useMoveNodes()
 const deleteNodes = useDeleteNodes()
+const updateNode = useUpdateNode()
+const updateEdge = useUpdateEdge()
+
+/** The shape or edge whose text is being edited in place, or empty. */
+const editingId = ref('')
+
+provide(EDIT_TEXT, {
+  editingId,
+  start: (/** @type {string} */ id) => (editingId.value = id),
+  stop: () => (editingId.value = ''),
+  renameNode: (/** @type {string} */ id, /** @type {string} */ name) =>
+    updateNode.mutate({ id, patch: { name } }),
+  relabelEdge: (/** @type {string} */ id, /** @type {string} */ label) =>
+    updateEdge.mutate({ id, patch: { label } }),
+})
 const { undo } = useFlowHistory()
 const { start } = useStartDiagram()
 const toasts = useToastStore()
@@ -193,6 +211,8 @@ function syncGraph(nextNodes, nextEdges, openId, openChanged) {
 
     if (edge.source !== next.source) edge.source = next.source
     if (edge.target !== next.target) edge.target = next.target
+    // Labels change too, from the text pane or in place, and an edge is never re-added.
+    if ((edge.label ?? '') !== (next.label ?? '')) edge.label = next.label
     edge.hidden = false
     wantedEdges.delete(edge.id)
   }
@@ -329,6 +349,13 @@ function onSelectionKeys(event) {
   const target = /** @type {HTMLElement | null} */ (event.target)
   if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return
   if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+
+  // F2 renames the shape the keyboard is on, as in a file manager.
+  if (event.key === 'F2' && focusedId.value) {
+    event.preventDefault()
+    editingId.value = focusedId.value
+    return
+  }
 
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a') {
     event.preventDefault()
@@ -547,6 +574,7 @@ watch(
       :delete-key-code="null"
       :elevate-nodes-on-select="true"
       selection-key-code="Shift"
+      :zoom-on-double-click="false"
       :multi-selection-key-code="['Shift', 'Meta', 'Control']"
       class="h-full w-full"
       @nodes-initialized="onNodesInitialized"

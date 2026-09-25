@@ -122,6 +122,27 @@ export function withEdge(document, source, target) {
 }
 
 /**
+ * An empty label removes it, rather than keeping an empty pill.
+ * @param {import('./types.js').FlowDocument} document
+ * @param {string} id
+ * @param {string} label
+ * @returns {import('./types.js').FlowDocument}
+ */
+export function withEdgeLabel(document, id, label) {
+  const text = label.trim()
+  return {
+    ...document,
+    edges: document.edges.map((edge) => {
+      if (edge.id !== id) return edge
+      const next = { ...edge }
+      if (text) next.label = text
+      else delete next.label
+      return next
+    }),
+  }
+}
+
+/**
  * @param {import('./types.js').FlowDocument} document
  * @param {string} id
  * @returns {import('./types.js').FlowDocument}

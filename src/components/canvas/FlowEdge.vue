@@ -23,6 +23,15 @@ const props = defineProps({
 
 /** @type {(edgeId: string) => void} */
 const detach = inject(DETACH_EDGE, () => {})
+
+const edit = inject(EDIT_TEXT, null)
+const isEditing = computed(() => edit?.editingId.value === props.id)
+
+/** @param {string} label */
+function relabel(label) {
+  if (label.trim() !== props.label) edit?.relabelEdge(props.id, label)
+  edit?.stop()
+}
 const hovered = ref(false)
 
 const path = computed(() =>
@@ -41,6 +50,8 @@ const showRemove = computed(() => props.selected || hovered.value)
 
 <script>
 import { DETACH_EDGE } from './connectKey.js'
+import { EDIT_TEXT } from './editKey.js'
+import InlineText from './InlineText.vue'
 </script>
 
 <template>
@@ -61,11 +72,26 @@ import { DETACH_EDGE } from './connectKey.js'
     data-testid="edge-hit-area"
     @mouseenter="hovered = true"
     @mouseleave="hovered = false"
+    @dblclick.stop="edit?.start(id)"
   />
 
   <EdgeLabelRenderer>
     <div
-      v-if="label || showRemove"
+      v-if="isEditing"
+      class="nodrag nopan pointer-events-auto absolute w-40"
+      :style="{ transform: `translate(-50%, -50%) translate(${path[1]}px, ${path[2]}px)` }"
+    >
+      <InlineText
+        class="text-xs"
+        :value="label"
+        label="Connection label"
+        @save="relabel"
+        @cancel="edit?.stop()"
+      />
+    </div>
+
+    <div
+      v-else-if="label || showRemove"
       class="nodrag nopan pointer-events-auto absolute flex items-center gap-1"
       :style="{ transform: `translate(-50%, -50%) translate(${path[1]}px, ${path[2]}px)` }"
       @mouseenter="hovered = true"
@@ -75,6 +101,8 @@ import { DETACH_EDGE } from './connectKey.js'
         v-if="label"
         class="rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] font-medium text-muted"
         data-testid="edge-label"
+        title="Double-click to edit the label"
+        @dblclick.stop="edit?.start(id)"
       >
         {{ label }}
       </span>

@@ -51,3 +51,11 @@ test('rewrites the text when the diagram is edited on the canvas', async ({ page
 
   await expect(editor(page)).toHaveValue(/b6a0c1 = process "Out of hours"/)
 })
+
+test('a label changed in the text reaches the canvas', async ({ page }) => {
+  const text = await editor(page).inputValue()
+  await editor(page).fill(text.replace('d09c08 -> b0653a : Success', 'd09c08 -> b0653a : Open'))
+
+  await expect(page.getByTestId('edge-label').filter({ hasText: 'Open' })).toBeVisible()
+  await expect(page.getByTestId('edge-label').filter({ hasText: 'Success' })).toHaveCount(0)
+})

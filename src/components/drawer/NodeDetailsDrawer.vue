@@ -93,7 +93,12 @@ function onKeydown(event) {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
-  titleField.value?.querySelector('input')?.focus()
+  // Opening a node usually means editing it, unless typing has already begun
+  // elsewhere: a double-click opens the drawer and a title field on the shape.
+  const active = document.activeElement
+  if (!active || !/^(INPUT|TEXTAREA)$/.test(active.tagName)) {
+    titleField.value?.querySelector('input')?.focus()
+  }
 })
 
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))

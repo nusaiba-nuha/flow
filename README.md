@@ -46,6 +46,8 @@ The full reasoning, and how we will know if it is working, is at the top of the
   sample. Undo brings back whatever was there.
 - **Shape palette.** Drag a shape onto the canvas to drop it there, or click it (or press Enter)
   to add it in a clear spot near the middle.
+- **Edit in place.** Double-click a shape to rename it, or a connection to add or change its
+  label; F2 renames the focused shape. Enter saves, Escape cancels.
 - **Select several.** Shift-click, or Shift-drag a box, to select shapes; move them together, or
   delete them with Delete, as one undoable step.
 - **Edit and delete.** Every change updates the canvas immediately and rolls back if it fails.

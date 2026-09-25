@@ -6,6 +6,7 @@ import { emptyDocument } from '@/domain/document.js'
 import {
   toNodeId,
   withEdge,
+  withEdgeLabel,
   withNodeRemoved,
   withNodesRemoved,
   withoutEdge,
@@ -128,6 +129,15 @@ export function useConnectNodes() {
     },
     apply: (flow, { source, target, position }) =>
       withEdge(position ? pin(flow, target, position) : flow, source, target),
+  })
+}
+
+/** A connection's label; an empty one removes it. */
+export function useUpdateEdge() {
+  return useOptimisticFlowMutation({
+    label: 'Edit label',
+    mutationFn: (variables) => flowApi.updateEdge(variables),
+    apply: (flow, { id, patch }) => withEdgeLabel(flow, id, patch.label),
   })
 }
 
