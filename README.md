@@ -101,11 +101,15 @@ db 276,352
   automatically, so a hand-written diagram needs no layout block at all.
 - `#` starts a comment. A newline inside a description or label is written `\n`.
 
+The full example, [`examples/architecture.flow`](examples/architecture.flow), drawn by
+`flow render` with no browser. CI fails if this picture falls out of date:
+
+![The web app architecture example, rendered to SVG](examples/architecture.svg)
+
 One node or edge per line, in a stable order, with the layout kept apart: moving a box changes
 one line at the end, and never the lines that say what the system is. `parseFlow` and
 `serialiseFlow` in `src/domain/flowText.js` read and write it, reporting every error with its
-line number. The text pane uses them, and import and file support will too; see the
-[backlog](BACKLOG.md).
+line number; the text pane, files, share links and the command line all go through them.
 
 ## Where it is going
 
@@ -137,6 +141,17 @@ Open http://localhost:5173. There is nothing to configure.
 docker compose up                   # dev server on http://localhost:5173
 docker compose --profile prod up    # production build on http://localhost:8080
 ```
+
+## Command line
+
+```bash
+npm run flow -- render diagram.flow -o diagram.svg   # draw it, add --dark for the dark theme
+npm run flow -- check docs/*.flow                    # file:line errors, exit 1 if any
+npm run examples                                     # redraw every SVG in examples/
+```
+
+It needs only Node: the renderer is the same pure code the app uses, so a docs build or CI can
+draw diagrams that match the editor.
 
 ## Scripts
 

@@ -1,0 +1,12 @@
+title: Support flow
+
+1 = terminal "Start" -- Conversation opened
+b6a0c1 = process "Away Message" -- Sorry, we are currently away. We will respond as soon as possible.
+d09c08 = decision "Business Hours" -- 09:00 - 17:00 - UTC
+b0653a = process "Welcome Message" -- Hello there
+e879e4 = note "Add Comment #1" -- User message during off hours
+
+1 -> d09c08
+b6a0c1 -> e879e4
+d09c08 -> b0653a : Success
+d09c08 -> b6a0c1 : Failure

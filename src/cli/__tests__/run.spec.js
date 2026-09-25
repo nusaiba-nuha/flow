@@ -1,0 +1,71 @@
+import { describe, expect, it } from 'vitest'
+
+import { run, USAGE } from '../run.js'
+
+/** An in-memory file system and captured output. */
+function fakeIo(files = {}) {
+  const written = {}
+  const out = []
+  const err = []
+  return {
+    written,
+    out,
+    err,
+    io: {
+      readFile: async (path) => {
+        if (!(path in files)) throw new Error('ENOENT')
+        return files[path]
+      },
+      writeFile: async (path, text) => {
+        written[path] = text
+      },
+      stdout: (text) => out.push(text),
+      stderr: (text) => err.push(text),
+    },
+  }
+}
+
+const GOOD = 'a = process "A"\nb = database "B"\na -> b : reads\n'
+
+describe('flow render', () => {
+  it('writes SVG to a file, or to stdout', async () => {
+    const toFile = fakeIo({ 'd.flow': GOOD })
+    expect(await run(['render', 'd.flow', '-o', 'd.svg'], toFile.io)).toBe(0)
+    expect(toFile.written['d.svg']).toMatch(/^<svg /)
+
+    const toStdout = fakeIo({ 'd.flow': GOOD })
+    expect(await run(['render', '--dark', 'd.flow'], toStdout.io)).toBe(0)
+    expect(toStdout.out.join('')).toContain('#0d1117')
+  })
+
+  it('fails with file:line errors and writes nothing', async () => {
+    const { io, written, err } = fakeIo({ 'd.flow': 'a = hexagon\n' })
+
+    expect(await run(['render', 'd.flow', '-o', 'd.svg'], io)).toBe(1)
+    expect(written).toEqual({})
+    expect(err.join('')).toMatch(/^d\.flow:1: Unknown shape "hexagon"/)
+  })
+})
+
+describe('flow check', () => {
+  it('passes good files and fails on any bad or missing one', async () => {
+    const { io, err } = fakeIo({ 'good.flow': GOOD, 'bad.flow': 'x -> y' })
+
+    expect(await run(['check', 'good.flow'], io)).toBe(0)
+    expect(await run(['check', 'good.flow', 'bad.flow', 'gone.flow'], io)).toBe(1)
+    expect(err.join('')).toContain('bad.flow:1: No node called "x".')
+    expect(err.join('')).toContain('gone.flow: cannot be read')
+  })
+})
+
+describe('usage', () => {
+  it('prints usage for help, and exits 2 for a mistake', async () => {
+    const help = fakeIo()
+    expect(await run(['--help'], help.io)).toBe(0)
+    expect(help.err.join('')).toBe(USAGE)
+
+    expect(await run(['draw'], fakeIo().io)).toBe(2)
+    expect(await run(['render'], fakeIo().io)).toBe(2)
+    expect(await run(['render', 'a.flow', '-o'], fakeIo().io)).toBe(2)
+  })
+})
