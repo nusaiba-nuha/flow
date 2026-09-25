@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "bin": {
+    "flow": "bin/flow.mjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,7 +18,9 @@
     "format": "prettier --write src/",
     "typecheck": "vue-tsc --noEmit -p jsconfig.json",
     "prepare": "husky",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "flow": "node bin/flow.mjs",
+    "examples": "for file in examples/*.flow; do node bin/flow.mjs render \"$file\" -o \"${file%.flow}.svg\"; done"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.103.2",

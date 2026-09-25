@@ -43,6 +43,15 @@ jobs:
         if: '!cancelled()'
         run: npm run build
 
+      # The examples are Flow's own diagrams: they must parse, and the SVGs next
+      # to them must be what the renderer draws today.
+      - name: Examples
+        if: '!cancelled()'
+        run: |
+          npm run -s flow -- check examples/*.flow
+          for file in examples/*.flow; do npm run -s flow -- render "$file" -o "${file%.flow}.svg"; done
+          git diff --exit-code examples/
+
   e2e:
     name: End to end
     runs-on: ubuntu-latest

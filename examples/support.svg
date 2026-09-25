@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="572" height="696" viewBox="-32 -32 572 696" font-family="ui-sans-serif, system-ui, -apple-system, &apos;Segoe UI&apos;, Roboto, sans-serif">
+<title>Support flow</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f97362"/></marker></defs>
+<rect x="-32" y="-32" width="572" height="696" fill="#ffffff"/>
+<path d="M254,104 V140 H254 V176" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M116,456 V492 H116 V528" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M254,280 V316 H392 V352" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="291.5" y="306" width="63" height="20" rx="10" fill="#ffffff" stroke="#e3e7ee"/>
+<text x="323" y="316" font-size="11" fill="#64748b" text-anchor="middle" dominant-baseline="central">Success</text>
+<path d="M254,280 V316 H116 V352" fill="none" stroke="#f97362" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="153.5" y="306" width="63" height="20" rx="10" fill="#ffffff" stroke="#e3e7ee"/>
+<text x="185" y="316" font-size="11" fill="#64748b" text-anchor="middle" dominant-baseline="central">Failure</text>
+<g transform="translate(138,0)">
+<path d="M52,1.5 H180 A50.5,50.5 0 0 1 180,102.5 H52 A50.5,50.5 0 0 1 52,1.5 Z" fill="#ffffff" stroke="#e11d48" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Start</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">Conversation opened</text>
+</g>
+<g transform="translate(0,352)">
+<path d="M7.5,1.5 H224.5 Q230.5,1.5 230.5,7.5 V96.5 Q230.5,102.5 224.5,102.5 H7.5 Q1.5,102.5 1.5,96.5 V7.5 Q1.5,1.5 7.5,1.5 Z" fill="#ffffff" stroke="#059669" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="39.2" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Away Message</text>
+<text x="116" y="59.8" font-size="12" fill="#64748b" text-anchor="middle">Sorry, we are currently away.</text>
+<text x="116" y="75.4" font-size="12" fill="#64748b" text-anchor="middle">We will respond as soon as…</text>
+</g>
+<g transform="translate(138,176)">
+<path d="M116,1.5 L230.5,52 L116,102.5 L1.5,52 Z" fill="#ffffff" stroke="#ea580c" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Business Hours</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">09:00 - 17:00 -…</text>
+</g>
+<g transform="translate(276,352)">
+<path d="M7.5,1.5 H224.5 Q230.5,1.5 230.5,7.5 V96.5 Q230.5,102.5 224.5,102.5 H7.5 Q1.5,102.5 1.5,96.5 V7.5 Q1.5,1.5 7.5,1.5 Z" fill="#ffffff" stroke="#059669" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Welcome Message</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">Hello there</text>
+</g>
+<g transform="translate(0,528)">
+<path d="M1.5,1.5 H212.32 L230.5,19.68 V102.5 H1.5 Z M212.32,1.5 V19.68 H230.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" stroke-linejoin="round"/>
+<text x="116" y="47" font-size="14" font-weight="600" fill="#14181f" text-anchor="middle">Add Comment #1</text>
+<text x="116" y="67.6" font-size="12" fill="#64748b" text-anchor="middle">User message during off hours</text>
+</g>
+</svg>

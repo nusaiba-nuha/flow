@@ -12,6 +12,7 @@ something the code cannot tell you.
 | E2E        | `npm run test:e2e`  |
 | Types      | `npm run typecheck` |
 | Lint       | `npm run lint`      |
+| Examples   | `npm run examples`  |
 
 `npm run test:e2e` builds and serves the app itself, but it reuses a server already
 on port 4173 rather than rebuilding. Kill a running `vite preview` first, or the run

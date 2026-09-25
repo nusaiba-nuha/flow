@@ -1,0 +1,31 @@
+title: Web app architecture
+
+browser = terminal "Browser" -- Single page app
+cdn = process "CDN" -- Static assets, cached at the edge
+lb = process "Load balancer" -- TLS termination
+api = process "API" -- REST, documented with OpenAPI
+queue = data "Job queue" -- Emails, exports, webhooks
+db = database "PostgreSQL" -- Primary data
+cache = database "Redis" -- Sessions and cache
+worker = process "Worker" -- Runs queued jobs
+files = document "Object storage" -- Uploads and exports
+
+browser -> cdn : assets
+browser -> lb : HTTPS
+lb -> api
+api -> db : SQL
+api -> cache
+api -> queue : enqueue
+queue -> worker
+worker -> files : write
+
+@layout
+browser 276,0
+cdn 0,176
+lb 276,176
+api 276,352
+queue 552,528
+db 0,528
+cache 276,528
+worker 552,704
+files 552,880
