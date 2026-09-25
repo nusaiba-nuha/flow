@@ -70,6 +70,10 @@ over the `.flow` file or its text.
   label; F2 renames the focused shape. Enter saves, Escape cancels.
 - **Select several.** Shift-click, or Shift-drag a box, to select shapes; move them together, or
   delete them with Delete, as one undoable step.
+- **Align and distribute.** With two or more shapes selected, a toolbar lines them up by any edge or
+  centre, and with three or more spaces them evenly, across or down.
+- **Snap to grid.** Dragged shapes snap to the canvas's dots; the switch under the zoom controls
+  turns it off, and this browser remembers.
 - **Copy, cut, paste and duplicate** (`Ctrl+C`, `Ctrl+X`, `Ctrl+V`, `Ctrl+D`), with the connections
   between copied shapes. The clipboard holds `.flow` text, so shapes paste between tabs, and any
   `.flow` text an agent writes pastes straight onto the canvas.

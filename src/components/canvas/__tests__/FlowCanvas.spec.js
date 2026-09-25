@@ -55,6 +55,7 @@ vi.mock('@vue-flow/core', () => ({
     viewport: ref({ x: 0, y: 0, zoom: 1 }),
     screenToFlowCoordinate: () => ({ x: 400, y: 300 }),
     addSelectedNodes,
+    getSelectedNodes: ref([]),
   }),
   Handle: { template: '<div />' },
   Position: { Top: 'top', Bottom: 'bottom' },

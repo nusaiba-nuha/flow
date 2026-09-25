@@ -2,6 +2,7 @@
 export const STORAGE_KEYS = Object.freeze({
   DOCUMENT: 'flow:document',
   THEME: 'flow:theme',
+  SNAP: 'flow:snap',
 })
 
 /**
