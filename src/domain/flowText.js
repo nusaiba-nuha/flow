@@ -238,3 +238,17 @@ function closingQuote(text) {
   }
   return -1
 }
+
+export const FLOW_EXTENSION = '.flow'
+
+/**
+ * A file name from a diagram's title, safe on every file system.
+ * @param {string} title
+ */
+export function flowFileName(title) {
+  const base = String(title ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return `${base || 'diagram'}${FLOW_EXTENSION}`
+}

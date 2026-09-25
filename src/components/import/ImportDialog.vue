@@ -10,6 +10,7 @@ import { IMPORT_FORMATS } from '@/domain/importers.js'
 import { mergeImport } from '@/domain/mergeImport.js'
 import { ROUTE } from '@/router/index.js'
 import { useCanvasStore } from '@/stores/canvas.js'
+import { useFileStore } from '@/stores/file.js'
 import { useToastStore } from '@/stores/toasts.js'
 
 /**
@@ -21,6 +22,7 @@ const emit = defineEmits(['close'])
 
 const router = useRouter()
 const canvas = useCanvasStore()
+const file = useFileStore()
 const toasts = useToastStore()
 const { document: current } = useFlowQuery()
 const { undo } = useFlowHistory()
@@ -78,7 +80,10 @@ function submit() {
   const count = shapeCount.value
 
   router.push({ name: ROUTE.FLOW })
-  if (mode.value === 'replace') canvas.forgetViewport()
+  if (mode.value === 'replace') {
+    canvas.forgetViewport()
+    file.forget()
+  }
   replace.mutate(next, {
     onSuccess: () =>
       toasts.push(`Imported ${plural(count, 'shape')}`, { action: { label: 'Undo', run: undo } }),

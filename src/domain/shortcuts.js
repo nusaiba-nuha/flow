@@ -13,14 +13,13 @@
 export const SHORTCUT_GROUPS = Object.freeze([
   {
     title: 'Canvas',
-    note: 'Display-only nodes are skipped, so focus only lands where something can happen.',
     shortcuts: [
-      { combos: [['↓'], ['→']], description: 'Focus the next node, in reading order' },
-      { combos: [['↑'], ['←']], description: 'Focus the previous node' },
-      { combos: [['Home']], description: 'Focus the first node' },
-      { combos: [['End']], description: 'Focus the last node' },
-      { combos: [['Enter'], ['Space']], description: 'Open the focused node' },
-      { combos: [['Esc']], description: 'Clear the focused node' },
+      { combos: [['↓'], ['→']], description: 'Focus the next shape, in reading order' },
+      { combos: [['↑'], ['←']], description: 'Focus the previous shape' },
+      { combos: [['Home']], description: 'Focus the first shape' },
+      { combos: [['End']], description: 'Focus the last shape' },
+      { combos: [['Enter'], ['Space']], description: 'Open the focused shape' },
+      { combos: [['Esc']], description: 'Clear the focused shape' },
     ],
   },
   {
@@ -35,6 +34,14 @@ export const SHORTCUT_GROUPS = Object.freeze([
         ],
         description: 'Redo',
       },
+    ],
+  },
+  {
+    title: 'File',
+    note: 'Save writes back to the file you opened or saved, where the browser allows it.',
+    shortcuts: [
+      { combos: [['mod', 'O']], description: 'Open a .flow file' },
+      { combos: [['mod', 'S']], description: 'Save as a .flow file' },
     ],
   },
   {
@@ -73,4 +80,6 @@ export const COMBO = Object.freeze({
   UNDO: ['mod', 'Z'],
   REDO: ['mod', 'Shift', 'Z'],
   HELP: ['?'],
+  OPEN: ['mod', 'O'],
+  SAVE: ['mod', 'S'],
 })

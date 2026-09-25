@@ -7,6 +7,7 @@ import { useReplaceDocument } from '@/composables/useNodeMutations.js'
 import { decodeShare, encodeShare, LONG_LINK, SHARE_PREFIX } from '@/domain/shareLink.js'
 import { ROUTE } from '@/router/index.js'
 import { useCanvasStore } from '@/stores/canvas.js'
+import { useFileStore } from '@/stores/file.js'
 import { useToastStore } from '@/stores/toasts.js'
 
 /** Copy a link that carries the whole diagram. */
@@ -50,6 +51,7 @@ export function useOpenSharedLink() {
   const replace = useReplaceDocument('Open shared diagram')
   const { undo } = useFlowHistory()
   const canvas = useCanvasStore()
+  const file = useFileStore()
   const toasts = useToastStore()
 
   watch(
@@ -66,6 +68,7 @@ export function useOpenSharedLink() {
       }
 
       canvas.forgetViewport()
+      file.forget()
       replace.mutate(shared, {
         onSuccess: () =>
           toasts.push('Opened a shared diagram. Undo brings yours back.', {

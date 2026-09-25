@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { SAMPLES } from '../samples.js'
-import { parseFlow, serialiseFlow } from '../flowText.js'
+import { flowFileName, parseFlow, serialiseFlow } from '../flowText.js'
 
 const small = {
   version: 3,
@@ -134,5 +134,13 @@ describe('parseFlow', () => {
       nodes: [],
       edges: [],
     })
+  })
+})
+
+describe('flowFileName', () => {
+  it('makes a safe file name from the title', () => {
+    expect(flowFileName('Web app architecture')).toBe('web-app-architecture.flow')
+    expect(flowFileName('  Café / Orders (v2)! ')).toBe('caf-orders-v2.flow')
+    expect(flowFileName('')).toBe('diagram.flow')
   })
 })
