@@ -6,6 +6,7 @@ import { POOL } from './database.js'
 import { DiagramsController } from './diagrams/diagrams.controller.js'
 import { DiagramsRepository } from './diagrams/diagrams.repository.js'
 import { DiagramsService } from './diagrams/diagrams.service.js'
+import { McpController } from './mcp/mcp.controller.js'
 
 @Module({})
 export class AppModule {
@@ -13,7 +14,7 @@ export class AppModule {
   static with(config: Config, pool: pg.Pool): DynamicModule {
     return {
       module: AppModule,
-      controllers: [DiagramsController],
+      controllers: [DiagramsController, McpController],
       providers: [
         { provide: CONFIG, useValue: config },
         { provide: POOL, useValue: pool },

@@ -26,19 +26,38 @@ export interface Domain {
   renderSvg(document: FlowDocument, options?: { theme?: string; sketchFont?: string }): string
   encodeShare(document: FlowDocument): Promise<string>
   sketchFont(): Promise<string>
+  diffDocuments(before: FlowDocument, after: FlowDocument): unknown
+  describeDiff(before: FlowDocument, after: FlowDocument, changes: unknown): string[]
+  isUnchanged(changes: unknown): boolean
+  createProtocol(server: {
+    tools: McpTool[]
+    instructions: string
+    context: unknown
+  }): (message: unknown) => Promise<object | null>
+  ToolError: new (message: string) => Error
+}
+
+export interface McpTool {
+  name: string
+  description: string
+  inputSchema: object
+  run: (context: unknown, args: Record<string, unknown>) => Promise<string>
 }
 
 const domainFile = (name: string) => new URL(`../../../src/domain/${name}`, import.meta.url).href
+const mcpFile = (name: string) => new URL(`../../../src/mcp/${name}`, import.meta.url).href
 
 let loaded: Promise<Domain> | undefined
 
 export function loadDomain(): Promise<Domain> {
   loaded ??= (async () => {
-    const [flowText, brief, svg, share] = await Promise.all([
+    const [flowText, brief, svg, share, diff, protocol] = await Promise.all([
       import(domainFile('flowText.js')),
       import(domainFile('brief.js')),
       import(domainFile('renderSvg.js')),
       import(domainFile('shareLink.js')),
+      import(domainFile('diff.js')),
+      import(mcpFile('protocol.js')),
     ])
     return {
       parseFlow: flowText.parseFlow,
@@ -47,6 +66,11 @@ export function loadDomain(): Promise<Domain> {
       renderSvg: svg.renderSvg,
       encodeShare: share.encodeShare,
       sketchFont: loadFont,
+      diffDocuments: diff.diffDocuments,
+      describeDiff: diff.describeDiff,
+      isUnchanged: diff.isUnchanged,
+      createProtocol: protocol.createProtocol,
+      ToolError: protocol.ToolError,
     }
   })()
   return loaded

@@ -204,7 +204,7 @@ Import a `.drawio` file (compressed or plain, first page) or Edit Diagram XML, m
 the nearest shape, reading entity tables with their rows, and flattening lanes; skipped arrows and
 pages are listed. Export plain XML, marked with an `isketch` style key so a round trip is exact.
 
-## Milestone 7: Links an agent can read
+## Milestone 7: Links an agent can read ✅
 
 ### FL-71 · Hosted diagrams ✅
 
@@ -216,9 +216,12 @@ page that carries the brief as text to people and AI fetchers, and `.md`, `.flow
 - ✅ Publish from the app: a public link from Share, updated in place on later publishes
 - ⬜ Hosting it at isketch.online, which is the owner's to do
 
-### FL-72 · Remote MCP ⏭️
+### FL-72 · Remote MCP ✅
 
-The MCP tools over HTTP, so an agent in the cloud can read and update hosted diagrams.
+The hosted server is also an MCP server at `/mcp` (Streamable HTTP, JSON responses), for agents
+that connect over the network: read a diagram by its link, publish one, and update it with its
+edit token, saying what changed. It shares its protocol code with `isketch mcp`. Checked with the
+official MCP SDK client.
 
 ## Milestone 4: Editing essentials (continues alongside)
 

@@ -1,4 +1,5 @@
 import { toBrief } from '../domain/brief.js'
+import { createProtocol, ToolError } from './protocol.js'
 import { describeDiff, diffDocuments, isUnchanged } from '../domain/diff.js'
 import { FLOW_EXTENSION, parseFlow, serialiseFlow } from '../domain/flowText.js'
 import { renderSvg } from '../domain/renderSvg.js'
@@ -20,13 +21,7 @@ import { isSketch } from '../domain/sketch.js'
  * }} Workspace  paths are relative to the folder; `resolve` refuses any outside it;
  *   `sketchFont` is the handwriting font to embed in a sketch
  *
- * @typedef {{ jsonrpc: '2.0', id?: string | number | null, method?: string, params?: any }} Message
  */
-
-export const SERVER_INFO = Object.freeze({ name: 'isketch', version: '0.1.0' })
-
-/** Newest first; a client asking for one we do not know gets the newest. */
-const PROTOCOL_VERSIONS = Object.freeze(['2025-06-18', '2025-03-26', '2024-11-05'])
 
 const INSTRUCTIONS = `Diagrams in this folder are .flow files, sketched by a person in isketch.
 Read one as a brief before building from it, and refer to shapes by their ids. When the code
@@ -104,81 +99,13 @@ const TOOLS = Object.freeze([
   },
 ])
 
-/** A tool's failure the agent should read and act on, rather than a protocol error. */
-class ToolError extends Error {}
-
 /**
  * @param {Workspace} workspace
- * @returns {(message: Message) => Promise<object | null>} a response, or null for a notification
+ * @returns {(message: import('./protocol.js').Message) => Promise<object | null>}
  */
 export function createServer(workspace) {
-  return async function handle(message) {
-    const { id, method, params } = message ?? {}
-    const isRequest = id !== undefined && id !== null
-    if (message?.jsonrpc !== '2.0' || typeof method !== 'string') {
-      return isRequest ? failure(id ?? null, -32600, 'Invalid request') : null
-    }
-    if (!isRequest) return null
-
-    try {
-      switch (method) {
-        case 'initialize':
-          return success(id, {
-            protocolVersion: PROTOCOL_VERSIONS.includes(params?.protocolVersion)
-              ? params.protocolVersion
-              : PROTOCOL_VERSIONS[0],
-            capabilities: { tools: {} },
-            serverInfo: SERVER_INFO,
-            instructions: INSTRUCTIONS,
-          })
-        case 'ping':
-          return success(id, {})
-        case 'tools/list':
-          return success(id, {
-            tools: TOOLS.map(({ name, description, inputSchema }) => ({
-              name,
-              description,
-              inputSchema,
-            })),
-          })
-        case 'tools/call':
-          return success(id, await callTool(workspace, params))
-        default:
-          return failure(id, -32601, `Unknown method: ${method}`)
-      }
-    } catch (error) {
-      return failure(id, -32603, error instanceof Error ? error.message : String(error))
-    }
-  }
+  return createProtocol({ tools: TOOLS, instructions: INSTRUCTIONS, context: workspace })
 }
-
-/**
- * @param {Workspace} workspace
- * @param {{ name?: string, arguments?: Record<string, unknown> }} params
- */
-async function callTool(workspace, params) {
-  const tool = TOOLS.find((candidate) => candidate.name === params?.name)
-  if (!tool) return toolResult(`Unknown tool: ${params?.name}`, true)
-
-  try {
-    return toolResult(await tool.run(workspace, params.arguments ?? {}))
-  } catch (error) {
-    if (error instanceof ToolError) return toolResult(error.message, true)
-    throw error
-  }
-}
-
-/** @param {string} text @param {boolean} [isError] */
-const toolResult = (text, isError = false) => ({
-  content: [{ type: 'text', text }],
-  ...(isError ? { isError: true } : {}),
-})
-
-/** @param {string | number} id @param {object} result */
-const success = (id, result) => ({ jsonrpc: '2.0', id, result })
-
-/** @param {string | number | null} id @param {number} code @param {string} message */
-const failure = (id, code, message) => ({ jsonrpc: '2.0', id, error: { code, message } })
 
 /**
  * A `.flow` path inside the folder, or a ToolError saying why not.
