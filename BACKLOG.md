@@ -94,12 +94,12 @@ A split pane: text on the left, canvas on the right. Typing re-renders the canva
 keeping every position it can; editing the canvas rewrites the text. Parse errors are shown on the
 line, and the canvas keeps the last good diagram.
 
-### FL-46 · Mermaid import and export ⏭️
+### FL-46 · Mermaid import and export ✅
 
 Flowchart subset: nodes, shapes, labelled edges, direction. Paste Mermaid, get an editable diagram;
 export any diagram as Mermaid to drop into a README.
 
-### FL-47 · Import `docker-compose.yml` ⬜
+### FL-47 · Import `docker-compose.yml` ⏭️
 
 Services become nodes, `depends_on` and shared networks become edges, ports and images become
 descriptions. Re-importing updates the diagram and keeps the layout.

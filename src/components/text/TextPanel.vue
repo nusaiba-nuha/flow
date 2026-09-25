@@ -2,13 +2,19 @@
 import { computed, ref, useId, useTemplateRef } from 'vue'
 
 import { useDiagramText } from '@/composables/useDiagramText.js'
+import { useFlowQuery } from '@/composables/useFlowQuery.js'
+import { toMermaid } from '@/domain/mermaid.js'
+import MermaidImportDialog from './MermaidImportDialog.vue'
 
 /** The diagram as `.flow` text, beside the canvas. Either side can be edited. */
 const { text, errors, input, focus, blur } = useDiagramText()
 
 const editor = useTemplateRef('editor')
 const errorsId = useId()
-const copied = ref(false)
+const { document } = useFlowQuery()
+/** Which copy button last worked, so only that one says so. */
+const copied = ref('')
+const isImporting = ref(false)
 
 const status = computed(() => {
   if (errors.value.length === 1) return '1 problem. The canvas shows the last valid diagram.'
@@ -30,11 +36,12 @@ function goToLine(line) {
   area.setSelectionRange(start, start + (lines[line - 1]?.length ?? 0))
 }
 
-async function copy() {
+/** @param {'flow' | 'mermaid'} format */
+async function copy(format) {
   try {
-    await navigator.clipboard.writeText(text.value)
-    copied.value = true
-    setTimeout(() => (copied.value = false), 1500)
+    await navigator.clipboard.writeText(format === 'flow' ? text.value : toMermaid(document.value))
+    copied.value = format
+    setTimeout(() => (copied.value = ''), 1500)
   } catch {
     // Clipboard access can be refused; the text is still there to select.
   }
@@ -46,20 +53,38 @@ async function copy() {
     class="flex w-[360px] shrink-0 flex-col border-r border-line bg-surface"
     aria-label="Diagram as text"
   >
-    <header class="flex items-center justify-between gap-2 px-4 pt-4 pb-2">
-      <div class="min-w-0">
+    <header class="space-y-2 px-4 pt-4 pb-2">
+      <div>
         <h2 class="text-xs font-semibold tracking-wide text-muted uppercase">Text</h2>
         <p class="text-xs text-muted" role="status">{{ status }}</p>
       </div>
 
-      <button
-        type="button"
-        class="shrink-0 rounded-lg border border-line px-2.5 py-1 text-xs transition-colors hover:bg-hover"
-        title="Copy the diagram as .flow text"
-        @click="copy"
-      >
-        {{ copied ? 'Copied' : 'Copy' }}
-      </button>
+      <div class="flex flex-wrap gap-1.5">
+        <button
+          type="button"
+          class="rounded-lg border border-line px-2.5 py-1 text-xs transition-colors hover:bg-hover"
+          title="Copy the diagram as .flow text"
+          @click="copy('flow')"
+        >
+          {{ copied === 'flow' ? 'Copied' : 'Copy' }}
+        </button>
+        <button
+          type="button"
+          class="rounded-lg border border-line px-2.5 py-1 text-xs transition-colors hover:bg-hover"
+          title="Copy the diagram as a Mermaid flowchart, for a README or a wiki"
+          @click="copy('mermaid')"
+        >
+          {{ copied === 'mermaid' ? 'Copied' : 'Copy as Mermaid' }}
+        </button>
+        <button
+          type="button"
+          class="rounded-lg border border-line px-2.5 py-1 text-xs transition-colors hover:bg-hover"
+          title="Paste a Mermaid flowchart to edit it here"
+          @click="isImporting = true"
+        >
+          Import Mermaid
+        </button>
+      </div>
     </header>
 
     <textarea
@@ -96,5 +121,6 @@ async function copy() {
         </button>
       </li>
     </ul>
+    <MermaidImportDialog v-if="isImporting" @close="isImporting = false" />
   </aside>
 </template>
