@@ -108,11 +108,11 @@ descriptions. Re-importing updates the diagram and keeps the layout.
 
 Tags or path groups become nodes, schemas referenced between them become edges.
 
-### FL-49 · Import SQL DDL as an entity diagram ⏭️
+### FL-49 · Import SQL DDL as an entity diagram ✅
 
 `CREATE TABLE` becomes a table node listing its columns; foreign keys become edges.
 
-### FL-50 · Share as a link ⬜
+### FL-50 · Share as a link ⏭️
 
 The whole diagram compressed into the URL hash. Opening the link opens a copy; nothing touches a
 server.

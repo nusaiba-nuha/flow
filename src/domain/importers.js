@@ -1,6 +1,7 @@
 import { COMPOSE_ORIGIN, fromCompose } from './compose.js'
 import { fromMermaid } from './mermaid.js'
 import { fromOpenApi, OPENAPI_ORIGIN } from './openapi.js'
+import { fromSql, SQL_ORIGIN } from './sql.js'
 
 /**
  * @typedef {Object} ImportFormat
@@ -40,6 +41,15 @@ export const IMPORT_FORMATS = Object.freeze([
       "openapi: 3.1.0\ninfo: { title: Shop API }\npaths:\n  /orders:\n    get:\n      tags: [Orders]\n      responses:\n        '200': { $ref: '#/components/schemas/Order' }\ncomponents:\n  schemas:\n    Order: { properties: { id: {} } }",
     origin: OPENAPI_ORIGIN,
     read: fromOpenApi,
+  },
+  {
+    id: 'sql',
+    label: 'SQL',
+    accept: '.sql,.ddl,.txt',
+    placeholder:
+      'CREATE TABLE customers (\n  id uuid PRIMARY KEY,\n  email text\n);\nCREATE TABLE orders (\n  id bigint PRIMARY KEY,\n  customer_id uuid REFERENCES customers (id)\n);',
+    origin: SQL_ORIGIN,
+    read: fromSql,
   },
 ])
 

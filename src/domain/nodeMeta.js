@@ -46,6 +46,7 @@ export const NODE_META = Object.freeze({
   [SHAPE.DATABASE]: shape('Database', 'A store of data', 'branch'),
   [SHAPE.DOCUMENT]: shape('Document', 'A file or report', 'comment'),
   [SHAPE.NOTE]: shape('Note', 'An annotation', 'comment'),
+  [SHAPE.TABLE]: shape('Table', 'A database table and its columns', 'branch'),
   [SHAPE.TEXT]: shape('Text', 'A label with no outline', 'unknown'),
 })
 

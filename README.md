@@ -39,7 +39,7 @@ The full reasoning, and how we will know if it is working, is at the top of the
 
 ## What works today
 
-- **Shapes.** Process, start / end, decision, input / output, database, document, note and text,
+- **Shapes.** Process, start / end, decision, input / output, database, document, note, table and text,
   each drawn as its own outline. Change a shape's type at any time.
 - **Canvas.** Pan, zoom and drag shapes on a Vue Flow canvas. Dragged positions are kept.
 - **New diagram and samples.** Start empty, or from a web app architecture or support flow
@@ -58,9 +58,11 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Edit as text.** Open the text pane beside the canvas and edit the diagram in the
   [`.flow` format](#the-flow-format): typing redraws the canvas, and changes on the canvas rewrite
   the text. Errors are listed by line, and the canvas keeps the last valid diagram meanwhile.
-- **Import.** Paste or open a Mermaid flowchart, a `docker-compose.yml` or an OpenAPI spec. Compose services
+- **Import.** Paste or open a Mermaid flowchart, a `docker-compose.yml`, an OpenAPI spec or
+  SQL `CREATE TABLE` statements. Compose services
   become shapes that fit their image (Postgres a database, RabbitMQ a queue), and dependencies
-  become connections. An OpenAPI spec becomes a map of its tags and the schemas they use.
+  become connections. An OpenAPI spec becomes a map of its tags and the schemas they use, and SQL an entity diagram
+  with keys marked and foreign keys as labelled connections.
   Re-importing updates the diagram and keeps its layout and anything added by
   hand. Anything skipped is listed by line.
 - **Copy as Mermaid** from the text pane, for a README.
@@ -87,7 +89,7 @@ db 276,352
 ```
 
 - `id = shape "Name" -- description` declares a node. The name and description are optional.
-  Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `text`.
+  Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `table`, `text`.
 - `a -> b : label` connects two nodes. The label is optional, and a line may refer to a node
   defined further down.
 - `@layout` starts the positions, one `id x,y` per line. A node with no position is laid out

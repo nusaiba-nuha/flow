@@ -45,6 +45,11 @@ export function shapePath(shape, width, height, inset = 1) {
       const fold = Math.min(w, h) * 0.18
       return `M${l},${t} H${r - fold} L${r},${t + fold} V${b} H${l} Z M${r - fold},${t} V${t + fold} H${r}`
     }
+    case SHAPE.TABLE: {
+      // A header band for the table's name, like an entity box.
+      const band = t + Math.min(h * 0.32, 30)
+      return `M${l},${t} H${r} V${b} H${l} Z M${l},${band} H${r}`
+    }
     case SHAPE.TEXT:
       return ''
     default: {

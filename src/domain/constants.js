@@ -1,5 +1,5 @@
 /**
- * @typedef {'process'|'terminal'|'decision'|'data'|'database'|'document'|'note'|'text'} Shape
+ * @typedef {'process'|'terminal'|'decision'|'data'|'database'|'document'|'note'|'table'|'text'} Shape
  */
 export const SHAPE = Object.freeze({
   PROCESS: 'process',
@@ -9,6 +9,7 @@ export const SHAPE = Object.freeze({
   DATABASE: 'database',
   DOCUMENT: 'document',
   NOTE: 'note',
+  TABLE: 'table',
   TEXT: 'text',
 })
 
