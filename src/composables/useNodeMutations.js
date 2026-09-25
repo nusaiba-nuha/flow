@@ -3,7 +3,14 @@ import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { emptyDocument } from '@/domain/document.js'
-import { toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
+import {
+  toNodeId,
+  withEdge,
+  withNodeRemoved,
+  withNodesRemoved,
+  withoutEdge,
+  withPositions,
+} from '@/domain/graph.js'
 import { useHistoryStore } from '@/stores/history.js'
 
 /** @typedef {import('@/domain/types.js').FlowDocument} FlowDocument */
@@ -148,6 +155,25 @@ function pin(flow, id, position) {
     ...flow,
     nodes: flow.nodes.map((node) => (toNodeId(node.id) === id ? { ...node, position } : node)),
   }
+}
+
+/** Several shapes at once, as one undo step. */
+export function useDeleteNodes() {
+  return useOptimisticFlowMutation({
+    label: 'Delete shapes',
+    mutationFn: (variables) => flowApi.deleteNodes(variables),
+    apply: (flow, { ids }) => withNodesRemoved(flow, ids),
+  })
+}
+
+/** A dragged selection, as one undo step. Skips the invalidate, as a single move does. */
+export function useMoveNodes() {
+  return useOptimisticFlowMutation({
+    label: 'Move shapes',
+    mutationFn: (variables) => flowApi.moveNodes(variables),
+    apply: (flow, { positions }) => withPositions(flow, positions),
+    invalidate: false,
+  })
 }
 
 /** Drag persistence. Skips the invalidate: a refetch mid-drag snaps the node back. */

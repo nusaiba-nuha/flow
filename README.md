@@ -46,6 +46,8 @@ The full reasoning, and how we will know if it is working, is at the top of the
   sample. Undo brings back whatever was there.
 - **Shape palette.** Drag a shape onto the canvas to drop it there, or click it (or press Enter)
   to add it in a clear spot near the middle.
+- **Select several.** Shift-click, or Shift-drag a box, to select shapes; move them together, or
+  delete them with Delete, as one undoable step.
 - **Edit and delete.** Every change updates the canvas immediately and rolls back if it fails.
 - **Connections.** Drag from one node to another to connect them, as many in and out as you like;
   remove a connection from the control on the edge.

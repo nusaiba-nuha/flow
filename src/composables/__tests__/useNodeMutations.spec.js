@@ -8,8 +8,10 @@ import {
   useConnectNodes,
   useCreateNode,
   useDeleteNode,
+  useDeleteNodes,
   useDisconnect,
   useMoveNode,
+  useMoveNodes,
   useNewDiagram,
 } from '../useNodeMutations.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
@@ -113,5 +115,26 @@ describe('applied changes', () => {
 
     expect(flowIn(queryClient)).toEqual([])
     expect((await flowApi.fetchFlow()).title).toBe('Blank')
+  })
+  it('deletes a selection in one write', async () => {
+    const { result, queryClient } = withFlow(() => useDeleteNodes())
+
+    result.mutate({ ids: ['b6a0c1', 'e879e4'] })
+    await waitUntil(() => result.isSuccess.value || result.isError.value)
+
+    expect(result.error.value).toBeNull()
+    expect(flowIn(queryClient).map((node) => node.id)).not.toContain('b6a0c1')
+    expect((await flowApi.fetchFlow()).nodes).toHaveLength(starter.nodes.length - 2)
+  })
+
+  it('moves a selection in one write', async () => {
+    const { result } = withFlow(() => useMoveNodes())
+
+    result.mutate({ positions: { b6a0c1: { x: 1, y: 2 }, e879e4: { x: 3, y: 4 } } })
+    await waitUntil(() => result.isSuccess.value || result.isError.value)
+
+    expect(result.error.value).toBeNull()
+    const saved = (await flowApi.fetchFlow()).nodes
+    expect(saved.find((node) => node.id === 'e879e4').position).toEqual({ x: 3, y: 4 })
   })
 })

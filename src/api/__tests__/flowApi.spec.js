@@ -6,6 +6,8 @@ import {
   createNode,
   connectNodes,
   deleteNode,
+  deleteNodes,
+  moveNodes,
   disconnect,
   fetchFlow,
   resetFlow,
@@ -107,6 +109,21 @@ describe('mutations', () => {
     await disconnect({ id: edge.id })
     expect((await fetchFlow()).edges).not.toContainEqual(edge)
     await expect(disconnect({ id: edge.id })).rejects.toThrow(/no longer exists/i)
+  })
+})
+
+describe('selections', () => {
+  it('deletes and moves several nodes in one write, refusing an id that is not there', async () => {
+    await moveNodes({ positions: { b6a0c1: { x: 10, y: 20 }, e879e4: { x: 30, y: 40 } } })
+    let flow = await fetchFlow()
+    expect(flow.nodes.find((node) => node.id === 'e879e4').position).toEqual({ x: 30, y: 40 })
+
+    await deleteNodes({ ids: ['b6a0c1', 'e879e4'] })
+    flow = await fetchFlow()
+    expect(flow.nodes.map((node) => node.id)).not.toContain('b6a0c1')
+    expect(flow.nodes.map((node) => node.id)).not.toContain('e879e4')
+
+    await expect(deleteNodes({ ids: ['ghost'] })).rejects.toThrow(/no longer exists/i)
   })
 })
 
