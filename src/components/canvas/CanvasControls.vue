@@ -6,6 +6,9 @@ import IconButton from '@/components/ui/IconButton.vue'
 import { nextZoom } from '@/domain/zoom.js'
 import { useLineStyle } from '@/composables/useLineStyle.js'
 import { useCanvasStore } from '@/stores/canvas.js'
+import { useTidyUp } from '@/composables/useTidyUp.js'
+import { useToastStore } from '@/stores/toasts.js'
+import { useFlowHistory } from '@/composables/useFlowHistory.js'
 
 /**
  * Instead of `@vue-flow/controls`, whose buttons carry no accessible name or
@@ -19,6 +22,19 @@ const ZOOM_STEP = { duration: 140 }
 
 const { lines, next, cycle } = useLineStyle()
 const canvas = useCanvasStore()
+const { tidyUp } = useTidyUp()
+const toasts = useToastStore()
+const { undo } = useFlowHistory()
+
+function tidy() {
+  tidyUp({
+    onSuccess: () => {
+      // After Vue Flow has moved the shapes, so the fit sees where they went.
+      setTimeout(() => fitView({ padding: 0.2, duration: 200 }), 60)
+      toasts.push('Laid out the whole diagram', { action: { label: 'Undo', run: undo } })
+    },
+  })
+}
 /** @type {Record<string, string>} */
 const LINE_NAMES = { step: 'in steps', curved: 'curved', straight: 'straight' }
 
@@ -52,6 +68,17 @@ const step = (direction) => zoomTo(nextZoom(viewport.value.zoom, direction), ZOO
       <path v-if="lines === 'curved'" d="M4 19C4 10 20 14 20 5" />
       <path v-else-if="lines === 'straight'" d="M4 19 20 5" />
       <path v-else d="M4 19v-7h16V5" />
+    </IconButton>
+
+    <IconButton
+      label="Tidy up"
+      title="Lay out the whole diagram automatically. Undo puts everything back"
+      @click="tidy"
+    >
+      <rect x="9" y="3" width="6" height="5" rx="1" />
+      <rect x="3" y="16" width="6" height="5" rx="1" />
+      <rect x="15" y="16" width="6" height="5" rx="1" />
+      <path d="M12 8v4M6 16v-4h12v4" />
     </IconButton>
 
     <IconButton
