@@ -20,6 +20,7 @@ const removeNodes = vi.fn((ids) => (store.nodes = store.nodes.filter((n) => !ids
 const removeEdges = vi.fn((ids) => (store.edges = store.edges.filter((e) => !ids.includes(e.id))))
 const updateFlowNode = vi.fn()
 const updateEdge = vi.fn()
+const addSelectedNodes = vi.fn()
 // Measured nodes, which is what the canvas waits for before panning.
 const findNode = vi.fn((id) => ({
   id,
@@ -53,6 +54,7 @@ vi.mock('@vue-flow/core', () => ({
     getEdges: { value: store.edges },
     viewport: ref({ x: 0, y: 0, zoom: 1 }),
     screenToFlowCoordinate: () => ({ x: 400, y: 300 }),
+    addSelectedNodes,
   }),
   Handle: { template: '<div />' },
   Position: { Top: 'top', Bottom: 'bottom' },
@@ -141,7 +143,7 @@ describe('FlowCanvas', () => {
       updateFlowNode.mock.calls.some(([id, patch]) => id === 'b6a0c1' && patch.position?.x === 300),
     )
   })
-  it('adds a shape asked for from the palette, then opens it', async () => {
+  it('adds a shape asked for from the palette, selected, without opening the drawer', async () => {
     const pinia = createPinia()
     setActivePinia(pinia)
     mountCanvas(pinia)
@@ -159,7 +161,9 @@ describe('FlowCanvas', () => {
         position: expect.objectContaining({ x: expect.any(Number) }),
       }),
     )
-    expect(push).toHaveBeenCalledWith(expect.objectContaining({ name: 'node-details' }))
+    expect(push).toHaveBeenCalledWith({ name: 'flow' })
+    expect(push).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'node-details' }))
+    await waitUntil(() => addSelectedNodes.mock.calls.length > 0)
     expect(useCanvasStore().pendingShape).toBe('')
   })
 })

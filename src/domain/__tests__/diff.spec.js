@@ -82,3 +82,14 @@ describe('mergeForDiff', () => {
     expect(svg).toContain('stroke-dasharray')
   })
 })
+
+describe('resizing', () => {
+  it('counts as a move, not a change of meaning', () => {
+    const after = structuredClone(before)
+    after.nodes.find((node) => node.id === 'api').size = { width: 400, height: 200 }
+    const diff = diffDocuments(before, after)
+
+    expect(diff.nodes.moved).toEqual(['api'])
+    expect(diff.nodes.changed).toEqual([])
+  })
+})

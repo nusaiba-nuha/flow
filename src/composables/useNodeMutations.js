@@ -99,6 +99,7 @@ export function useUpdateNode() {
               ...(patch.name !== undefined ? { name: patch.name } : {}),
               ...(patch.type !== undefined ? { type: patch.type } : {}),
               ...(patch.position !== undefined ? { position: patch.position } : {}),
+              ...(patch.size !== undefined ? { size: patch.size } : {}),
               ...(patch.data !== undefined ? { data: { ...node.data, ...patch.data } } : {}),
             }
           : node,
@@ -182,6 +183,24 @@ export function useMoveNodes() {
     label: 'Move shapes',
     mutationFn: (variables) => flowApi.moveNodes(variables),
     apply: (flow, { positions }) => withPositions(flow, positions),
+    invalidate: false,
+  })
+}
+
+/**
+ * A resize can move the node too, from its top or left edge, so both are
+ * saved in the one step. Skips the invalidate, as a move does.
+ */
+export function useResizeNode() {
+  return useOptimisticFlowMutation({
+    label: 'Resize shape',
+    mutationFn: ({ id, position, size }) => flowApi.updateNode({ id, patch: { position, size } }),
+    apply: (flow, { id, position, size }) => ({
+      ...flow,
+      nodes: flow.nodes.map((node) =>
+        toNodeId(node.id) === id ? { ...node, position, size } : node,
+      ),
+    }),
     invalidate: false,
   })
 }

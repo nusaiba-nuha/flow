@@ -3,25 +3,29 @@ import { expect, test } from '@playwright/test'
 const palette = (page) => page.getByRole('complementary', { name: 'Shapes' })
 const shapeButton = (page, label) => palette(page).getByRole('button', { name: label, exact: true })
 const shapes = (page) => page.locator('.vue-flow__node')
-const openId = (page) => page.url().split('/').pop()
+const titleField = (page) => page.getByRole('textbox', { name: 'Shape title' })
+/** The shape just added: selected, with its title field open. */
+const added = (page) => page.locator('.vue-flow__node.selected')
+const transform = (page) =>
+  page.locator('.vue-flow__transformationpane').evaluate((element) => element.style.transform)
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/flow')
   await expect(shapes(page)).toHaveCount(5)
 })
 
-test('adds a shape on click, and opens it to be named', async ({ page }) => {
+test('adds a shape on click, selected, with its title ready to type over', async ({ page }) => {
   await shapeButton(page, 'Decision').click()
 
-  await expect(page).toHaveURL(/\/flow\/node\//)
-  await expect(page.getByLabel('Title')).toHaveValue('Decision')
   await expect(shapes(page)).toHaveCount(6)
+  await expect(titleField(page)).toBeFocused()
+  await expect(titleField(page)).toHaveValue('Decision')
+  // No drawer: the shape is named where it sits.
+  await expect(page).toHaveURL(/\/flow$/)
 
-  await page.getByLabel('Title').fill('In stock?')
-  await page.getByRole('button', { name: 'Save changes' }).click()
-  await expect(page.locator(`.vue-flow__node[data-id="${openId(page)}"]`)).toContainText(
-    'In stock?',
-  )
+  await page.keyboard.type('In stock?')
+  await page.keyboard.press('Enter')
+  await expect(added(page)).toContainText('In stock?')
 })
 
 test('drops a dragged shape where it was let go', async ({ page }) => {
@@ -29,20 +33,14 @@ test('drops a dragged shape where it was let go', async ({ page }) => {
   const drop = { x: Math.round(pane.width * 0.2), y: Math.round(pane.height * 0.6) }
 
   // Where that point is in the diagram, from the viewport transform before the drop.
-  const transform = await page.locator('.vue-flow__transformationpane').evaluate((element) => {
-    const [x, y, zoom] = element.style.transform.match(/-?[\d.]+/g).map(Number)
-    return { x, y, zoom }
-  })
-  const expected = {
-    x: (drop.x - transform.x) / transform.zoom,
-    y: (drop.y - transform.y) / transform.zoom,
-  }
+  const [x, y, zoom] = (await transform(page)).match(/-?[\d.]+/g).map(Number)
+  const expected = { x: (drop.x - x) / zoom, y: (drop.y - y) / zoom }
 
   await shapeButton(page, 'Database').dragTo(page.locator('.vue-flow__pane'), {
     targetPosition: drop,
   })
-  await page.waitForURL(/\/flow\/node\//)
-  const id = openId(page)
+  await expect(titleField(page)).toBeFocused()
+  const id = await added(page).getAttribute('data-id')
 
   const saved = await page.evaluate(
     (nodeId) =>
@@ -59,31 +57,17 @@ test('adds a shape from the keyboard', async ({ page }) => {
   await shapeButton(page, 'Note').focus()
   await page.keyboard.press('Enter')
 
-  await expect(page).toHaveURL(/\/flow\/node\//)
-  await expect(page.getByLabel('Title')).toHaveValue('Note')
+  await expect(titleField(page)).toBeFocused()
+  await expect(titleField(page)).toHaveValue('Note')
 })
 
-test('brings an added shape into view, clear of the drawer', async ({ page }) => {
-  // Twice: the first one could land in view by luck.
-  for (const shape of ['Process', 'Document']) {
-    await page.goto('/flow')
-    await shapeButton(page, shape).click()
-    await page.waitForURL(/\/flow\/node\//)
+test('adding a shape in view leaves the canvas where it was', async ({ page }) => {
+  const before = await transform(page)
+  await shapeButton(page, 'Process').click()
+  await expect(titleField(page)).toBeFocused()
 
-    const card = page.locator(`.vue-flow__node[data-id="${openId(page)}"]`)
-    await expect(card).toBeVisible()
-
-    const viewport = page.viewportSize()
-    await expect
-      .poll(async () => {
-        const box = await card.boundingBox()
-        return (
-          box.y >= 0 &&
-          box.y + box.height <= viewport.height &&
-          // 380 is the drawer, which opens over the right of the canvas.
-          box.x + box.width <= viewport.width - 380
-        )
-      })
-      .toBe(true)
-  }
+  const box = await added(page).boundingBox()
+  const viewport = page.viewportSize()
+  expect(box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width).toBe(true)
+  expect(await transform(page)).toBe(before)
 })

@@ -60,6 +60,7 @@ export default [
         Response: 'readonly',
         TextEncoder: 'readonly',
         TextDecoder: 'readonly',
+        requestAnimationFrame: 'readonly',
       },
     },
     rules: {

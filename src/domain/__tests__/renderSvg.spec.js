@@ -67,3 +67,27 @@ describe('wrap', () => {
     expect(wrap('', 100, 10, 2)).toEqual([])
   })
 })
+
+describe('sizes', () => {
+  it('draws a resized node at its size, and frames it', () => {
+    const svg = renderSvg(
+      {
+        version: 3,
+        title: 'Big',
+        nodes: [
+          {
+            id: 'a',
+            type: 'process',
+            name: 'A',
+            data: {},
+            position: { x: 0, y: 0 },
+            size: { width: 500, height: 300 },
+          },
+        ],
+        edges: [],
+      },
+      { padding: 0 },
+    )
+    expect(svg).toContain('viewBox="0 0 500 300"')
+  })
+})

@@ -144,3 +144,14 @@ describe('flowFileName', () => {
     expect(flowFileName('')).toBe('diagram.flow')
   })
 })
+
+describe('sizes', () => {
+  it('keep a resized node size on its layout line, and read it back', () => {
+    const sized = structuredClone(small)
+    sized.nodes[1].size = { width: 300, height: 140 }
+
+    const text = serialiseFlow(sized)
+    expect(text).toContain('pay 10,176 300x140')
+    expect(parseFlow(text).document).toEqual(sized)
+  })
+})

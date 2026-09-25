@@ -1,9 +1,12 @@
 <script setup>
 import { computed, inject, ref } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
+import { NodeResizer } from '@vue-flow/node-resizer'
 
 import { metaFor } from '@/domain/nodeMeta.js'
-import { NODE_SIZE, SHAPE } from '@/domain/constants.js'
+import { MIN_NODE_SIZE, SHAPE, sizeOf } from '@/domain/constants.js'
+import { useShiftKey } from '@/composables/useShiftKey.js'
+import { RESIZE_NODE } from './resizeKey.js'
 import { shapePath, textInset } from '@/domain/shapes.js'
 import { accentClasses } from './accents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
@@ -17,6 +20,11 @@ const props = defineProps({
   id: { type: String, required: true },
   data: { type: Object, required: true },
   selected: { type: Boolean, default: false },
+  /** Measured by Vue Flow, and live while a resize is under way. */
+  dimensions: {
+    type: /** @type {import('vue').PropType<{ width: number, height: number }>} */ (Object),
+    default: () => ({ width: 0, height: 0 }),
+  },
 })
 
 /** @type {import('vue').Ref<string>} */
@@ -47,8 +55,20 @@ const accent = computed(() => accentClasses(meta.value.accent))
 
 const description = computed(() => meta.value.summary(node.value))
 
-const outline = computed(() => shapePath(node.value.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5))
-const inset = computed(() => textInset(node.value.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT))
+/** The live size while resizing, else the saved one. */
+const size = computed(() =>
+  props.dimensions.width && props.dimensions.height ? props.dimensions : sizeOf(node.value),
+)
+const outline = computed(() => shapePath(node.value.type, size.value.width, size.value.height, 1.5))
+const inset = computed(() => textInset(node.value.type, size.value.width, size.value.height))
+
+const resize = inject(RESIZE_NODE, () => {})
+const shiftHeld = useShiftKey()
+
+/** @param {{ params: { x: number, y: number, width: number, height: number } }} event */
+function onResizeEnd({ params }) {
+  resize(props.id, params)
+}
 const isText = computed(() => node.value.type === SHAPE.TEXT)
 const isDecision = computed(() => node.value.type === SHAPE.DECISION)
 const isTable = computed(() => node.value.type === SHAPE.TABLE)
@@ -69,8 +89,9 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     ]"
     :aria-current="isKeyboardFocused ? 'true' : undefined"
     :style="{
-      width: `${NODE_SIZE.WIDTH}px`,
-      height: `${NODE_SIZE.HEIGHT}px`,
+      // The wrapper carries the size, so a resize handle can change it.
+      width: '100%',
+      height: '100%',
       // A diamond's inset already leaves room; padding on top would leave none for text.
       padding: isTable ? undefined : `${inset.y + 8}px ${inset.x || 12}px`,
       paddingInline: isTable ? '12px' : undefined,
@@ -79,13 +100,22 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     :data-shape="node.type"
     @dblclick="edit?.start(id)"
   >
+    <NodeResizer
+      :is-visible="selected && !isEditing"
+      :min-width="MIN_NODE_SIZE.WIDTH"
+      :min-height="MIN_NODE_SIZE.HEIGHT"
+      :keep-aspect-ratio="shiftHeld"
+      color="var(--focus)"
+      @resize-end="onResizeEnd"
+    />
+
     <svg
       v-if="outline"
       class="pointer-events-none absolute inset-0 overflow-visible"
       :class="acceptsDrop ? 'text-node-message' : accent.icon"
-      :width="NODE_SIZE.WIDTH"
-      :height="NODE_SIZE.HEIGHT"
-      :viewBox="`0 0 ${NODE_SIZE.WIDTH} ${NODE_SIZE.HEIGHT}`"
+      :width="size.width"
+      :height="size.height"
+      :viewBox="`0 0 ${size.width} ${size.height}`"
       aria-hidden="true"
     >
       <path

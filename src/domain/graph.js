@@ -1,3 +1,4 @@
+import { sizeOf } from './constants.js'
 import { edgeIdFor, toNodeId } from './document.js'
 import { layoutTree } from './layout.js'
 
@@ -14,6 +15,7 @@ export function normaliseNode(raw) {
     name: raw.name ?? 'Untitled',
     data: raw.data ?? {},
     position: raw.position ?? null,
+    size: raw.size ?? null,
   }
 }
 
@@ -62,6 +64,7 @@ export function documentToGraph(document) {
       // One component draws every shape, so an unknown one still renders.
       type: 'shape',
       position: node.position ?? positions.get(node.id) ?? { x: 0, y: 0 },
+      ...sizeOf(node),
       data: { node },
     })),
     edges,

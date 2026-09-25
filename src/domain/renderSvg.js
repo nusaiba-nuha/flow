@@ -1,4 +1,4 @@
-import { NODE_SIZE, SHAPE } from './constants.js'
+import { SHAPE, sizeOf } from './constants.js'
 import { buildEdges, normaliseNode } from './graph.js'
 import { layoutTree } from './layout.js'
 import { metaFor } from './nodeMeta.js'
@@ -72,12 +72,14 @@ export function renderSvg(document, { theme = 'light', padding = 32, highlight =
     nodes.map((node) => [node.id, node.position ?? laidOut.get(node.id) ?? { x: 0, y: 0 }]),
   )
 
-  const xs = [...at.values()].map((point) => point.x)
-  const ys = [...at.values()].map((point) => point.y)
-  const left = (xs.length ? Math.min(...xs) : 0) - padding
-  const top = (ys.length ? Math.min(...ys) : 0) - padding
-  const width = (xs.length ? Math.max(...xs) + NODE_SIZE.WIDTH : 0) - left + padding
-  const height = (ys.length ? Math.max(...ys) + NODE_SIZE.HEIGHT : 0) - top + padding
+  const boxes = nodes.map((node) => ({ ...(at.get(node.id) ?? { x: 0, y: 0 }), ...sizeOf(node) }))
+  const left = (boxes.length ? Math.min(...boxes.map((box) => box.x)) : 0) - padding
+  const top = (boxes.length ? Math.min(...boxes.map((box) => box.y)) : 0) - padding
+  const width =
+    (boxes.length ? Math.max(...boxes.map((box) => box.x + box.width)) : 0) - left + padding
+  const height =
+    (boxes.length ? Math.max(...boxes.map((box) => box.y + box.height)) : 0) - top + padding
+  const sizes = new Map(nodes.map((node) => [node.id, sizeOf(node)]))
 
   const parts = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${round(width)}" height="${round(height)}" viewBox="${round(left)} ${round(top)} ${round(width)} ${round(height)}" font-family="${escapeXml(FONT)}">`,
@@ -100,8 +102,8 @@ export function renderSvg(document, { theme = 'light', padding = 32, highlight =
     ...edges.map((edge) =>
       renderEdge(
         edge,
-        /** @type {any} */ (at.get(edge.source)),
-        /** @type {any} */ (at.get(edge.target)),
+        { ...at.get(edge.source), ...sizes.get(edge.source) },
+        { ...at.get(edge.target), ...sizes.get(edge.target) },
         colours,
         highlight.get(edge.id),
       ),
@@ -118,16 +120,16 @@ export function renderSvg(document, { theme = 'light', padding = 32, highlight =
 /**
  * Bottom centre to top centre, turning halfway, like the canvas's step edges.
  * @param {import('./types.js').VueFlowEdge} edge
- * @param {{ x: number, y: number }} from
- * @param {{ x: number, y: number }} to
+ * @param {{ x?: number, y?: number, width?: number, height?: number }} from
+ * @param {{ x?: number, y?: number, width?: number, height?: number }} to
  * @param {typeof SVG_THEMES.light} colours
  * @param {'added' | 'removed' | 'changed'} [change]
  */
 function renderEdge(edge, from, to, colours, change) {
-  const x1 = from.x + NODE_SIZE.WIDTH / 2
-  const y1 = from.y + NODE_SIZE.HEIGHT
-  const x2 = to.x + NODE_SIZE.WIDTH / 2
-  const y2 = to.y
+  const x1 = (from.x ?? 0) + (from.width ?? 0) / 2
+  const y1 = (from.y ?? 0) + (from.height ?? 0)
+  const x2 = (to.x ?? 0) + (to.width ?? 0) / 2
+  const y2 = to.y ?? 0
   const middle = (y1 + y2) / 2
 
   const stroke = change ? colours.changes[change] : colours.edge
@@ -158,9 +160,10 @@ function renderNode(node, position, colours, change) {
     colours.accents[/** @type {keyof typeof colours.accents} */ (meta.accent)] ??
     colours.accents.unknown
   // A text shape has no outline of its own, but a change still needs a frame.
+  const size = sizeOf(node)
   const outline =
-    shapePath(node.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5) ||
-    (change ? shapePath(SHAPE.PROCESS, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5) : '')
+    shapePath(node.type, size.width, size.height, 1.5) ||
+    (change ? shapePath(SHAPE.PROCESS, size.width, size.height, 1.5) : '')
   const stroke = change ? colours.changes[change] : accent
   const style = change
     ? ` stroke-width="3"${change === 'removed' ? ' stroke-dasharray="7 5"' : ''}`
@@ -169,8 +172,8 @@ function renderNode(node, position, colours, change) {
 
   const body =
     node.type === SHAPE.TABLE
-      ? tableText(node.name, description, colours)
-      : centredText(node, description, colours)
+      ? tableText(node.name, description, colours, size)
+      : centredText(node, description, colours, size)
 
   return [
     `<g transform="translate(${round(position.x)},${round(position.y)})"${change === 'removed' ? ' opacity="0.6"' : ''}${change ? ` data-change="${change}"` : ''}>`,
@@ -188,10 +191,11 @@ function renderNode(node, position, colours, change) {
  * @param {import('./types.js').FlowNode} node
  * @param {string} description
  * @param {typeof SVG_THEMES.light} colours
+ * @param {{ width: number, height: number }} size
  */
-function centredText(node, description, colours) {
-  const inset = textInset(node.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT)
-  const room = NODE_SIZE.WIDTH - 2 * (inset.x || 12)
+function centredText(node, description, colours, size) {
+  const inset = textInset(node.type, size.width, size.height)
+  const room = size.width - 2 * (inset.x || 12)
   const titleSize = node.type === SHAPE.TEXT ? 16 : TITLE_SIZE
   const titles = wrap(node.name, room, titleSize, 2)
   const lines = description
@@ -200,8 +204,8 @@ function centredText(node, description, colours) {
 
   const blockHeight =
     titles.length * titleSize * 1.25 + (lines.length ? 4 + lines.length * TEXT_SIZE * 1.3 : 0)
-  let y = NODE_SIZE.HEIGHT / 2 - blockHeight / 2
-  const cx = NODE_SIZE.WIDTH / 2
+  let y = size.height / 2 - blockHeight / 2
+  const cx = size.width / 2
 
   const out = titles.map((line) => {
     y += titleSize * 1.25
@@ -221,9 +225,10 @@ function centredText(node, description, colours) {
  * @param {string} name
  * @param {string} description
  * @param {typeof SVG_THEMES.light} colours
+ * @param {{ width: number, height: number }} size
  */
-function tableText(name, description, colours) {
-  const room = NODE_SIZE.WIDTH - 24
+function tableText(name, description, colours, size) {
+  const room = size.width - 24
   const out = [
     `<text x="12" y="21" font-size="${TITLE_SIZE}" font-weight="600" fill="${colours.ink}">${escapeXml(wrap(name, room, TITLE_SIZE, 1)[0] ?? '')}</text>`,
   ]
