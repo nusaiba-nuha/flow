@@ -52,6 +52,44 @@ jobs:
           for file in examples/*.flow; do npm run -s isketch -- render "$file" -o "${file%.flow}.svg"; done
           git diff --exit-code examples/
 
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        # A throwaway database reachable only from this job, so no password at all.
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: isketch_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 2s --health-timeout 5s --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+
+      # The server reads the app's domain code, and that code's dependencies.
+      - run: npm ci --ignore-scripts
+      - run: npm ci
+        working-directory: server
+
+      - name: Build and test against PostgreSQL
+        run: npm test
+        working-directory: server
+        env:
+          DATABASE_URL: postgres://postgres@localhost:5432/isketch_test
+
   e2e:
     name: End to end
     runs-on: ubuntu-latest

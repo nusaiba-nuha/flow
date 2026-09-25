@@ -206,12 +206,17 @@ pages are listed. Export plain XML, marked with an `isketch` style key so a roun
 
 ## Milestone 7: Links an agent can read
 
-### FL-71 · Hosted diagrams ⏭️
+### FL-71 · Hosted diagrams ✅
 
-A small service (NestJS and PostgreSQL) that stores a diagram behind a short link, serving the page
-to people and the brief as plain Markdown to agents (`/d/:id.md`). Private by default.
+A small service (NestJS and PostgreSQL) that stores a diagram behind an unguessable link, serving a
+page that carries the brief as text to people and AI fetchers, and `.md`, `.flow`, `.svg` and
+`.json` forms. Readable by anyone with the link, changeable only with its edit token.
 
-### FL-72 · Remote MCP ⬜
+- ✅ The server, its tests against PostgreSQL, Docker and CI
+- ✅ Publish from the app: a public link from Share, updated in place on later publishes
+- ⬜ Hosting it at isketch.online, which is the owner's to do
+
+### FL-72 · Remote MCP ⏭️
 
 The MCP tools over HTTP, so an agent in the cloud can read and update hosted diagrams.
 

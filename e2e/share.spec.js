@@ -13,7 +13,8 @@ test('a copied link opens the same diagram in another browser, as an undoable ch
   await page.getByRole('button', { name: /Web app architecture/ }).click()
   await expect(shapes(page)).toHaveCount(9)
 
-  await page.getByRole('button', { name: 'Share' }).click()
+  await page.getByRole('banner').getByRole('button', { name: 'Share' }).click()
+  await page.getByRole('button', { name: 'Copy private link' }).click()
   await expect(page.getByText(/Link copied/)).toBeVisible()
   const link = await page.evaluate(() => navigator.clipboard.readText())
   expect(link).toMatch(/\/flow#flow=z[\w-]+$/)

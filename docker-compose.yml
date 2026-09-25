@@ -17,3 +17,38 @@ services:
       target: prod
     ports:
       - '8080:80'
+
+  # Hosted links: `docker compose --profile server up` for a local copy.
+  server:
+    profiles: ['server']
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    environment:
+      DATABASE_URL: postgres://isketch@db:5432/isketch
+      PUBLIC_URL: http://localhost:3000
+      APP_URL: http://localhost:5173
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    profiles: ['server']
+    image: postgres:16-alpine
+    # Local only and never published: reachable just from the server on this network.
+    environment:
+      POSTGRES_USER: isketch
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: isketch
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U isketch']
+      interval: 2s
+      retries: 20
+
+volumes:
+  db:

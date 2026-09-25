@@ -4,7 +4,6 @@ import { computed } from 'vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
-import { useShareLink } from '@/composables/useShareLink.js'
 import { useCopyBrief } from '@/composables/useCopyBrief.js'
 import { useSketchStyle } from '@/composables/useSketchStyle.js'
 import { useDiagramFile } from '@/composables/useDiagramFile.js'
@@ -15,14 +14,13 @@ import { useToastStore } from '@/stores/toasts.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
-const emit = defineEmits(['help', 'import', 'compare', 'export'])
+const emit = defineEmits(['help', 'import', 'compare', 'export', 'share'])
 
 // The one place the shortcut is bound: the toolbar is always mounted.
 const { undo, redo, history } = useFlowHistory({ bindKeys: true })
 const { start, isPending: isStarting } = useStartDiagram()
 const toasts = useToastStore()
 const canvas = useCanvasStore()
-const { share } = useShareLink()
 const { copyBrief } = useCopyBrief()
 const { sketch, toggle: toggleSketch } = useSketchStyle()
 // The one place Ctrl+S and Ctrl+O are bound, like undo.
@@ -142,8 +140,8 @@ const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
 
     <IconButton
       label="Share"
-      title="Copy a link that carries this whole diagram. Nothing is uploaded"
-      @click="share"
+      title="Share a private link, or publish one an AI can read"
+      @click="emit('share')"
     >
       <circle cx="18" cy="5" r="2.5" />
       <circle cx="6" cy="12" r="2.5" />

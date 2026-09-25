@@ -3,7 +3,16 @@ import pluginVue from 'eslint-plugin-vue'
 import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
 export default [
-  { ignores: ['dist/**', 'coverage/**', 'node_modules/**', 'playwright-report/**'] },
+  {
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'node_modules/**',
+      'playwright-report/**',
+      // The server is TypeScript, checked by its own compiler.
+      'server/**',
+    ],
+  },
 
   js.configs.recommended,
   ...pluginVue.configs['flat/recommended'],
