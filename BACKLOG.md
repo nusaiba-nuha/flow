@@ -148,7 +148,7 @@ canvas and as an SVG.
 
 On a pull request that changes a `.flow` file, post the before and after as a comment.
 
-## Milestone 5: Built for agents ⏭️
+## Milestone 5: Built for agents ✅
 
 ### FL-63 · Become isketch ✅
 
@@ -177,14 +177,15 @@ Screen, button, input, card, list and image shapes, in their own palette section
 sketched and handed over as an interface to build, not only boxes and arrows. Navigation is a
 screen connected to screens.
 
-### FL-67 · Notes an agent can act on ⏭️
+### FL-67 · Notes an agent can act on ✅
 
-A free-text note on the diagram and on each shape ("paginate this", "must be idempotent") that
-travels with the brief, the `.flow` file and MCP.
+A free-text note on the diagram (`note: ...`) and on each shape (`id note: ...`, or "Notes for
+the builder" in its details), such as "paginate this" or "must be idempotent". Noted shapes are
+marked on the canvas, and notes travel with the brief, the `.flow` file and MCP.
 
 ## Milestone 6: Sketch feel
 
-### FL-68 · Hand-drawn style ⬜
+### FL-68 · Hand-drawn style ⏭️
 
 A sketch or clean switch per diagram: rough outlines and a handwritten font in sketch mode, the
 same diagram underneath. Both render in the app, in SVG and in the brief's picture.

@@ -2,7 +2,8 @@
  * @typedef {import('./constants.js').Shape} Shape
  *
  * @typedef {Object} FlowNodeData
- * @property {string} [description]
+ * @property {string} [description] what the shape is
+ * @property {string} [notes] what whoever builds it must do, such as "paginate"
  * @property {string} [origin] the importer that made it, so a re-import can tell its own from yours
  *
  * @typedef {Object} FlowNode
@@ -23,6 +24,7 @@
  * @typedef {Object} FlowDocument
  * @property {number} version
  * @property {string} title
+ * @property {string} [notes] instructions for the whole diagram, such as the stack to use
  * @property {Record<string, any>[]} nodes stored as saved; `normaliseNode` makes them FlowNodes
  * @property {FlowEdge[]} edges
  *

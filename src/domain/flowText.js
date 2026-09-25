@@ -6,9 +6,11 @@ import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
  * review in a pull request.
  *
  *     title: Web app architecture
+ *     note: Use NestJS and PostgreSQL
  *
  *     browser = terminal "Browser" -- Single page app
  *     api = process "API"
+ *     api note: Paginate every list endpoint
  *
  *     browser -> api : HTTPS
  *
@@ -18,7 +20,8 @@ import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
  *
  * One node or edge per line, in document order, so a diff shows exactly what
  * changed. Positions sit in their own block at the end: moving a box never
- * touches the lines that say what the system is.
+ * touches the lines that say what the system is. Notes are instructions for
+ * whoever builds from the diagram, one line each, for the diagram or a shape.
  *
  * @typedef {{ line: number, message: string }} FlowTextError
  */
@@ -29,6 +32,8 @@ const EDGE_LINE = new RegExp(String.raw`^(${ID})\s*->\s*(${ID})\s*(?::\s?(.*))?$
 const LAYOUT_LINE = new RegExp(
   String.raw`^(${ID})\s+(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)(?:\s+(\d+)\s*x\s*(\d+))?$`,
 )
+const NOTE_LINE = new RegExp(String.raw`^(${ID})\s+note:\s?(.*)$`)
+const DIAGRAM_NOTE = 'note:'
 const LAYOUT_HEADER = '@layout'
 const DESCRIPTION_MARK = '--'
 
@@ -43,6 +48,17 @@ const escapeRest = (text) => text.replace(/\\/g, '\\\\').replace(/\n/g, '\\n')
 const unescapeRest = (text) =>
   text.replace(/\\(\\|n)/g, (_match, char) => (char === 'n' ? '\n' : '\\'))
 
+/**
+ * Notes are written one line per line of text, so each reads, and diffs, on
+ * its own. Blank lines are dropped.
+ * @param {string | undefined} notes
+ */
+const noteLines = (notes) =>
+  String(notes ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+
 /** @param {number} value */
 const coordinate = (value) => String(Math.round(value))
 
@@ -51,13 +67,21 @@ const coordinate = (value) => String(Math.round(value))
  * @returns {string}
  */
 export function serialiseFlow(document) {
-  const sections = [`title: ${escapeRest(document.title ?? DEFAULT_TITLE)}`]
+  const sections = [
+    [
+      `title: ${escapeRest(document.title ?? DEFAULT_TITLE)}`,
+      ...noteLines(document.notes).map((line) => `${DIAGRAM_NOTE} ${line}`),
+    ].join('\n'),
+  ]
 
   const nodes = document.nodes.map((node) => {
     const description = node.data?.description
     const name = JSON.stringify(node.name ?? '')
     const tail = description ? ` ${DESCRIPTION_MARK} ${escapeRest(description)}` : ''
-    return `${node.id} = ${node.type} ${name}${tail}`
+    return [
+      `${node.id} = ${node.type} ${name}${tail}`,
+      ...noteLines(node.data?.notes).map((line) => `${node.id} note: ${line}`),
+    ].join('\n')
   })
   if (nodes.length) sections.push(nodes.join('\n'))
 
@@ -106,6 +130,10 @@ export function parseFlow(text) {
   const layout = []
   /** @type {{ line: number, source: string, target: string, label: string }[]} */
   const pendingEdges = []
+  /** @type {{ line: number, id: string, text: string }[]} */
+  const pendingNotes = []
+  /** @type {string[]} */
+  const diagramNotes = []
 
   let title = DEFAULT_TITLE
   let inLayout = false
@@ -141,6 +169,17 @@ export function parseFlow(text) {
 
       if (content.startsWith('title:')) {
         title = unescapeRest(content.slice('title:'.length).trim())
+        return
+      }
+
+      if (content.startsWith(DIAGRAM_NOTE)) {
+        diagramNotes.push(content.slice(DIAGRAM_NOTE.length).trim())
+        return
+      }
+
+      const note = NOTE_LINE.exec(content)
+      if (note) {
+        pendingNotes.push({ line, id: note[1], text: note[2].trim() })
         return
       }
 
@@ -195,6 +234,12 @@ export function parseFlow(text) {
     edges.push({ id, source, target, ...(label ? { label } : {}) })
   })
 
+  pendingNotes.forEach(({ line, id, text }) => {
+    const node = byId.get(id)
+    if (!node) return errors.push({ line, message: `No node called "${id}".` })
+    node.data.notes = node.data.notes ? `${node.data.notes}\n${text}` : text
+  })
+
   const positioned = new Set()
   layout.forEach(({ line, id, x, y, width, height }) => {
     const node = byId.get(id)
@@ -209,7 +254,16 @@ export function parseFlow(text) {
 
   return errors.length
     ? { document: null, errors }
-    : { document: { version: DOCUMENT_VERSION, title, nodes, edges }, errors }
+    : {
+        document: {
+          version: DOCUMENT_VERSION,
+          title,
+          ...(diagramNotes.length ? { notes: diagramNotes.join('\n') } : {}),
+          nodes,
+          edges,
+        },
+        errors,
+      }
 }
 
 /**

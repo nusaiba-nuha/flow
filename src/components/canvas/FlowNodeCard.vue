@@ -72,6 +72,8 @@ function onResizeEnd({ params }) {
 const isText = computed(() => node.value.type === SHAPE.TEXT)
 const isDecision = computed(() => node.value.type === SHAPE.DECISION)
 const isTable = computed(() => node.value.type === SHAPE.TABLE)
+/** Notes are for the builder, so the canvas only marks that there are some. */
+const notes = computed(() => node.value.data?.notes?.trim() ?? '')
 
 /** Selection and keyboard focus draw on the outline itself, since a ring would be a rectangle. */
 const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 3 : 1.5))
@@ -96,7 +98,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
       padding: isTable ? undefined : `${inset.y + 8}px ${inset.x || 12}px`,
       paddingInline: isTable ? '12px' : undefined,
     }"
-    :aria-label="`${meta.label}: ${node.name}`"
+    :aria-label="`${meta.label}: ${node.name}${notes ? ', has notes for the builder' : ''}`"
     :data-shape="node.type"
     @dblclick="edit?.start(id)"
   >
@@ -162,6 +164,29 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     >
       {{ description }}
     </p>
+
+    <span
+      v-if="notes"
+      class="absolute -top-2.5 right-5 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-muted shadow-sm"
+      :title="`Notes for the builder: ${notes}`"
+      data-testid="node-notes"
+    >
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 4h16v12H8l-4 4Z" />
+        <path d="M8 9h8M8 12h5" />
+      </svg>
+      <span class="sr-only">Has notes for the builder</span>
+    </span>
 
     <Handle
       type="source"

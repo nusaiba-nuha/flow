@@ -25,7 +25,12 @@ export function diffDocuments(before, after) {
 
   /** @param {Record<string, any>} node */
   const meaning = (node) =>
-    JSON.stringify([node.name ?? '', node.type, node.data?.description ?? ''])
+    JSON.stringify([
+      node.name ?? '',
+      node.type,
+      node.data?.description ?? '',
+      node.data?.notes ?? '',
+    ])
   /** @param {Record<string, any>} node */
   const place = (node) => JSON.stringify([node.position ?? null, node.size ?? null])
 

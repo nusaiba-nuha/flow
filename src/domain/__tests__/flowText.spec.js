@@ -146,6 +146,34 @@ describe('flowFileName', () => {
 })
 
 describe('sizes', () => {
+  it('writes notes one per line, for the diagram and for each shape, and reads them back', () => {
+    const document = {
+      ...small,
+      notes: 'Use NestJS\nPostgreSQL 16',
+      nodes: small.nodes.map((node) =>
+        node.id === 'pay'
+          ? { ...node, data: { ...node.data, notes: 'Retry twice\n\nLog failures' } }
+          : node,
+      ),
+    }
+    const text = serialiseFlow(document)
+
+    expect(text).toMatch(/^title: Checkout\nnote: Use NestJS\nnote: PostgreSQL 16\n\n/)
+    expect(text).toContain(
+      'pay = decision "Paid?" -- Card or wallet\npay note: Retry twice\npay note: Log failures\n',
+    )
+
+    const { document: read } = parseFlow(text)
+    expect(read.notes).toBe('Use NestJS\nPostgreSQL 16')
+    expect(read.nodes[1].data).toEqual({
+      description: 'Card or wallet',
+      notes: 'Retry twice\nLog failures',
+    })
+    expect(parseFlow('a = note "A"\nb note: x').errors).toEqual([
+      { line: 2, message: 'No node called "b".' },
+    ])
+  })
+
   it('keep a resized node size on its layout line, and read it back', () => {
     const sized = structuredClone(small)
     sized.nodes[1].size = { width: 300, height: 140 }

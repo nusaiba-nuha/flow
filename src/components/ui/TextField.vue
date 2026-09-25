@@ -9,6 +9,8 @@ const props = defineProps({
   multiline: { type: Boolean, default: false },
   maxlength: { type: Number, default: null },
   placeholder: { type: String, default: '' },
+  /** A line under the field saying what it is for. */
+  hint: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
 })
 
@@ -16,6 +18,12 @@ const emit = defineEmits(['update:modelValue', 'blur'])
 
 const id = useId()
 const errorId = computed(() => `${id}-error`)
+const hintId = computed(() => `${id}-hint`)
+const describedBy = computed(
+  () =>
+    [props.hint ? hintId.value : '', props.error ? errorId.value : ''].filter(Boolean).join(' ') ||
+    undefined,
+)
 const remaining = computed(() =>
   props.maxlength === null ? null : props.maxlength - props.modelValue.length,
 )
@@ -48,13 +56,14 @@ function onInput(event) {
       :placeholder="placeholder"
       :disabled="disabled"
       :aria-invalid="error ? 'true' : undefined"
-      :aria-describedby="error ? errorId : undefined"
+      :aria-describedby="describedBy"
       class="w-full rounded-lg border bg-surface px-3 py-2 text-sm text-ink outline-none transition-colors disabled:bg-sunken"
       :class="error ? 'border-danger focus:border-danger' : 'border-line focus:border-line-strong'"
       @input="onInput"
       @blur="emit('blur')"
     />
 
+    <p v-if="hint" :id="hintId" class="mt-1 text-xs text-muted">{{ hint }}</p>
     <p v-if="error" :id="errorId" class="mt-1 text-xs text-danger">{{ error }}</p>
   </div>
 </template>

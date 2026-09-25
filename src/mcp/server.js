@@ -29,6 +29,8 @@ const INSTRUCTIONS = `Diagrams in this folder are .flow files, sketched by a per
 Read one as a brief before building from it, and refer to shapes by their ids. When the code
 changes what a diagram shows, update the diagram with write_diagram so the two stay true.
 Format: \`id = shape "Name" -- description\`, \`a -> b : label\`, positions under \`@layout\`.
+Notes (\`note: ...\` for the diagram, \`id note: ...\` for a shape) are the person's instructions:
+follow them, and add one when you leave something for them to decide.
 Shapes: ${SHAPE_OPTIONS.map((option) => option.value).join(', ')}.
 Screen, button, input, card, list and image sketch an interface.`
 
