@@ -50,6 +50,7 @@ export default [
         globalThis: 'readonly',
         File: 'readonly',
         FileReader: 'readonly',
+        Image: 'readonly',
         Event: 'readonly',
         KeyboardEvent: 'readonly',
         URL: 'readonly',

@@ -15,7 +15,7 @@ import { useToastStore } from '@/stores/toasts.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
-const emit = defineEmits(['help', 'import', 'compare'])
+const emit = defineEmits(['help', 'import', 'compare', 'export'])
 
 // The one place the shortcut is bound: the toolbar is always mounted.
 const { undo, redo, history } = useFlowHistory({ bindKeys: true })
@@ -119,6 +119,16 @@ const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
         d="M5 3h11l3 3v13.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19.5v-15A1.5 1.5 0 0 1 5 3Z"
       />
       <path d="M8 3v5h7V3M8 21v-6h8v6" />
+    </IconButton>
+
+    <IconButton
+      label="Export"
+      title="Download the diagram as PNG, SVG or a draw.io file"
+      @click="emit('export')"
+    >
+      <rect x="3" y="4" width="18" height="14" rx="2" />
+      <path d="m3 15 5-5 4 4 3-3 6 6" />
+      <circle cx="16" cy="8.5" r="1.5" />
     </IconButton>
 
     <IconButton

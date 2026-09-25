@@ -8,6 +8,7 @@ import ShapePalette from '@/components/palette/ShapePalette.vue'
 import TextPanel from '@/components/text/TextPanel.vue'
 import ImportDialog from '@/components/import/ImportDialog.vue'
 import CompareDialog from '@/components/compare/CompareDialog.vue'
+import ExportDialog from '@/components/export/ExportDialog.vue'
 import HelpDialog from '@/components/ui/HelpDialog.vue'
 import ToastHost from '@/components/ui/ToastHost.vue'
 import { useHelpDialog } from '@/composables/useHelpDialog.js'
@@ -19,6 +20,7 @@ import { useFileStore } from '@/stores/file.js'
 const canvas = useCanvasStore()
 const isImporting = ref(false)
 const isComparing = ref(false)
+const isExporting = ref(false)
 useOpenSharedLink()
 const file = useFileStore()
 // Bound at the shell: a dialog that is not mounted cannot listen for its own key.
@@ -35,7 +37,12 @@ const help = useHelpDialog()
         <p class="text-xs text-muted">Drag a shape in, click one to open its details</p>
       </div>
 
-      <FlowToolbar @help="help.open" @import="isImporting = true" @compare="isComparing = true" />
+      <FlowToolbar
+        @help="help.open"
+        @import="isImporting = true"
+        @compare="isComparing = true"
+        @export="isExporting = true"
+      />
     </header>
 
     <div class="flex min-h-0 flex-1">
@@ -55,6 +62,7 @@ const help = useHelpDialog()
         <HelpDialog v-if="help.isOpen.value" @close="help.close" />
         <ImportDialog v-if="isImporting" @close="isImporting = false" />
         <CompareDialog v-if="isComparing" @close="isComparing = false" />
+        <ExportDialog v-if="isExporting" @close="isExporting = false" />
         <ToastHost />
       </main>
     </div>
