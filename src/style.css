@@ -348,37 +348,3 @@ optgroup {
   opacity: 0;
   transform: none;
 }
-
-/* v14 renamed `dp__*` to `dp--*` and applies its own theme class, so both are targeted. */
-.dp--theme-light,
-.dp--theme-dark {
-  --dp-background-color: var(--surface);
-  --dp-text-color: var(--ink);
-  --dp-border-color: var(--line);
-  --dp-border-color-hover: var(--line-strong);
-  --dp-border-color-focus: var(--focus);
-  --dp-hover-color: var(--hover);
-  --dp-hover-text-color: var(--ink);
-  --dp-primary-color: var(--focus);
-  --dp-primary-text-color: #ffffff;
-  --dp-secondary-color: var(--muted);
-  --dp-menu-border-color: var(--line);
-  --dp-icon-color: var(--muted);
-  --dp-disabled-color: var(--surface-sunken);
-  --dp-scroll-bar-background: var(--surface-sunken);
-  --dp-scroll-bar-color: var(--line-strong);
-}
-
-.dp--input {
-  border-radius: 0.5rem;
-  border-color: var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 0.8125rem;
-  padding: 0.4rem 0.5rem 0.4rem 2rem;
-}
-
-.dp--input-icon,
-.dp--clear-btn {
-  color: var(--muted);
-}

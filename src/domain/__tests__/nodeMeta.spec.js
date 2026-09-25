@@ -1,47 +1,43 @@
 import { describe, expect, it } from 'vitest'
 
 import diagram from '@/tests/fixtures/diagram.json'
-import { NODE_TYPE } from '../constants.js'
+import { SHAPE } from '../constants.js'
 import { normaliseNode } from '../graph.js'
-import { CREATABLE_NODES, creatableByValue, isOpenable, metaFor } from '../nodeMeta.js'
-
-const nodes = Object.fromEntries(diagram.nodes.map((raw) => [String(raw.id), normaliseNode(raw)]))
+import { isKnownShape, isOpenable, metaFor, SHAPE_OPTIONS } from '../nodeMeta.js'
+import { shapePath } from '../shapes.js'
 
 describe('metaFor', () => {
-  it('covers every sample type and falls back rather than throwing', () => {
+  it('covers every sample shape and falls back rather than throwing', () => {
     diagram.nodes.forEach((raw) => expect(metaFor(raw.type).label).not.toBe('Unknown'))
     expect(metaFor('somethingNew').label).toBe('Unknown')
+    expect(isKnownShape('somethingNew')).toBe(false)
   })
 
-  it('summarises each type from its own data', () => {
-    expect(metaFor(NODE_TYPE.SEND_MESSAGE).summary(nodes['b0653a'])).toBe('Hello there')
-    expect(metaFor(NODE_TYPE.ADD_COMMENT).summary(nodes['e879e4'])).toBe(
-      'User message during off hours',
-    )
-    expect(metaFor(NODE_TYPE.DATE_TIME).summary(nodes['d09c08'])).toBe('09:00 - 17:00 - UTC')
+  it('summarises a shape by its description, truncated', () => {
+    const node = normaliseNode({
+      id: 'a',
+      type: SHAPE.PROCESS,
+      data: { description: 'x'.repeat(200) },
+    })
+    const summary = metaFor(SHAPE.PROCESS).summary(node)
+
+    expect(summary.endsWith('...')).toBe(true)
+    expect(summary.length).toBeLessThan(200)
+    expect(metaFor(SHAPE.PROCESS).summary(normaliseNode({ id: 'b', type: SHAPE.PROCESS }))).toBe('')
+  })
+
+  it('lets every shape be opened, edited and deleted', () => {
+    diagram.nodes.forEach((raw) => expect(isOpenable(normaliseNode(raw))).toBe(true))
   })
 })
 
-describe('interaction rules', () => {
-  it('keeps the trigger and both connectors display only', () => {
-    expect(isOpenable(nodes['1'])).toBe(false)
-    expect(isOpenable(nodes['161f52'])).toBe(false)
-    expect(isOpenable(nodes['28c4b9'])).toBe(false)
-    expect(isOpenable(nodes['b6a0c1'])).toBe(true)
-  })
-})
+describe('SHAPE_OPTIONS', () => {
+  it('offers every shape once, each with an outline except text', () => {
+    expect(SHAPE_OPTIONS.map((option) => option.value).sort()).toEqual(Object.values(SHAPE).sort())
 
-describe('CREATABLE_NODES', () => {
-  it('offers the brief three options, with businessHours seeding a dateTime node', () => {
-    expect(CREATABLE_NODES.map((option) => option.label)).toEqual([
-      'Send Message',
-      'Add Comments',
-      'Business Hours',
-    ])
-
-    const hours = creatableByValue('businessHours')
-    expect(hours?.type).toBe(NODE_TYPE.DATE_TIME)
-    expect(hours?.seed('desc').times).toHaveLength(7)
-    expect(creatableByValue(NODE_TYPE.SEND_MESSAGE)?.seed('Hi').payload[0].text).toBe('Hi')
+    SHAPE_OPTIONS.forEach(({ value }) => {
+      if (value === SHAPE.TEXT) expect(shapePath(value, 100, 50)).toBe('')
+      else expect(shapePath(value, 100, 50)).toMatch(/^M[\d.]+,[\d.]+ .*/)
+    })
   })
 })

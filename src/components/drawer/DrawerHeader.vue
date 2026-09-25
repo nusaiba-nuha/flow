@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from 'vue'
 
-import NodeIcon from '@/components/ui/NodeIcon.vue'
+import ShapeIcon from '@/components/ui/ShapeIcon.vue'
 import { accentClasses } from '@/components/canvas/accents.js'
 
 const props = defineProps({
   label: { type: String, default: 'Node' },
-  icon: { type: String, default: '' },
+  shape: { type: String, default: '' },
   accent: { type: String, default: 'unknown' },
   name: { type: String, default: '' },
 })
@@ -18,7 +18,7 @@ const accentClass = computed(() => accentClasses(props.accent).icon)
 
 <template>
   <header class="flex items-start gap-3 border-b border-line px-5 py-4">
-    <NodeIcon v-if="icon" :name="icon" :size="18" :class="accentClass" class="mt-0.5" />
+    <ShapeIcon v-if="shape" :shape="shape" :class="accentClass" class="mt-0.5 shrink-0" />
 
     <div class="min-w-0 flex-1">
       <p class="text-xs text-muted">{{ label }}</p>

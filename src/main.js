@@ -10,7 +10,6 @@ import { migrateLegacyKeys } from './api/storageKeys'
 // Library styles first, so ours win where they overlap.
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
-import '@vuepic/vue-datepicker/dist/main.css'
 import './style.css'
 
 // Before any store reads its key.

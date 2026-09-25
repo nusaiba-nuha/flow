@@ -125,19 +125,13 @@ describe('FlowCanvas', () => {
     expect(fitView).not.toHaveBeenCalled()
   })
 
-  it('opens an openable node on click, ignores the rest, and persists a drag on drop', async () => {
+  it('opens a node on click, and persists a drag on drop', async () => {
     const wrapper = await renderCanvas()
     const push = vi.spyOn(router, 'push')
     const flow = wrapper.findComponent(VueFlowStub)
 
     flow.vm.$emit('node-click', { node: lastNodes().find((node) => node.id === 'b6a0c1') })
     expect(push).toHaveBeenCalledWith({ name: 'node-details', params: { id: 'b6a0c1' } })
-
-    push.mockClear()
-    for (const id of ['1', '161f52']) {
-      flow.vm.$emit('node-click', { node: lastNodes().find((node) => node.id === id) })
-    }
-    expect(push).not.toHaveBeenCalled()
 
     flow.vm.$emit('node-drag-stop', { node: { id: 'b6a0c1', position: { x: 300, y: 500 } } })
     // Persisted through the mutation, then applied to the existing node.

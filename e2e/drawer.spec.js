@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const NODE = { away: 'b6a0c1', hours: 'd09c08' }
+const NODE = { away: 'b6a0c1' }
 
 const nodeAt = (page, id) => page.locator(`.vue-flow__node[data-id="${id}"]`)
 const titleField = (page) => page.getByLabel('Title')
@@ -35,12 +35,14 @@ test('deletes a node behind a confirmation and keeps its neighbours', async ({ p
   await expect(nodeAt(page, 'e879e4')).toBeVisible()
 })
 
-test('shows the business hours week and refuses an impossible range', async ({ page }) => {
-  await page.goto(`/flow/node/${NODE.hours}`)
+test('changes a node shape and keeps it across a reload', async ({ page }) => {
+  await page.goto(`/flow/node/${NODE.away}`)
 
-  await expect(page.locator('li')).toHaveCount(7)
-  await page.getByLabel('Mon start time').fill('18:00')
-  await page.keyboard.press('Enter')
+  await page.getByLabel('Shape').selectOption('database')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  const shape = nodeAt(page, NODE.away).locator('[data-shape]')
+  await expect(shape).toHaveAttribute('data-shape', 'database')
 
-  await expect(page.getByRole('alert')).toContainText('End time must be after start time')
+  await page.reload()
+  await expect(shape).toHaveAttribute('data-shape', 'database')
 })

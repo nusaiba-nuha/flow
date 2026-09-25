@@ -53,7 +53,7 @@ describe('rollback', () => {
     vi.spyOn(flowApi, 'createNode').mockRejectedValue(new Error('nope'))
     const { result, queryClient } = withFlow(() => useCreateNode())
 
-    result.mutate({ title: 'Ghost', description: '', nodeType: 'sendMessage' })
+    result.mutate({ title: 'Ghost', description: '', shape: 'process' })
     await waitUntil(() => result.isError.value)
 
     expect(flowIn(queryClient).some((node) => node.name === 'Ghost')).toBe(false)
@@ -61,16 +61,13 @@ describe('rollback', () => {
 })
 
 describe('applied changes', () => {
-  it('shows a created node before the server answers, branches included', async () => {
+  it('shows a created node before the server answers', async () => {
     const { result, queryClient } = withFlow(() => useCreateNode())
 
-    result.mutate({ title: 'Hours', description: '', nodeType: 'businessHours' })
-    await waitUntil(() => flowIn(queryClient).some((node) => node.name === 'Hours'))
+    result.mutate({ title: 'Check', description: '', shape: 'decision' })
+    await waitUntil(() => flowIn(queryClient).some((node) => node.name === 'Check'))
 
-    const created = flowIn(queryClient).find((node) => node.name === 'Hours')
-    const branches = edgesIn(queryClient).filter((edge) => edge.source === created.id)
-    expect(created.type).toBe('dateTime')
-    expect(branches).toHaveLength(2)
+    expect(flowIn(queryClient).find((node) => node.name === 'Check').type).toBe('decision')
   })
 
   it('keeps a dragged position without refetching over it', async () => {
@@ -85,12 +82,12 @@ describe('applied changes', () => {
   it('adds a second incoming edge and pins the target where it was', async () => {
     const { result, queryClient } = withFlow(() => useConnectNodes())
 
-    // b0653a already has an incoming edge from the Success branch.
+    // b0653a already has an incoming edge from Business Hours.
     result.mutate({ source: 'e879e4', target: 'b0653a', position: { x: 10, y: 20 } })
     await waitUntil(() => result.isSuccess.value)
 
     const into = edgesIn(queryClient).filter((edge) => edge.target === 'b0653a')
-    expect(into.map((edge) => edge.source).sort()).toEqual(['161f52', 'e879e4'])
+    expect(into.map((edge) => edge.source).sort()).toEqual(['d09c08', 'e879e4'])
     expect(flowIn(queryClient).find((node) => node.id === 'b0653a').position).toEqual({
       x: 10,
       y: 20,
@@ -99,7 +96,7 @@ describe('applied changes', () => {
 
   it('removes a connection and keeps both nodes', async () => {
     const { result, queryClient } = withFlow(() => useDisconnect())
-    const id = edgeIdFor('28c4b9', 'b6a0c1')
+    const id = edgeIdFor('d09c08', 'b6a0c1')
 
     result.mutate({ id, target: 'b6a0c1' })
     await waitUntil(() => result.isSuccess.value)

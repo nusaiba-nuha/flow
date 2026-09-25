@@ -4,8 +4,6 @@ import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { emptyDocument } from '@/domain/document.js'
 import { toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
-import { creatableByValue } from '@/domain/nodeMeta.js'
-import { CONNECTOR_TYPE, NODE_TYPE } from '@/domain/constants.js'
 import { useHistoryStore } from '@/stores/history.js'
 
 /** @typedef {import('@/domain/types.js').FlowDocument} FlowDocument */
@@ -64,35 +62,19 @@ export function useCreateNode() {
   return useOptimisticFlowMutation({
     label: 'Create node',
     mutationFn: (variables) => flowApi.createNode(variables),
-    apply: (flow, variables) => {
-      // The form value is not always the payload type: businessHours is a dateTime.
-      const type = creatableByValue(variables.nodeType)?.type ?? variables.nodeType
-      const id = `optimistic-${Date.now()}`
-
-      const node = {
-        id,
-        type,
-        name: variables.title,
-        data: { description: variables.description },
-        ...(variables.position ? { position: variables.position } : {}),
-      }
-
-      // Mirror the branches the server will create, so they do not pop in late.
-      const branches =
-        type === NODE_TYPE.DATE_TIME
-          ? [CONNECTOR_TYPE.SUCCESS, CONNECTOR_TYPE.FAILURE].map((connectorType) => ({
-              id: `${id}-${connectorType}`,
-              type: NODE_TYPE.DATE_TIME_CONNECTOR,
-              name: connectorType === CONNECTOR_TYPE.SUCCESS ? 'Success' : 'Failure',
-              data: { connectorType },
-            }))
-          : []
-
-      return branches.reduce((next, branch) => withEdge(next, id, branch.id), {
-        ...flow,
-        nodes: [...flow.nodes, node, ...branches],
-      })
-    },
+    apply: (flow, variables) => ({
+      ...flow,
+      nodes: [
+        ...flow.nodes,
+        {
+          id: `optimistic-${Date.now()}`,
+          type: variables.shape,
+          name: variables.title,
+          data: { description: variables.description },
+          ...(variables.position ? { position: variables.position } : {}),
+        },
+      ],
+    }),
   })
 }
 
@@ -107,6 +89,7 @@ export function useUpdateNode() {
           ? {
               ...node,
               ...(patch.name !== undefined ? { name: patch.name } : {}),
+              ...(patch.type !== undefined ? { type: patch.type } : {}),
               ...(patch.position !== undefined ? { position: patch.position } : {}),
               ...(patch.data !== undefined ? { data: { ...node.data, ...patch.data } } : {}),
             }

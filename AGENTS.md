@@ -23,8 +23,8 @@ tests the previous build.
   without mounting anything. Keep it that way.
 - `src/api/flowApi.js` is the only module that touches persistence. It is shaped
   like a real API so it can be swapped for one.
-- Per node type behaviour lives in `src/domain/nodeMeta.js`. Add an entry there
-  rather than branching on node type in a component.
+- Per shape behaviour lives in `src/domain/nodeMeta.js`, and each outline in
+  `src/domain/shapes.js`. Add an entry there rather than branching on type in a component.
 - State has three owners and no copies: TanStack Query owns the document, the route
   owns which node is open, Pinia owns viewport, history, theme and toasts. Do not
   mirror one in another.

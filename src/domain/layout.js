@@ -1,4 +1,4 @@
-import { NODE_GAP, NODE_SIZE, NODE_TYPE } from './constants.js'
+import { NODE_GAP, NODE_SIZE } from './constants.js'
 
 const STEP_X = NODE_SIZE.WIDTH + NODE_GAP.X
 const STEP_Y = NODE_SIZE.HEIGHT + NODE_GAP.Y
@@ -56,7 +56,6 @@ export function layoutTree(nodes, edges = []) {
   // A broken parentId still needs somewhere to live.
   nodes.filter((node) => !positions.has(node.id)).forEach((node) => place(node.id, 0))
 
-  anchorConnectors(nodes, parentOf, positions)
   return positions
 }
 
@@ -75,38 +74,6 @@ function treeParents(nodes, edges) {
   })
 
   return parentOf
-}
-
-/**
- * A node with a stored position has been dragged or created; its connectors have
- * not, so they would stay where the tree put them. They belong to it, so they move.
- *
- * @param {import('./types.js').FlowNode[]} nodes
- * @param {Map<string, string>} parentOf
- * @param {Map<string, { x: number, y: number }>} positions
- */
-function anchorConnectors(nodes, parentOf, positions) {
-  nodes.forEach((node) => {
-    const anchor = node.position
-    const computed = positions.get(node.id)
-    if (!anchor || !computed) return
-
-    const dx = anchor.x - computed.x
-    const dy = anchor.y - computed.y
-    if (dx === 0 && dy === 0) return
-
-    nodes
-      .filter(
-        (child) =>
-          parentOf.get(child.id) === node.id &&
-          child.type === NODE_TYPE.DATE_TIME_CONNECTOR &&
-          !child.position,
-      )
-      .forEach((child) => {
-        const at = positions.get(child.id)
-        if (at) positions.set(child.id, { x: at.x + dx, y: at.y + dy })
-      })
-  })
 }
 
 /**

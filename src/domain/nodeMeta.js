@@ -1,11 +1,10 @@
-import { MESSAGE_PART, NODE_TYPE, WEEKDAYS } from './constants.js'
-import { firstLine, summariseHours, textParts, truncate } from './format.js'
-import { localTimezone } from './time.js'
+import { SHAPE } from './constants.js'
+import { truncate } from './format.js'
 
 /**
  * @typedef {Object} NodeMeta
  * @property {string} label
- * @property {string} icon      key into the icon component
+ * @property {string} hint      what the shape conventionally means
  * @property {string} accent    token name, resolved to classes by the canvas
  * @property {boolean} openable can the drawer be opened
  * @property {boolean} editable
@@ -13,77 +12,50 @@ import { localTimezone } from './time.js'
  * @property {(node: import('./types.js').FlowNode) => string} summary
  */
 
+/** @param {import('./types.js').FlowNode} node */
+const describe = (node) => (node.data.description ? truncate(node.data.description) : '')
+
 /**
- * Every per-type difference, as data. Components read this instead of branching
- * on type, so adding a node type is one entry.
+ * @param {string} label
+ * @param {string} hint
+ * @param {string} accent
+ * @returns {NodeMeta}
+ */
+const shape = (label, hint, accent) => ({
+  label,
+  hint,
+  accent,
+  openable: true,
+  editable: true,
+  deletable: true,
+  summary: describe,
+})
+
+/**
+ * Every per-shape difference, as data. Components read this instead of
+ * branching on type, so adding a shape is one entry here and one outline in
+ * `shapes.js`. Order is palette order.
  *
  * @type {Readonly<Record<string, NodeMeta>>}
  */
 export const NODE_META = Object.freeze({
-  [NODE_TYPE.TRIGGER]: {
-    label: 'Trigger',
-    icon: 'bolt',
-    accent: 'trigger',
-    openable: false,
-    editable: false,
-    deletable: false,
-    summary: (node) => humanise(node.data.type ?? 'Conversation Opened'),
-  },
-  [NODE_TYPE.DATE_TIME]: {
-    label: 'Business Hours',
-    icon: 'calendar',
-    accent: 'hours',
-    openable: true,
-    editable: true,
-    deletable: true,
-    summary: (node) => summariseHours(node.data.times, node.data.timezone),
-  },
-  // Display only, per the brief.
-  [NODE_TYPE.DATE_TIME_CONNECTOR]: {
-    label: 'Branch',
-    icon: 'branch',
-    accent: 'branch',
-    openable: false,
-    editable: false,
-    deletable: false,
-    summary: (node) => humanise(node.data.connectorType ?? ''),
-  },
-  [NODE_TYPE.SEND_MESSAGE]: {
-    label: 'Send Message',
-    icon: 'send',
-    accent: 'message',
-    openable: true,
-    editable: true,
-    deletable: true,
-    summary: (node) => {
-      const text = textParts(node.data.payload)[0]?.text
-      return text ? truncate(firstLine(text)) : 'No message yet'
-    },
-  },
-  [NODE_TYPE.ADD_COMMENT]: {
-    label: 'Add Comment',
-    icon: 'comment',
-    accent: 'comment',
-    openable: true,
-    editable: true,
-    deletable: true,
-    summary: (node) => (node.data.comment ? truncate(node.data.comment) : 'No comment yet'),
-  },
+  [SHAPE.PROCESS]: shape('Process', 'A step', 'message'),
+  [SHAPE.TERMINAL]: shape('Start / end', 'Where a flow begins or ends', 'trigger'),
+  [SHAPE.DECISION]: shape('Decision', 'A question with more than one way out', 'hours'),
+  [SHAPE.DATA]: shape('Input / output', 'Data going in or out', 'branch'),
+  [SHAPE.DATABASE]: shape('Database', 'A store of data', 'branch'),
+  [SHAPE.DOCUMENT]: shape('Document', 'A file or report', 'comment'),
+  [SHAPE.NOTE]: shape('Note', 'An annotation', 'comment'),
+  [SHAPE.TEXT]: shape('Text', 'A label with no outline', 'unknown'),
 })
 
 /**
  * So an unfamiliar type renders instead of crashing the canvas.
  * @type {NodeMeta}
  */
-const FALLBACK_META = Object.freeze({
-  label: 'Unknown',
-  icon: 'question',
-  accent: 'unknown',
-  openable: false,
-  editable: false,
-  deletable: false,
-  summary: () => 'Unsupported node type',
-})
+const FALLBACK_META = Object.freeze(
+  shape('Unknown', 'A shape this version does not know', 'unknown'),
+)
 
 /** @param {string} type @returns {NodeMeta} */
 export const metaFor = (type) => NODE_META[type] ?? FALLBACK_META
@@ -94,48 +66,16 @@ export const isOpenable = (node) => metaFor(node.type).openable
 /** @param {import('./types.js').FlowNode} node */
 export const isDeletable = (node) => metaFor(node.type).deletable
 
-/**
- * The three options in the create form. `businessHours` is the brief's label for
- * a dateTime node, so the option carries both the type and its seed data.
- */
-export const CREATABLE_NODES = Object.freeze([
-  {
-    value: NODE_TYPE.SEND_MESSAGE,
-    label: 'Send Message',
-    type: NODE_TYPE.SEND_MESSAGE,
-    /** @param {string} description @returns {import('./types.js').FlowNodeData} */
-    seed: (description) => ({
-      payload: [{ type: MESSAGE_PART.TEXT, text: description }],
-      description,
-    }),
-  },
-  {
-    value: NODE_TYPE.ADD_COMMENT,
-    label: 'Add Comments',
-    type: NODE_TYPE.ADD_COMMENT,
-    /** @param {string} description @returns {import('./types.js').FlowNodeData} */
-    seed: (description) => ({ comment: description, description }),
-  },
-  {
-    value: 'businessHours',
-    label: 'Business Hours',
-    type: NODE_TYPE.DATE_TIME,
-    /** @param {string} description @returns {import('./types.js').FlowNodeData} */
-    seed: (description) => ({
-      action: 'businessHours',
-      // Whoever creates it is usually configuring their own hours.
-      timezone: localTimezone(),
-      times: WEEKDAYS.map((day) => ({ day, startTime: '09:00', endTime: '17:00' })),
-      description,
-    }),
-  },
-])
+/** @param {string} type */
+export const isKnownShape = (type) => Object.hasOwn(NODE_META, type)
 
-/** @param {string} value */
-export const creatableByValue = (value) => CREATABLE_NODES.find((option) => option.value === value)
+/** Every shape, in palette order, for pickers. */
+export const SHAPE_OPTIONS = Object.freeze(
+  Object.entries(NODE_META).map(([value, meta]) => ({ value, label: meta.label, hint: meta.hint })),
+)
 
 /**
- * camelCase or snake_case to Title Case, for payload values shown as they are.
+ * camelCase or snake_case to Title Case, for stored values shown as they are.
  * @param {string} value
  * @returns {string}
  */

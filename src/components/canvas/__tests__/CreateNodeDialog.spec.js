@@ -8,6 +8,7 @@ import * as flowApi from '@/api/flowApi.js'
 import { createTestQueryClient, waitUntil } from '@/tests/utils.js'
 import TextField from '@/components/ui/TextField.vue'
 import SelectField from '@/components/ui/SelectField.vue'
+import { SHAPE_OPTIONS } from '@/domain/nodeMeta.js'
 import CreateNodeDialog from '../CreateNodeDialog.vue'
 
 const router = createRouter({
@@ -47,19 +48,17 @@ beforeEach(async () => {
 })
 
 describe('CreateNodeDialog', () => {
-  it('offers the three types the brief names', () => {
+  it('offers every shape in the registry', () => {
     const wrapper = render()
 
     expect($$('option').map((option) => option.textContent?.trim())).toEqual([
-      'Select a node type',
-      'Send Message',
-      'Add Comments',
-      'Business Hours',
+      'Select a shape',
+      ...SHAPE_OPTIONS.map((option) => option.label),
     ])
     wrapper.unmount()
   })
 
-  it('refuses to create without a title and a type', async () => {
+  it('refuses to create without a title and a shape', async () => {
     const create = vi.spyOn(flowApi, 'createNode')
     const wrapper = render()
 
@@ -75,12 +74,12 @@ describe('CreateNodeDialog', () => {
     const push = vi.spyOn(router, 'push')
     const wrapper = render()
 
-    await fill(wrapper, { title: 'Follow up', type: 'sendMessage' })
+    await fill(wrapper, { title: 'Follow up', type: 'process' })
     await submit(wrapper)
     await waitUntil(() => wrapper.emitted('close') !== undefined)
 
     expect(create).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Follow up', nodeType: 'sendMessage' }),
+      expect.objectContaining({ title: 'Follow up', shape: 'process' }),
     )
     expect(push).toHaveBeenCalledWith(expect.objectContaining({ name: 'node-details' }))
     wrapper.unmount()

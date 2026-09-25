@@ -1,6 +1,10 @@
-import { ROOT_PARENT_ID } from './constants.js'
+import { SHAPE } from './constants.js'
+import { isLegacyBranch, legacyDescription, legacyName, shapeForLegacy } from './legacy.js'
 
-export const DOCUMENT_VERSION = 2
+export const DOCUMENT_VERSION = 3
+
+/** v1 marked a root with this parent. */
+const ROOT_PARENT_ID = '-1'
 
 export const DEFAULT_TITLE = 'Untitled diagram'
 
@@ -30,35 +34,96 @@ export const emptyDocument = (title = DEFAULT_TITLE) => ({
 /**
  * Anything Flow has ever stored, lifted to the current shape.
  *
- * v1 was a bare array of nodes whose one incoming edge was `parentId`.
+ * - v1: a bare array of chat-bot nodes whose one incoming edge was `parentId`
+ * - v2: `{ nodes, edges }`, still with the chat-bot node types
+ * - v3: the same, with general shapes; branch nodes became labelled edges
  *
  * @param {unknown} raw
  * @returns {import('./types.js').FlowDocument}
  */
 export function migrate(raw) {
-  if (Array.isArray(raw)) return fromV1(raw)
+  if (Array.isArray(raw)) return toV3(fromV1(raw))
 
   if (raw && typeof raw === 'object' && Array.isArray(/** @type {any} */ (raw).nodes)) {
-    const document = /** @type {Record<string, any>} */ (raw)
-    return {
-      version: DOCUMENT_VERSION,
-      title: typeof document.title === 'string' ? document.title : DEFAULT_TITLE,
-      nodes: document.nodes.map((/** @type {Record<string, any>} */ node) => ({
-        ...node,
-        id: toNodeId(node.id),
-      })),
-      edges: (Array.isArray(document.edges) ? document.edges : []).map(
-        (/** @type {Record<string, any>} */ edge) => ({
-          ...edge,
-          id: toNodeId(edge.id ?? edgeIdFor(edge.source, edge.target)),
-          source: toNodeId(edge.source),
-          target: toNodeId(edge.target),
-        }),
-      ),
-    }
+    const document = normalise(/** @type {Record<string, any>} */ (raw))
+    return document.version >= DOCUMENT_VERSION ? document : toV3(document)
   }
 
   throw new Error('This is not a Flow document.')
+}
+
+/**
+ * @param {Record<string, any>} document
+ * @returns {import('./types.js').FlowDocument}
+ */
+function normalise(document) {
+  return {
+    version: Number(document.version) || 2,
+    title: typeof document.title === 'string' ? document.title : DEFAULT_TITLE,
+    nodes: document.nodes.map((/** @type {Record<string, any>} */ node) => ({
+      ...node,
+      id: toNodeId(node.id),
+    })),
+    edges: (Array.isArray(document.edges) ? document.edges : []).map(
+      (/** @type {Record<string, any>} */ edge) => ({
+        ...edge,
+        id: toNodeId(edge.id ?? edgeIdFor(edge.source, edge.target)),
+        source: toNodeId(edge.source),
+        target: toNodeId(edge.target),
+      }),
+    ),
+  }
+}
+
+/**
+ * Chat-bot types become shapes, keeping what their card showed as the
+ * description. A branch node between two others becomes the label on a direct
+ * edge; one that leads nowhere stays, as text, so its label is not lost.
+ *
+ * @param {import('./types.js').FlowDocument} document
+ * @returns {import('./types.js').FlowDocument}
+ */
+function toV3(document) {
+  let { nodes, edges } = document
+
+  nodes.filter(isLegacyBranch).forEach((branch) => {
+    const into = edges.filter((edge) => edge.target === branch.id)
+    const out = edges.filter((edge) => edge.source === branch.id)
+    if (!into.length || !out.length) return
+
+    const bridged = into.flatMap((from) =>
+      out.map((to) => ({
+        id: edgeIdFor(from.source, to.target),
+        source: from.source,
+        target: to.target,
+        label: branch.name ?? '',
+      })),
+    )
+
+    nodes = nodes.filter((node) => node.id !== branch.id)
+    edges = [
+      ...edges.filter((edge) => edge.source !== branch.id && edge.target !== branch.id),
+      ...bridged.filter((edge) => !edges.some((existing) => existing.id === edge.id)),
+    ]
+  })
+
+  return {
+    ...document,
+    version: DOCUMENT_VERSION,
+    nodes: nodes.map((node) => {
+      if (isLegacyBranch(node)) return { ...node, type: SHAPE.TEXT }
+
+      const shape = shapeForLegacy(node.type)
+      if (!shape) return node
+      return {
+        ...node,
+        type: shape,
+        name: legacyName(node),
+        data: { ...node.data, description: legacyDescription(node) },
+      }
+    }),
+    edges,
+  }
 }
 
 /**
@@ -78,5 +143,5 @@ function fromV1(list) {
 
   const nodes = list.map(({ parentId: _parentId, ...node }) => ({ ...node, id: toNodeId(node.id) }))
 
-  return { version: DOCUMENT_VERSION, title: DEFAULT_TITLE, nodes, edges }
+  return { version: 2, title: DEFAULT_TITLE, nodes, edges }
 }

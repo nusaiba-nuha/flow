@@ -1,4 +1,3 @@
-import { CONNECTOR_TYPE, NODE_TYPE } from './constants.js'
 import { edgeIdFor, toNodeId } from './document.js'
 import { layoutTree } from './layout.js'
 
@@ -12,7 +11,7 @@ export function normaliseNode(raw) {
   return {
     id: toNodeId(raw.id),
     type: raw.type,
-    name: raw.name ?? (raw.type === NODE_TYPE.TRIGGER ? 'Trigger' : 'Untitled'),
+    name: raw.name ?? 'Untitled',
     data: raw.data ?? {},
     position: raw.position ?? null,
   }
@@ -38,15 +37,6 @@ export function buildEdges(edges, ids) {
 }
 
 /**
- * @param {import('./types.js').FlowNode} node
- * @returns {string | null}
- */
-export function connectorLabel(node) {
-  if (node.type !== NODE_TYPE.DATE_TIME_CONNECTOR) return null
-  return node.data.connectorType === CONNECTOR_TYPE.SUCCESS ? 'Success' : 'Failure'
-}
-
-/**
  * A dragged node keeps where it was put; everything else is laid out.
  * @param {import('./types.js').FlowDocument | null | undefined} document
  * @returns {{ nodes: import('./types.js').VueFlowNode[], edges: import('./types.js').VueFlowEdge[] }}
@@ -60,7 +50,8 @@ export function documentToGraph(document) {
   return {
     nodes: nodes.map((node) => ({
       id: node.id,
-      type: node.type,
+      // One component draws every shape, so an unknown one still renders.
+      type: 'shape',
       position: node.position ?? positions.get(node.id) ?? { x: 0, y: 0 },
       data: { node },
     })),
@@ -69,8 +60,7 @@ export function documentToGraph(document) {
 }
 
 /**
- * A node goes with every edge that touches it. A dateTime node's branches go
- * too: they belong to it and mean nothing on their own.
+ * A node goes with every edge that touches it.
  *
  * @param {import('./types.js').FlowDocument} document
  * @param {string} id
@@ -79,19 +69,10 @@ export function documentToGraph(document) {
 export function withNodeRemoved(document, id) {
   if (!document.nodes.some((node) => toNodeId(node.id) === id)) return document
 
-  const typeOf = new Map(document.nodes.map((node) => [toNodeId(node.id), node.type]))
-  const branches = document.edges
-    .filter(
-      (edge) => edge.source === id && typeOf.get(edge.target) === NODE_TYPE.DATE_TIME_CONNECTOR,
-    )
-    .map((edge) => edge.target)
-
-  const gone = new Set([id, ...branches])
-
   return {
     ...document,
-    nodes: document.nodes.filter((node) => !gone.has(toNodeId(node.id))),
-    edges: document.edges.filter((edge) => !gone.has(edge.source) && !gone.has(edge.target)),
+    nodes: document.nodes.filter((node) => toNodeId(node.id) !== id),
+    edges: document.edges.filter((edge) => edge.source !== id && edge.target !== id),
   }
 }
 
