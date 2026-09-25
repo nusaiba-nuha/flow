@@ -20,7 +20,8 @@ export default defineConfig({
 
   // Against the production build, so E2E exercises what actually ships.
   webServer: {
-    command: 'npm run build && npm run preview -- --port 4173',
+    command:
+      'VITE_ISKETCH_API=https://api.isketch.test npm run build && npm run preview -- --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -43,10 +43,10 @@ isketch aims at that gap:
   SQL DDL, with re-import that keeps your layout. And a `.drawio` back out whenever you want one.
 - **Local first.** No account, no server, works offline, shareable as a link.
 
-What is honestly not there yet: a share link keeps the diagram after the `#`, which browsers never
-send to a server, so an AI that fetches it sees nothing. The [server](#hosted-links-for-agents)
-for links an agent can read is built, but nobody hosts it yet, and the app does not publish to it
-yet. Until then, hand over the `.flow` file, the brief, or run the server yourself.
+What is honestly not there yet: a private share link keeps the diagram after the `#`, which
+browsers never send to a server, so an AI that fetches it sees nothing. Public links an agent can
+read come from the [server](#hosted-links-for-agents), which is built and wired into Share, but
+nobody hosts it yet: run it yourself, or hand over the `.flow` file or the brief.
 
 > **Status: early.** isketch started as a flow chart exercise called Flow. The canvas, text
 > format, importers, CLI and pull request diffs below work today.
@@ -124,8 +124,10 @@ yet. Until then, hand over the `.flow` file, the brief, or run the server yourse
 - **Compare versions.** Compare the diagram on screen with the file in your repository, or any
   other version, and see what was added, removed and changed, as a list and as a marked-up
   picture.
-- **Share as a link.** The whole diagram travels in the link itself, compressed, so nothing is
-  uploaded. Opening one gives the visitor their own copy, and undo brings back theirs.
+- **Share.** A private link carries the whole diagram in the link itself, compressed, so nothing is
+  uploaded; opening one gives the visitor their own copy, and undo brings back theirs. With a
+  server configured (`VITE_ISKETCH_API`, see `.env.example`), Share also publishes a public link an
+  AI can read, updates it in place, or unpublishes it; the edit token stays in this browser.
 - **Works offline.** The samples are bundled, so the app makes no network requests.
 
 ## The `.flow` format

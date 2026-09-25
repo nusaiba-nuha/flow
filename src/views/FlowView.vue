@@ -9,6 +9,7 @@ import TextPanel from '@/components/text/TextPanel.vue'
 import ImportDialog from '@/components/import/ImportDialog.vue'
 import CompareDialog from '@/components/compare/CompareDialog.vue'
 import ExportDialog from '@/components/export/ExportDialog.vue'
+import ShareDialog from '@/components/share/ShareDialog.vue'
 import HelpDialog from '@/components/ui/HelpDialog.vue'
 import ToastHost from '@/components/ui/ToastHost.vue'
 import { useHelpDialog } from '@/composables/useHelpDialog.js'
@@ -21,6 +22,7 @@ const canvas = useCanvasStore()
 const isImporting = ref(false)
 const isComparing = ref(false)
 const isExporting = ref(false)
+const isSharing = ref(false)
 useOpenSharedLink()
 const file = useFileStore()
 // Bound at the shell: a dialog that is not mounted cannot listen for its own key.
@@ -42,6 +44,7 @@ const help = useHelpDialog()
         @import="isImporting = true"
         @compare="isComparing = true"
         @export="isExporting = true"
+        @share="isSharing = true"
       />
     </header>
 
@@ -63,6 +66,7 @@ const help = useHelpDialog()
         <ImportDialog v-if="isImporting" @close="isImporting = false" />
         <CompareDialog v-if="isComparing" @close="isComparing = false" />
         <ExportDialog v-if="isExporting" @close="isExporting = false" />
+        <ShareDialog v-if="isSharing" @close="isSharing = false" />
         <ToastHost />
       </main>
     </div>

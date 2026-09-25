@@ -25,7 +25,9 @@ tests the previous build.
   run it in Node, so it also uses no browser globals, no `@/` alias, and only packages listed
   under `dependencies`.
 - `src/api/flowApi.js` is the only module that touches persistence. It is shaped
-  like a real API so it can be swapped for one.
+  like a real API so it can be swapped for one. Publishing a public link is not
+  persistence: it lives in `src/api/publishApi.js`, and is off unless
+  `VITE_ISKETCH_API` names a server.
 - Per shape behaviour lives in `src/domain/nodeMeta.js`, and each outline in
   `src/domain/shapes.js`. Add an entry there rather than branching on type in a component.
 - State has three owners and no copies: TanStack Query owns the document, the route
