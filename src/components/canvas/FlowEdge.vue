@@ -45,6 +45,10 @@ const path = computed(() =>
   }),
 )
 
+const sketch = inject(SKETCH, ref(false))
+/** Drawn by hand, the line wobbles; the hit area below stays the clean path. */
+const drawn = computed(() => (sketch.value ? sketchPath(path.value[0], props.id) : path.value[0]))
+
 const showRemove = computed(() => props.selected || hovered.value)
 </script>
 
@@ -52,12 +56,14 @@ const showRemove = computed(() => props.selected || hovered.value)
 import { DETACH_EDGE } from './connectKey.js'
 import { EDIT_TEXT } from './editKey.js'
 import InlineText from './InlineText.vue'
+import { SKETCH } from './sketchKey.js'
+import { sketchPath } from '@/domain/sketch.js'
 </script>
 
 <template>
   <BaseEdge
     :id="id"
-    :path="path[0]"
+    :path="drawn"
     :style="{ strokeWidth: selected ? 2.5 : 1.5 }"
     :class="selected ? 'stroke-focus' : ''"
   />
@@ -99,7 +105,8 @@ import InlineText from './InlineText.vue'
     >
       <span
         v-if="label"
-        class="rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] font-medium text-muted"
+        class="rounded-full border border-line bg-surface px-2 py-0.5 font-medium text-muted"
+        :class="sketch ? 'font-sketch text-[13px]' : 'text-[11px]'"
         data-testid="edge-label"
         title="Double-click to edit the label"
         @dblclick.stop="edit?.start(id)"

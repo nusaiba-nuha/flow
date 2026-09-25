@@ -47,6 +47,19 @@ describe('isketch render', () => {
   })
 })
 
+describe('isketch render, sketched', () => {
+  it('embeds the handwriting font only in a sketch', async () => {
+    const font = async () => 'data:font/woff2;base64,AAAA'
+    const sketch = fakeIo({ 'd.flow': `style: sketch\n${GOOD}` })
+    const clean = fakeIo({ 'd.flow': GOOD })
+
+    expect(await run(['render', 'd.flow'], { ...sketch.io, sketchFont: font })).toBe(0)
+    expect(await run(['render', 'd.flow'], { ...clean.io, sketchFont: font })).toBe(0)
+    expect(sketch.out.join('')).toContain('base64,AAAA')
+    expect(clean.out.join('')).not.toContain('base64')
+  })
+})
+
 describe('isketch check', () => {
   it('passes good files and fails on any bad or missing one', async () => {
     const { io, err } = fakeIo({ 'good.flow': GOOD, 'bad.flow': 'x -> y' })

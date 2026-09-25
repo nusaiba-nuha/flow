@@ -2,6 +2,7 @@ import { parseFlow } from '../domain/flowText.js'
 import { describeDiff, diffDocuments, isUnchanged, mergeForDiff } from '../domain/diff.js'
 import { renderSvg } from '../domain/renderSvg.js'
 import { toBrief } from '../domain/brief.js'
+import { isSketch } from '../domain/sketch.js'
 
 export const USAGE = `Usage:
   isketch render <file.flow> [-o <out.svg>] [--dark]   Draw a diagram as SVG
@@ -21,7 +22,8 @@ export const USAGE = `Usage:
  *   writeFile: (path: string, text: string) => Promise<void>,
  *   stdout: (text: string) => void,
  *   stderr: (text: string) => void,
- * }} io
+ *   sketchFont?: () => Promise<string>,
+ * }} io  `sketchFont` gives the handwriting font to embed in a sketch
  * @returns {Promise<number>} the exit code
  */
 export async function run(argv, io) {
@@ -52,7 +54,10 @@ async function render(args, io) {
   const document = await read(input, io)
   if (!document) return 1
 
-  const svg = renderSvg(document, { theme: dark ? 'dark' : 'light' })
+  const svg = renderSvg(document, {
+    theme: dark ? 'dark' : 'light',
+    sketchFont: await fontFor(document, io),
+  })
   if (out) {
     await io.writeFile(out, svg)
     io.stderr(`Rendered ${input} to ${out}\n`)
@@ -101,10 +106,25 @@ async function diff(args, io) {
 
   if (out) {
     const { document, highlight } = mergeForDiff(before, after, changes)
-    await io.writeFile(out, renderSvg(document, { theme: dark ? 'dark' : 'light', highlight }))
+    await io.writeFile(
+      out,
+      renderSvg(document, {
+        theme: dark ? 'dark' : 'light',
+        highlight,
+        sketchFont: await fontFor(document, io),
+      }),
+    )
   }
   return 0
 }
+
+/**
+ * The font to embed, read only when a sketch needs it.
+ * @param {import('../domain/types.js').FlowDocument} document
+ * @param {Parameters<typeof run>[1]} io
+ */
+const fontFor = async (document, io) =>
+  isSketch(document) && io.sketchFont ? await io.sketchFont() : ''
 
 /**
  * Positional files, and the value of `-o`, which is '' when it is given

@@ -1,4 +1,5 @@
 title: Sign up
+style: sketch
 
 page = screen "Sign up page" -- /signup
 email = input "Email"

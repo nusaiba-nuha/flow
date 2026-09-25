@@ -69,6 +69,23 @@ describe('wrap', () => {
 })
 
 describe('sizes', () => {
+  it('draws a sketch by hand, in handwriting, with the font embedded when given', () => {
+    const sketch = { ...architecture, style: 'sketch' }
+    const plain = renderSvg(sketch)
+    const embedded = renderSvg(sketch, { sketchFont: 'data:font/woff2;base64,AAAA' })
+
+    expect(plain).toMatch(/font-family="[^"]*Patrick Hand/)
+    expect(plain).toContain('<style>text{font-weight:400}')
+    expect(plain).not.toContain('@font-face')
+    expect(embedded).toContain(
+      "@font-face{font-family:'Patrick Hand';src:url(data:font/woff2;base64,AAAA)",
+    )
+    // Each shape keeps its clean fill under a hand-drawn stroke.
+    expect(plain.match(/stroke="none"\/>/g)).toHaveLength(architecture.nodes.length)
+    expect(renderSvg(sketch)).toBe(plain)
+    expect(renderSvg(architecture)).not.toContain('<style>')
+  })
+
   it('draws a resized node at its size, and frames it', () => {
     const svg = renderSvg(
       {

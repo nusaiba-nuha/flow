@@ -174,6 +174,18 @@ describe('sizes', () => {
     ])
   })
 
+  it('writes the sketch style under the title, and refuses a style it does not know', () => {
+    const text = serialiseFlow({ ...small, style: 'sketch' })
+
+    expect(text).toMatch(/^title: Checkout\nstyle: sketch\n\n/)
+    expect(parseFlow(text).document.style).toBe('sketch')
+    expect(parseFlow('style: clean\na = note "A"').document.style).toBeUndefined()
+    expect(serialiseFlow(small)).not.toContain('style:')
+    expect(parseFlow('style: wobbly').errors).toEqual([
+      { line: 1, message: 'Unknown style "wobbly". Use one of: clean, sketch.' },
+    ])
+  })
+
   it('keep a resized node size on its layout line, and read it back', () => {
     const sized = structuredClone(small)
     sized.nodes[1].size = { width: 300, height: 140 }

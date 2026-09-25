@@ -185,17 +185,18 @@ marked on the canvas, and notes travel with the brief, the `.flow` file and MCP.
 
 ## Milestone 6: Sketch feel
 
-### FL-68 · Hand-drawn style ⏭️
+### FL-68 · Hand-drawn style ✅
 
-A sketch or clean switch per diagram: rough outlines and a handwritten font in sketch mode, the
-same diagram underneath. Both render in the app, in SVG and in the brief's picture.
+A sketch or clean switch per diagram (`style: sketch`): outlines and edges redrawn by Rough.js,
+seeded by id so they hold still, and a handwritten font (Patrick Hand, bundled, embedded in
+exported SVGs). The same diagram underneath, in the app and in SVG.
 
 ### FL-69 · Freehand pen and arrows ⬜
 
 Draw freely, and draw an arrow between two shapes by dragging from one to the other anywhere, not
 only from a handle.
 
-### FL-70 · draw.io XML import and export ⬜
+### FL-70 · draw.io XML import and export ⏭️
 
 Open a `.drawio` file, and save one, for the shapes isketch has, saying what was skipped.
 

@@ -3,6 +3,7 @@ import { describeDiff, diffDocuments, isUnchanged } from '../domain/diff.js'
 import { FLOW_EXTENSION, parseFlow, serialiseFlow } from '../domain/flowText.js'
 import { renderSvg } from '../domain/renderSvg.js'
 import { SHAPE_OPTIONS } from '../domain/nodeMeta.js'
+import { isSketch } from '../domain/sketch.js'
 
 /**
  * A Model Context Protocol server for a folder of `.flow` files, so a coding
@@ -15,7 +16,9 @@ import { SHAPE_OPTIONS } from '../domain/nodeMeta.js'
  *   writeFile: (path: string, text: string) => Promise<void>,
  *   listFiles: () => Promise<string[]>,
  *   resolve: (path: string) => string | null,
- * }} Workspace  paths are relative to the folder; `resolve` refuses any outside it
+ *   sketchFont?: () => Promise<string>,
+ * }} Workspace  paths are relative to the folder; `resolve` refuses any outside it;
+ *   `sketchFont` is the handwriting font to embed in a sketch
  *
  * @typedef {{ jsonrpc: '2.0', id?: string | number | null, method?: string, params?: any }} Message
  */
@@ -275,7 +278,11 @@ async function writeDiagram(workspace, { path, text }) {
  */
 async function renderDiagram(workspace, { path, out, theme }) {
   const file = checkedPath(workspace, path)
-  const svg = renderSvg(await load(workspace, file), { theme: theme === 'dark' ? 'dark' : 'light' })
+  const document = await load(workspace, file)
+  const svg = renderSvg(document, {
+    theme: theme === 'dark' ? 'dark' : 'light',
+    sketchFont: isSketch(document) && workspace.sketchFont ? await workspace.sketchFont() : '',
+  })
   if (out === undefined) return svg
 
   const target = checkedPath(workspace, out, '.svg')

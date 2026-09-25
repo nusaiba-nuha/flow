@@ -6,6 +6,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useShareLink } from '@/composables/useShareLink.js'
 import { useCopyBrief } from '@/composables/useCopyBrief.js'
+import { useSketchStyle } from '@/composables/useSketchStyle.js'
 import { useDiagramFile } from '@/composables/useDiagramFile.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { usePlatform } from '@/composables/usePlatform.js'
@@ -23,6 +24,7 @@ const toasts = useToastStore()
 const canvas = useCanvasStore()
 const { share } = useShareLink()
 const { copyBrief } = useCopyBrief()
+const { sketch, toggle: toggleSketch } = useSketchStyle()
 // The one place Ctrl+S and Ctrl+O are bound, like undo.
 const { open, save } = useDiagramFile({ bindKeys: true })
 
@@ -94,6 +96,16 @@ const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
       @click="canvas.toggleText"
     >
       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+    </IconButton>
+
+    <IconButton
+      label="Sketch style"
+      :title="sketch ? 'Draw with clean lines' : 'Draw by hand, like a whiteboard sketch'"
+      :pressed="sketch"
+      @click="toggleSketch"
+    >
+      <path d="M3 17c3-1 4-6 7-6s2 5 5 5 3-4 6-5" />
+      <path d="M16 3.5a2.1 2.1 0 0 1 3 3L9 16.5l-4 1 1-4Z" />
     </IconButton>
 
     <IconButton label="Open file" :title="`Open a .flow file (${openHint})`" @click="open">
