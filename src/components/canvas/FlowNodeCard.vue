@@ -7,6 +7,8 @@ import { metaFor } from '@/domain/nodeMeta.js'
 import { MIN_NODE_SIZE, SHAPE, sizeOf } from '@/domain/constants.js'
 import { useShiftKey } from '@/composables/useShiftKey.js'
 import { RESIZE_NODE } from './resizeKey.js'
+import { SKETCH } from './sketchKey.js'
+import { sketchPath } from '@/domain/sketch.js'
 import { shapePath, textInset } from '@/domain/shapes.js'
 import { accentClasses } from './accents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
@@ -60,6 +62,17 @@ const size = computed(() =>
   props.dimensions.width && props.dimensions.height ? props.dimensions : sizeOf(node.value),
 )
 const outline = computed(() => shapePath(node.value.type, size.value.width, size.value.height, 1.5))
+const sketch = inject(SKETCH, ref(false))
+/** Drawn by hand: the clean outline still fills, and this wobbly one strokes over it. */
+const drawn = computed(() => (sketch.value ? sketchPath(outline.value, props.id) : ''))
+/**
+ * Handwriting runs small and has one weight, so a sketch's titles go a size
+ * up rather than bold.
+ */
+const titleSize = computed(() => {
+  if (sketch.value) return isText.value ? 'text-xl' : 'text-lg leading-tight'
+  return isText.value ? 'text-base font-semibold' : 'text-sm font-semibold'
+})
 const inset = computed(() => textInset(node.value.type, size.value.width, size.value.height))
 
 const resize = inject(RESIZE_NODE, () => {})
@@ -83,6 +96,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
   <div
     class="relative flex flex-col items-center transition-opacity duration-150"
     :class="[
+      sketch ? 'font-sketch' : '',
       // A table reads top down: its name in the band, its columns below.
       isTable ? 'justify-start pt-1.5 text-left' : 'justify-center text-center',
       isDropTarget && !acceptsDrop ? 'opacity-40' : '',
@@ -123,9 +137,18 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
       <path
         :d="outline"
         class="fill-surface transition-[stroke-width] duration-150"
-        stroke="currentColor"
+        :stroke="drawn ? 'none' : 'currentColor'"
         :stroke-width="acceptsDrop ? 3 : strokeWidth"
         stroke-linejoin="round"
+      />
+      <path
+        v-if="drawn"
+        :d="drawn"
+        fill="none"
+        stroke="currentColor"
+        :stroke-width="acceptsDrop ? 3 : strokeWidth"
+        stroke-linecap="round"
+        data-testid="sketch-outline"
       />
     </svg>
 
@@ -149,15 +172,16 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     />
     <h3
       v-else
-      class="relative w-full font-semibold break-words"
-      :class="[isText ? 'text-base' : 'text-sm', isTable ? 'truncate' : 'line-clamp-2']"
+      class="relative w-full break-words"
+      :class="[titleSize, isTable ? 'truncate' : 'line-clamp-2']"
     >
       {{ node.name }}
     </h3>
 
     <p
       v-if="description"
-      class="relative w-full text-xs leading-snug text-muted"
+      class="relative w-full leading-snug text-muted"
+      :style="{ fontSize: sketch ? '0.875rem' : '0.75rem' }"
       :class="
         isTable ? 'mt-2.5 line-clamp-3' : isDecision ? 'mt-0.5 line-clamp-1' : 'mt-0.5 line-clamp-2'
       "

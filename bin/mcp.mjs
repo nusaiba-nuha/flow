@@ -6,6 +6,7 @@ import process from 'node:process'
 import { createInterface } from 'node:readline'
 
 import { createServer } from '../src/mcp/server.js'
+import { sketchFont } from './sketchFont.mjs'
 
 /** Folders no diagram lives in, skipped so a listing stays quick. */
 const SKIPPED = new Set(['node_modules', '.git', 'dist', 'coverage'])
@@ -20,6 +21,7 @@ export function serve(folder) {
 
   const handle = createServer({
     resolve: inside,
+    sketchFont,
     readFile: (path) => readFile(inside(path), 'utf8'),
     writeFile: async (path, text) => {
       const full = inside(path)

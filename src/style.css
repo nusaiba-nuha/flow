@@ -146,6 +146,7 @@
 
 /* Mapped onto variables, so utilities follow the active theme. */
 @theme inline {
+  --font-sketch: 'Patrick Hand', 'Comic Sans MS', 'Segoe Print', cursive;
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-raised: var(--surface-raised);

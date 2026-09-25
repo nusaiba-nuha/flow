@@ -33,6 +33,7 @@ import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
 import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
 import { canConnect, edgeIdFor, toNodeId } from '@/domain/graph.js'
 import { isInView, panDuration } from '@/domain/motion.js'
+import { isSketch } from '@/domain/sketch.js'
 import { useToastStore } from '@/stores/toasts.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
@@ -40,6 +41,7 @@ import { FOCUSED_NODE_ID } from './focusKey.js'
 import { CONNECT_STATE, DETACH_EDGE } from './connectKey.js'
 import { EDIT_TEXT } from './editKey.js'
 import { RESIZE_NODE } from './resizeKey.js'
+import { SKETCH } from './sketchKey.js'
 import { SHAPE_DRAG_TYPE } from '@/components/palette/dragType.js'
 import { NODE_SIZE } from '@/domain/constants.js'
 import { freeSpotNear } from '@/domain/layout.js'
@@ -60,6 +62,11 @@ const deleteNodes = useDeleteNodes()
 const updateNode = useUpdateNode()
 const updateEdge = useUpdateEdge()
 const resizeNode = useResizeNode()
+
+provide(
+  SKETCH,
+  computed(() => isSketch(diagram.value)),
+)
 
 provide(
   RESIZE_NODE,

@@ -61,6 +61,7 @@ function normalise(document) {
     version: Number(document.version) || 2,
     title: typeof document.title === 'string' ? document.title : DEFAULT_TITLE,
     ...(typeof document.notes === 'string' && document.notes ? { notes: document.notes } : {}),
+    ...(document.style === 'sketch' ? { style: 'sketch' } : {}),
     nodes: document.nodes.map((/** @type {Record<string, any>} */ node) => ({
       ...node,
       id: toNodeId(node.id),

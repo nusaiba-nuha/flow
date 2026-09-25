@@ -29,6 +29,8 @@ isketch aims at that gap:
 
 - **Every sketch is exact text.** Ids, kinds, directions and notes, in a line-based `.flow` file
   an agent reads without guessing. Edit the canvas or the text; the other follows.
+- **Sketch like a whiteboard, keep it precise.** A hand-drawn style for when the design is still
+  rough, a clean one for when it is not, over the same exact diagram.
 - **Sketch the interface too.** Wireframe shapes (screen, button, input, card, list, image) sit
   on the same canvas as the architecture, so a whole feature is one sketch.
 - **Built for the hand-off.** _Copy for AI_ puts a Markdown brief on the clipboard: every shape by
@@ -75,6 +77,9 @@ over the `.flow` file or its text.
 - **Deep links.** Each node's details open at `/flow/node/:id`, so a node can be linked to.
 - **Keyboard first.** Arrow keys walk the nodes, Enter opens one, `?` lists every shortcut.
 - **Automatic layout** for anything you have not placed by hand.
+- **Sketch style.** One switch draws the whole diagram by hand, like a whiteboard: wobbly outlines
+  (drawn by [Rough.js](https://roughjs.com), as in Excalidraw) and a handwritten font. The
+  diagram underneath is the same, so switching back is lossless, and exported SVGs carry the font.
 - **Light and dark themes**, following the system until you choose.
 - **Saved locally.** Edits are kept in `localStorage` and survive a reload.
 - **Edit as text.** Open the text pane beside the canvas and edit the diagram in the
@@ -131,6 +136,7 @@ db 276,352
   defined further down.
 - `@layout` starts the positions, one `id x,y` per line, with ` WxH` after it for a resized shape. A node with no position is laid out
   automatically, so a hand-written diagram needs no layout block at all.
+- `style: sketch` under the title draws the diagram by hand. Leave it out for clean lines.
 - `#` starts a comment. A newline inside a description or label is written `\n`.
 
 The full example, [`examples/architecture.flow`](examples/architecture.flow), drawn by
@@ -138,9 +144,10 @@ The full example, [`examples/architecture.flow`](examples/architecture.flow), dr
 
 ![The web app architecture example, rendered to SVG](examples/architecture.svg)
 
-A wireframe, [`examples/signup.flow`](examples/signup.flow), drawn the same way:
+A wireframe in the sketch style, [`examples/signup.flow`](examples/signup.flow), drawn the same
+way:
 
-![A sign-up page wireframe, rendered to SVG](examples/signup.svg)
+![A sign-up page wireframe, drawn by hand and rendered to SVG](examples/signup.svg)
 
 One node or edge per line, in a stable order, with the layout kept apart: moving a box changes
 one line at the end, and never the lines that say what the system is. `parseFlow` and

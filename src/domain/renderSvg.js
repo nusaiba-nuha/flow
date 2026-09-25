@@ -3,6 +3,7 @@ import { buildEdges, normaliseNode } from './graph.js'
 import { layoutTree } from './layout.js'
 import { metaFor } from './nodeMeta.js'
 import { shapePath, textInset } from './shapes.js'
+import { isSketch, SKETCH_FONT, sketchPath } from './sketch.js'
 
 /**
  * The app's colour tokens, copied from `style.css` so the renderer runs where
@@ -58,11 +59,15 @@ const GLYPH = 0.56
  * lays them out.
  *
  * @param {import('./types.js').FlowDocument} document
- * @param {{ theme?: 'light' | 'dark', padding?: number, highlight?: Map<string, 'added' | 'removed' | 'changed'> }} [options]
- *   `highlight` marks nodes and edges by id, for a diff
+ * @param {{ theme?: 'light' | 'dark', padding?: number, highlight?: Map<string, 'added' | 'removed' | 'changed'>, sketchFont?: string }} [options]
+ *   `highlight` marks nodes and edges by id, for a diff; `sketchFont` is the handwriting
+ *   font as a data URL, embedded in a sketch so it looks the same wherever it opens
  * @returns {string}
  */
-export function renderSvg(document, { theme = 'light', padding = 32, highlight = new Map() } = {}) {
+export function renderSvg(
+  document,
+  { theme = 'light', padding = 32, highlight = new Map(), sketchFont = '' } = {},
+) {
   const colours = SVG_THEMES[theme] ?? SVG_THEMES.light
   const nodes = document.nodes.map(normaliseNode)
   const ids = new Set(nodes.map((node) => node.id))
@@ -80,10 +85,12 @@ export function renderSvg(document, { theme = 'light', padding = 32, highlight =
   const height =
     (boxes.length ? Math.max(...boxes.map((box) => box.y + box.height)) : 0) - top + padding
   const sizes = new Map(nodes.map((node) => [node.id, sizeOf(node)]))
+  const sketch = isSketch(document)
 
   const parts = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${round(width)}" height="${round(height)}" viewBox="${round(left)} ${round(top)} ${round(width)} ${round(height)}" font-family="${escapeXml(FONT)}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${round(width)}" height="${round(height)}" viewBox="${round(left)} ${round(top)} ${round(width)} ${round(height)}" font-family="${escapeXml(sketch ? SKETCH_FONT : FONT)}">`,
     `<title>${escapeXml(document.title ?? '')}</title>`,
+    sketch ? sketchStyle(sketchFont) : '',
     `<defs>${[
       ['arrow', colours.edge],
       // Coloured heads only for a diff, so an ordinary drawing stays byte for byte the same.
@@ -106,15 +113,33 @@ export function renderSvg(document, { theme = 'light', padding = 32, highlight =
         { ...at.get(edge.target), ...sizes.get(edge.target) },
         colours,
         highlight.get(edge.id),
+        sketch,
       ),
     ),
     ...nodes.map((node) =>
-      renderNode(node, /** @type {any} */ (at.get(node.id)), colours, highlight.get(node.id)),
+      renderNode(
+        node,
+        /** @type {any} */ (at.get(node.id)),
+        colours,
+        highlight.get(node.id),
+        sketch,
+      ),
     ),
     '</svg>',
   ]
 
-  return `${parts.join('\n')}\n`
+  return `${parts.filter(Boolean).join('\n')}\n`
+}
+
+/**
+ * Handwriting runs small and has one weight, so a sketch's text goes a size up
+ * rather than bold. The sizes are keyed on the clean ones, so both looks share
+ * one layout.
+ * @param {string} font a data URL, or empty to rely on the fallbacks
+ */
+function sketchStyle(font) {
+  const face = font ? `@font-face{font-family:'Patrick Hand';src:url(${font}) format('woff2')}` : ''
+  return `<style>${face}text{font-weight:400}text[font-size="16"]{font-size:20px}text[font-size="${TITLE_SIZE}"]{font-size:17px}text[font-size="${TEXT_SIZE}"]{font-size:14px}text[font-size="11"]{font-size:13px}</style>`
 }
 
 /**
@@ -124,8 +149,9 @@ export function renderSvg(document, { theme = 'light', padding = 32, highlight =
  * @param {{ x?: number, y?: number, width?: number, height?: number }} to
  * @param {typeof SVG_THEMES.light} colours
  * @param {'added' | 'removed' | 'changed'} [change]
+ * @param {boolean} [sketch] drawn by hand
  */
-function renderEdge(edge, from, to, colours, change) {
+function renderEdge(edge, from, to, colours, change, sketch = false) {
   const x1 = (from.x ?? 0) + (from.width ?? 0) / 2
   const y1 = (from.y ?? 0) + (from.height ?? 0)
   const x2 = (to.x ?? 0) + (to.width ?? 0) / 2
@@ -136,7 +162,8 @@ function renderEdge(edge, from, to, colours, change) {
   const style = change
     ? ` stroke-width="2.5"${change === 'removed' ? ' stroke-dasharray="6 4" opacity="0.75"' : ''}`
     : ' stroke-width="1.5"'
-  const line = `<path d="M${round(x1)},${round(y1)} V${round(middle)} H${round(x2)} V${round(y2)}" fill="none" stroke="${stroke}"${style} marker-end="url(#${change ? `arrow-${change}` : 'arrow'})"${change ? ` data-change="${change}"` : ''}/>`
+  const clean = `M${round(x1)},${round(y1)} V${round(middle)} H${round(x2)} V${round(y2)}`
+  const line = `<path d="${sketch ? sketchPath(clean, edge.id) : clean}" fill="none" stroke="${stroke}"${style} marker-end="url(#${change ? `arrow-${change}` : 'arrow'})"${change ? ` data-change="${change}"` : ''}/>`
   if (!edge.label) return line
 
   const labelWidth = edge.label.length * TEXT_SIZE * GLYPH + 16
@@ -153,8 +180,9 @@ function renderEdge(edge, from, to, colours, change) {
  * @param {{ x: number, y: number }} position
  * @param {typeof SVG_THEMES.light} colours
  * @param {'added' | 'removed' | 'changed'} [change]
+ * @param {boolean} [sketch] drawn by hand: the clean shape fills, a wobbly one strokes
  */
-function renderNode(node, position, colours, change) {
+function renderNode(node, position, colours, change, sketch = false) {
   const meta = metaFor(node.type)
   const accent =
     colours.accents[/** @type {keyof typeof colours.accents} */ (meta.accent)] ??
@@ -177,7 +205,13 @@ function renderNode(node, position, colours, change) {
 
   return [
     `<g transform="translate(${round(position.x)},${round(position.y)})"${change === 'removed' ? ' opacity="0.6"' : ''}${change ? ` data-change="${change}"` : ''}>`,
-    outline
+    outline && sketch
+      ? [
+          `<path d="${outline}" fill="${colours.surface}" stroke="none"/>`,
+          `<path d="${sketchPath(outline, node.id)}" fill="none" stroke="${stroke}"${style} stroke-linecap="round"/>`,
+        ].join('\n')
+      : '',
+    outline && !sketch
       ? `<path d="${outline}" fill="${colours.surface}" stroke="${stroke}"${style} stroke-linejoin="round"/>`
       : '',
     body,

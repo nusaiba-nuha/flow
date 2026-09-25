@@ -6,6 +6,7 @@ import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
  * review in a pull request.
  *
  *     title: Web app architecture
+ *     style: sketch
  *     note: Use NestJS and PostgreSQL
  *
  *     browser = terminal "Browser" -- Single page app
@@ -34,6 +35,8 @@ const LAYOUT_LINE = new RegExp(
 )
 const NOTE_LINE = new RegExp(String.raw`^(${ID})\s+note:\s?(.*)$`)
 const DIAGRAM_NOTE = 'note:'
+const STYLE_LINE = /^style:\s*(\S*)\s*$/
+const STYLES = ['clean', 'sketch']
 const LAYOUT_HEADER = '@layout'
 const DESCRIPTION_MARK = '--'
 
@@ -70,6 +73,7 @@ export function serialiseFlow(document) {
   const sections = [
     [
       `title: ${escapeRest(document.title ?? DEFAULT_TITLE)}`,
+      ...(document.style === 'sketch' ? ['style: sketch'] : []),
       ...noteLines(document.notes).map((line) => `${DIAGRAM_NOTE} ${line}`),
     ].join('\n'),
   ]
@@ -136,6 +140,8 @@ export function parseFlow(text) {
   const diagramNotes = []
 
   let title = DEFAULT_TITLE
+  /** @type {string} */
+  let style = 'clean'
   let inLayout = false
 
   String(text ?? '')
@@ -169,6 +175,15 @@ export function parseFlow(text) {
 
       if (content.startsWith('title:')) {
         title = unescapeRest(content.slice('title:'.length).trim())
+        return
+      }
+
+      const styled = STYLE_LINE.exec(content)
+      if (styled) {
+        if (!STYLES.includes(styled[1])) {
+          return fail(`Unknown style "${styled[1]}". Use one of: ${STYLES.join(', ')}.`)
+        }
+        style = styled[1]
         return
       }
 
@@ -258,6 +273,7 @@ export function parseFlow(text) {
         document: {
           version: DOCUMENT_VERSION,
           title,
+          ...(style === 'sketch' ? { style: /** @type {'sketch'} */ ('sketch') } : {}),
           ...(diagramNotes.length ? { notes: diagramNotes.join('\n') } : {}),
           nodes,
           edges,

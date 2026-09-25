@@ -25,6 +25,7 @@
  * @property {number} version
  * @property {string} title
  * @property {string} [notes] instructions for the whole diagram, such as the stack to use
+ * @property {'sketch'} [style] drawn by hand; absent for the clean look
  * @property {Record<string, any>[]} nodes stored as saved; `normaliseNode` makes them FlowNodes
  * @property {FlowEdge[]} edges
  *
