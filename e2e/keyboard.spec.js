@@ -17,7 +17,7 @@ test('arrows move focus between nodes and Enter opens the focused one', async ({
 })
 
 test('the canvas releases the keyboard while a dialog is open', async ({ page }) => {
-  await page.getByRole('button', { name: 'Create new node' }).click()
+  await page.getByRole('button', { name: 'Keyboard shortcuts' }).click()
   await page.keyboard.press('ArrowDown')
 
   await expect(page.locator('.vue-flow__node [aria-current="true"]')).toHaveCount(0)

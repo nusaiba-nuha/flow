@@ -42,11 +42,11 @@ test('adds the first shape to an empty diagram', async ({ page }) => {
   await page.getByRole('button', { name: 'New diagram' }).click()
   await expect(shapes(page)).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Create new node' }).click()
-  await page.getByLabel('Title').fill('First step')
-  await page.getByLabel('Shape').selectOption('process')
-  await page.getByRole('button', { name: 'Create node' }).click()
+  await page
+    .getByRole('complementary', { name: 'Shapes' })
+    .getByRole('button', { name: 'Process', exact: true })
+    .click()
 
   await expect(shapes(page)).toHaveCount(1)
-  await expect(shapes(page).first()).toContainText('First step')
+  await expect(page.getByLabel('Title')).toHaveValue('Process')
 })

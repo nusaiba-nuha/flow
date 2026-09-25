@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import diagram from '@/tests/fixtures/diagram.json'
 import { NODE_GAP, NODE_SIZE } from '../constants.js'
 import { normaliseNode } from '../graph.js'
-import { layoutTree, nextFreePosition } from '../layout.js'
+import { freeSpotNear, layoutTree } from '../layout.js'
 
 const nodes = diagram.nodes.map(normaliseNode)
 const { edges } = diagram
@@ -46,11 +46,15 @@ describe('layoutTree', () => {
   })
 })
 
-describe('nextFreePosition', () => {
-  it('lands below the lowest node, aligned with the leftmost', () => {
-    const placed = [{ position: { x: 100, y: 0 } }, { position: { x: 40, y: STEP_Y } }]
+describe('freeSpotNear', () => {
+  it('keeps the wanted spot when it is clear, and moves to the nearest clear one when not', () => {
+    expect(freeSpotNear({ x: 0, y: 0 }, [])).toEqual({ x: 0, y: 0 })
 
-    expect(nextFreePosition(placed)).toEqual({ x: 40, y: STEP_Y * 2 })
-    expect(nextFreePosition([])).toEqual({ x: 0, y: 0 })
+    const taken = [{ position: { x: 10, y: 10 } }]
+    const spot = freeSpotNear({ x: 0, y: 0 }, taken)
+    expect(spot).not.toEqual({ x: 0, y: 0 })
+    expect(
+      Math.abs(spot.x - 10) >= NODE_SIZE.WIDTH || Math.abs(spot.y - 10) >= NODE_SIZE.HEIGHT,
+    ).toBe(true)
   })
 })

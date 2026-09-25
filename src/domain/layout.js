@@ -95,15 +95,40 @@ function groupChildren(nodes, parentOf) {
 }
 
 /**
- * Where a created node lands: below the lowest, aligned with the leftmost.
+ * The nearest spot to `wanted` where a new node overlaps none of `placed`,
+ * searched ring by ring on a node-sized grid, so a shape added in the middle
+ * of the view never lands on top of another.
+ *
+ * @param {{ x: number, y: number }} wanted top left corner
  * @param {{ position: { x: number, y: number } }[]} placed
  * @returns {{ x: number, y: number }}
  */
-export function nextFreePosition(placed) {
-  if (!placed?.length) return { x: 0, y: 0 }
+export function freeSpotNear(wanted, placed) {
+  const overlaps = (/** @type {{ x: number, y: number }} */ spot) =>
+    placed.some(
+      ({ position }) =>
+        Math.abs(position.x - spot.x) < NODE_SIZE.WIDTH + NODE_GAP.X / 2 &&
+        Math.abs(position.y - spot.y) < NODE_SIZE.HEIGHT + NODE_GAP.Y / 2,
+    )
 
-  return {
-    x: Math.min(...placed.map((node) => node.position.x)),
-    y: Math.max(...placed.map((node) => node.position.y)) + STEP_Y,
+  // Bounded: past this the view is so full that anywhere near will do.
+  for (let ring = 0; ring <= 12; ring += 1) {
+    const candidates = []
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      for (let dy = -ring; dy <= ring; dy += 1) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== ring) continue
+        candidates.push({ x: wanted.x + dx * STEP_X, y: wanted.y + dy * STEP_Y })
+      }
+    }
+
+    const free = candidates
+      .filter((spot) => !overlaps(spot))
+      .sort(
+        (a, b) =>
+          Math.hypot(a.x - wanted.x, a.y - wanted.y) - Math.hypot(b.x - wanted.x, b.y - wanted.y),
+      )[0]
+    if (free) return free
   }
+
+  return wanted
 }

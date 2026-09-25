@@ -38,7 +38,7 @@ test('deletes a node behind a confirmation and keeps its neighbours', async ({ p
 test('changes a node shape and keeps it across a reload', async ({ page }) => {
   await page.goto(`/flow/node/${NODE.away}`)
 
-  await page.getByLabel('Shape').selectOption('database')
+  await page.getByLabel('Shape', { exact: true }).selectOption('database')
   await page.getByRole('button', { name: 'Save changes' }).click()
   const shape = nodeAt(page, NODE.away).locator('[data-shape]')
   await expect(shape).toHaveAttribute('data-shape', 'database')

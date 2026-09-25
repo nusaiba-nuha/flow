@@ -6,7 +6,7 @@ import { VueQueryPlugin } from '@tanstack/vue-query'
 import { createRouter, createWebHistory } from 'vue-router'
 
 import starter from '@/domain/samples/support.json'
-import { resetFlow } from '@/api/flowApi.js'
+import * as flowApi from '@/api/flowApi.js'
 import { createTestQueryClient, waitUntil } from '@/tests/utils.js'
 
 /** Vue Flow measures real DOM, which happy-dom cannot provide; E2E covers the real thing. */
@@ -52,6 +52,7 @@ vi.mock('@vue-flow/core', () => ({
     getNodes: { value: store.nodes },
     getEdges: { value: store.edges },
     viewport: ref({ x: 0, y: 0, zoom: 1 }),
+    screenToFlowCoordinate: () => ({ x: 400, y: 300 }),
   }),
   Handle: { template: '<div />' },
   Position: { Top: 'top', Bottom: 'bottom' },
@@ -85,7 +86,8 @@ async function renderCanvas() {
 
 beforeEach(() => {
   setActivePinia(createPinia())
-  resetFlow()
+  flowApi.resetFlow()
+  vi.restoreAllMocks()
   vi.clearAllMocks()
   store.nodes = []
   store.edges = []
@@ -138,5 +140,26 @@ describe('FlowCanvas', () => {
     await waitUntil(() =>
       updateFlowNode.mock.calls.some(([id, patch]) => id === 'b6a0c1' && patch.position?.x === 300),
     )
+  })
+  it('adds a shape asked for from the palette, then opens it', async () => {
+    const pinia = createPinia()
+    setActivePinia(pinia)
+    mountCanvas(pinia)
+    await waitUntil(() => lastNodes().length > 0)
+    const create = vi.spyOn(flowApi, 'createNode')
+    const push = vi.spyOn(router, 'push')
+
+    useCanvasStore().requestShape('decision')
+
+    await waitUntil(() => push.mock.calls.length > 0)
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        shape: 'decision',
+        title: 'Decision',
+        position: expect.objectContaining({ x: expect.any(Number) }),
+      }),
+    )
+    expect(push).toHaveBeenCalledWith(expect.objectContaining({ name: 'node-details' }))
+    expect(useCanvasStore().pendingShape).toBe('')
   })
 })

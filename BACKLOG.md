@@ -73,14 +73,14 @@ in milestone 2 is possible until diagrams are nodes and edges.
 - "Reset flow" becomes "New diagram", which starts empty with a hint
 - The old support flow and a small architecture diagram become samples
 
-### FL-43 · Shape palette ⏭️
+### FL-43 · Shape palette ✅
 
 A left sidebar lists every shape; drag one onto the canvas to create it where it lands, or click to
 add it at the centre. Replaces the create dialog.
 
 ## Milestone 2: The wedge
 
-### FL-44 · The `.flow` text format ⬜
+### FL-44 · The `.flow` text format ⏭️
 
 - A small line based format: one node or edge per line, stable order, so a diff shows exactly
   what changed

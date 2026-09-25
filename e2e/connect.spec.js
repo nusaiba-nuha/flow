@@ -93,10 +93,10 @@ test('leaves the node where it was when its connection goes', async ({ page }) =
 })
 
 test('draws the edge at once when a created node is connected', async ({ page }) => {
-  await page.getByRole('button', { name: 'Create new node' }).click()
-  await page.getByLabel('Title').fill('Standalone')
-  await page.getByLabel('Shape').selectOption('process')
-  await page.getByRole('button', { name: 'Create node' }).click()
+  await page
+    .getByRole('complementary', { name: 'Shapes' })
+    .getByRole('button', { name: 'Process', exact: true })
+    .click()
   await page.waitForURL(/\/flow\/node\//)
 
   const created = page.url().split('/').pop()
