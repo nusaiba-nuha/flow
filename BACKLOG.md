@@ -104,11 +104,11 @@ export any diagram as Mermaid to drop into a README.
 Services become nodes, `depends_on` and shared networks become edges, ports and images become
 descriptions. Re-importing updates the diagram and keeps the layout.
 
-### FL-48 · Import OpenAPI ⏭️
+### FL-48 · Import OpenAPI ✅
 
 Tags or path groups become nodes, schemas referenced between them become edges.
 
-### FL-49 · Import SQL DDL as an entity diagram ⬜
+### FL-49 · Import SQL DDL as an entity diagram ⏭️
 
 `CREATE TABLE` becomes a table node listing its columns; foreign keys become edges.
 

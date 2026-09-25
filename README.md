@@ -58,9 +58,10 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Edit as text.** Open the text pane beside the canvas and edit the diagram in the
   [`.flow` format](#the-flow-format): typing redraws the canvas, and changes on the canvas rewrite
   the text. Errors are listed by line, and the canvas keeps the last valid diagram meanwhile.
-- **Import.** Paste or open a Mermaid flowchart or a `docker-compose.yml`. Compose services
+- **Import.** Paste or open a Mermaid flowchart, a `docker-compose.yml` or an OpenAPI spec. Compose services
   become shapes that fit their image (Postgres a database, RabbitMQ a queue), and dependencies
-  become connections. Re-importing updates the diagram and keeps its layout and anything added by
+  become connections. An OpenAPI spec becomes a map of its tags and the schemas they use.
+  Re-importing updates the diagram and keeps its layout and anything added by
   hand. Anything skipped is listed by line.
 - **Copy as Mermaid** from the text pane, for a README.
 - **Works offline.** The samples are bundled, so the app makes no network requests.
