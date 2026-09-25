@@ -7,6 +7,8 @@ defineProps({
   label: { type: String, required: true },
   title: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
+  /** For a toggle; left null, the button is a plain action. */
+  pressed: { type: /** @type {import('vue').PropType<boolean | null>} */ (Boolean), default: null },
 })
 </script>
 
@@ -17,6 +19,8 @@ defineProps({
       class="rounded-lg border border-line bg-surface px-2.5 py-2 text-sm text-ink transition-colors hover:bg-hover disabled:opacity-30"
       :disabled="disabled"
       :aria-label="label"
+      :aria-pressed="pressed === null ? undefined : pressed ? 'true' : 'false'"
+      :class="pressed ? 'bg-hover' : ''"
     >
       <svg
         width="15"

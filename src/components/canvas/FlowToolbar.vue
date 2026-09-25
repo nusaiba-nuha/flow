@@ -8,6 +8,7 @@ import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { usePlatform } from '@/composables/usePlatform.js'
 import { COMBO, comboLabel } from '@/domain/shortcuts.js'
 import { useToastStore } from '@/stores/toasts.js'
+import { useCanvasStore } from '@/stores/canvas.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
 const emit = defineEmits(['help'])
@@ -15,6 +16,7 @@ const emit = defineEmits(['help'])
 const { undo, redo, history } = useFlowHistory()
 const { start, isPending: isStarting } = useStartDiagram()
 const toasts = useToastStore()
+const canvas = useCanvasStore()
 
 function startEmpty() {
   start(undefined, {
@@ -61,6 +63,19 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
         <path d="M20 9H9a5 5 0 0 0 0 10h3" />
       </IconButton>
     </div>
+
+    <IconButton
+      label="Edit as text"
+      :title="
+        canvas.isTextOpen
+          ? 'Hide the diagram as text'
+          : 'Show the diagram as text, to edit either side'
+      "
+      :pressed="canvas.isTextOpen"
+      @click="canvas.toggleText"
+    >
+      <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+    </IconButton>
 
     <IconButton
       label="New diagram"

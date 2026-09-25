@@ -55,7 +55,9 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Automatic layout** for anything you have not placed by hand.
 - **Light and dark themes**, following the system until you choose.
 - **Saved locally.** Edits are kept in `localStorage` and survive a reload.
-- **Plain text format.** Every diagram round trips through the [`.flow` format](#the-flow-format).
+- **Edit as text.** Open the text pane beside the canvas and edit the diagram in the
+  [`.flow` format](#the-flow-format): typing redraws the canvas, and changes on the canvas rewrite
+  the text. Errors are listed by line, and the canvas keeps the last valid diagram meanwhile.
 - **Works offline.** The samples are bundled, so the app makes no network requests.
 
 ## The `.flow` format
@@ -89,7 +91,8 @@ db 276,352
 One node or edge per line, in a stable order, with the layout kept apart: moving a box changes
 one line at the end, and never the lines that say what the system is. `parseFlow` and
 `serialiseFlow` in `src/domain/flowText.js` read and write it, reporting every error with its
-line number. The editor, import and file support build on it; see the [backlog](BACKLOG.md).
+line number. The text pane uses them, and import and file support will too; see the
+[backlog](BACKLOG.md).
 
 ## Where it is going
 

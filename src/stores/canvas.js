@@ -9,6 +9,13 @@ export const useCanvasStore = defineStore('canvas', () => {
   /** Node the canvas should pan to next, such as one just created. */
   const focusNodeId = ref('')
 
+  /** Whether the text pane is open beside the canvas. */
+  const isTextOpen = ref(false)
+
+  function toggleText() {
+    isTextOpen.value = !isTextOpen.value
+  }
+
   /**
    * A shape asked for from outside the canvas, which alone knows where the
    * middle of the view is in diagram coordinates.
@@ -47,6 +54,8 @@ export const useCanvasStore = defineStore('canvas', () => {
     viewport,
     focusNodeId,
     pendingShape,
+    isTextOpen,
+    toggleText,
     setViewport,
     forgetViewport,
     requestFocus,

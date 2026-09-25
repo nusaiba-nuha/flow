@@ -21,14 +21,20 @@ const sourcesInto = (page, id) =>
       .sort()
   }, id)
 
-/** The canvas eases into place, so coordinates are only safe once it stops. */
-async function whenStill(locator) {
+/**
+ * The canvas eases into place, so coordinates are only safe once it stops. Still
+ * for several samples, not one: a pan towards a just-added shape can start a
+ * moment after the shape is measured, and one still sample would miss it.
+ */
+async function whenStill(locator, samples = 4) {
   let previous = null
-  for (let attempt = 0; attempt < 30; attempt += 1) {
+  let still = 0
+  for (let attempt = 0; attempt < 40; attempt += 1) {
     const box = await locator.boundingBox()
-    if (previous && Math.abs(box.x - previous.x) < 0.5 && Math.abs(box.y - previous.y) < 0.5) {
-      return box
-    }
+    const unmoved =
+      previous && Math.abs(box.x - previous.x) < 0.5 && Math.abs(box.y - previous.y) < 0.5
+    still = unmoved ? still + 1 : 0
+    if (still >= samples) return box
     previous = box
     await new Promise((resolve) => setTimeout(resolve, 100))
   }
