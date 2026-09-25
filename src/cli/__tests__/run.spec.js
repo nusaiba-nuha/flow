@@ -58,6 +58,25 @@ describe('flow check', () => {
   })
 })
 
+describe('flow diff', () => {
+  it('lists what changed, and draws it', async () => {
+    const after = `${GOOD}c = note "C"\nb -> c\n`.replace('"A"', '"Alpha"')
+    const { io, out, written } = fakeIo({ 'before.flow': GOOD, 'after.flow': after })
+
+    expect(await run(['diff', 'before.flow', 'after.flow', '-o', 'd.svg'], io)).toBe(0)
+    expect(out.join('')).toBe('+ C\n~ A → Alpha\n+ B → C\n')
+    expect(written['d.svg']).toContain('data-change="added"')
+  })
+
+  it('says when nothing changed, and needs exactly two files', async () => {
+    const same = fakeIo({ 'a.flow': GOOD, 'b.flow': GOOD })
+    expect(await run(['diff', 'a.flow', 'b.flow'], same.io)).toBe(0)
+    expect(same.out.join('')).toBe('No changes.\n')
+
+    expect(await run(['diff', 'a.flow'], fakeIo().io)).toBe(2)
+  })
+})
+
 describe('usage', () => {
   it('prints usage for help, and exits 2 for a mistake', async () => {
     const help = fakeIo()

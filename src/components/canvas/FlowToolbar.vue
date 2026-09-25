@@ -13,7 +13,7 @@ import { useToastStore } from '@/stores/toasts.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
-const emit = defineEmits(['help', 'import'])
+const emit = defineEmits(['help', 'import', 'compare'])
 
 // The one place the shortcut is bound: the toolbar is always mounted.
 const { undo, redo, history } = useFlowHistory({ bindKeys: true })
@@ -96,6 +96,15 @@ const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
         d="M5 3h11l3 3v13.5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19.5v-15A1.5 1.5 0 0 1 5 3Z"
       />
       <path d="M8 3v5h7V3M8 21v-6h8v6" />
+    </IconButton>
+
+    <IconButton
+      label="Compare"
+      title="Compare with another version, such as the file in your repository"
+      @click="emit('compare')"
+    >
+      <path d="M8 3v18M16 3v18" />
+      <path d="M4 8h4M16 16h4M18 14v4" />
     </IconButton>
 
     <IconButton

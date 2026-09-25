@@ -37,6 +37,15 @@ export function buildEdges(edges, ids) {
 }
 
 /**
+ * Where every node sits: its own position if it has one, else the layout's.
+ * @param {import('./types.js').FlowDocument | null | undefined} document
+ * @returns {Map<string, { x: number, y: number }>}
+ */
+export function documentPositions(document) {
+  return new Map(documentToGraph(document).nodes.map((node) => [node.id, node.position]))
+}
+
+/**
  * A dragged node keeps where it was put; everything else is laid out.
  * @param {import('./types.js').FlowDocument | null | undefined} document
  * @returns {{ nodes: import('./types.js').VueFlowNode[], edges: import('./types.js').VueFlowEdge[] }}
