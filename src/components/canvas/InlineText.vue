@@ -18,10 +18,19 @@ const draft = ref(props.value)
 const input = useTemplateRef('input')
 let done = false
 
-onMounted(() => {
-  input.value?.focus()
-  input.value?.select()
-})
+/**
+ * Vue Flow keeps a just-added node hidden until it is measured, and a hidden
+ * field refuses focus, so this tries again for a few frames until it takes.
+ */
+function takeFocus(attempts = 10) {
+  const field = input.value
+  if (!field || done) return
+  field.focus()
+  if (document.activeElement === field) field.select()
+  else if (attempts > 0) requestAnimationFrame(() => takeFocus(attempts - 1))
+}
+
+onMounted(() => takeFocus())
 
 function save() {
   if (done) return

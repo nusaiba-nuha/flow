@@ -79,3 +79,45 @@ test('zoom steps land on round numbers, and the label resets to 100%', async ({ 
   await zoom.click()
   await expect(zoom).toHaveText('100%')
 })
+
+test('clicking a shape opens it without moving the canvas', async ({ page }) => {
+  const pane = page.locator('.vue-flow__transformationpane')
+  const before = await pane.evaluate((element) => element.style.transform)
+
+  // The Welcome Message sits on the right, under where the drawer opens.
+  await nodeAt(page, 'b0653a').click()
+  await expect(page).toHaveURL(/\/flow\/node\/b0653a/)
+  await page.waitForTimeout(400)
+
+  expect(await pane.evaluate((element) => element.style.transform)).toBe(before)
+})
+
+test('resizes a selected shape, and keeps the size after a reload', async ({ page }) => {
+  await nodeAt(page, 'e879e4').click({ modifiers: ['Shift'] })
+  const handle = nodeAt(page, 'e879e4').locator('.vue-flow__resize-control.bottom.right')
+  const start = await handle.boundingBox()
+
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(start.x + 60, start.y + 40, { steps: 8 })
+  await page.mouse.up()
+
+  const size = () =>
+    page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem('flow:document')).nodes.find((n) => n.id === 'e879e4').size,
+    )
+  await expect.poll(size).not.toBeUndefined()
+  const saved = await size()
+  expect(saved.width).toBeGreaterThan(232 + 30)
+  expect(saved.height).toBeGreaterThan(104 + 20)
+
+  await page.reload()
+  const box = await nodeAt(page, 'e879e4').boundingBox()
+  const zoom = Number(
+    (
+      await page.locator('.vue-flow__transformationpane').evaluate((el) => el.style.transform)
+    ).match(/scale\(([\d.]+)\)/)[1],
+  )
+  expect(Math.abs(box.width / zoom - saved.width)).toBeLessThan(2)
+})

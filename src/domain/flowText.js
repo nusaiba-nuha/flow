@@ -14,6 +14,7 @@ import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
  *
  *     @layout
  *     browser 276,0
+ *     api 276,176 300x120
  *
  * One node or edge per line, in document order, so a diff shows exactly what
  * changed. Positions sit in their own block at the end: moving a box never
@@ -25,7 +26,9 @@ import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
 const ID = String.raw`[A-Za-z0-9_][\w-]*`
 const NODE_LINE = new RegExp(String.raw`^(${ID})\s*=\s*([A-Za-z][\w-]*)\s*(.*)$`)
 const EDGE_LINE = new RegExp(String.raw`^(${ID})\s*->\s*(${ID})\s*(?::\s?(.*))?$`)
-const LAYOUT_LINE = new RegExp(String.raw`^(${ID})\s+(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$`)
+const LAYOUT_LINE = new RegExp(
+  String.raw`^(${ID})\s+(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)(?:\s+(\d+)\s*x\s*(\d+))?$`,
+)
 const LAYOUT_HEADER = '@layout'
 const DESCRIPTION_MARK = '--'
 
@@ -70,7 +73,10 @@ export function serialiseFlow(document) {
       [
         LAYOUT_HEADER,
         ...placed.map(
-          (node) => `${node.id} ${coordinate(node.position.x)},${coordinate(node.position.y)}`,
+          (node) =>
+            `${node.id} ${coordinate(node.position.x)},${coordinate(node.position.y)}${
+              node.size ? ` ${coordinate(node.size.width)}x${coordinate(node.size.height)}` : ''
+            }`,
         ),
       ].join('\n'),
     )
@@ -96,7 +102,7 @@ export function parseFlow(text) {
   const edges = []
   /** @type {Map<string, Record<string, any>>} */
   const byId = new Map()
-  /** @type {{ line: number, id: string, x: number, y: number }[]} */
+  /** @type {{ line: number, id: string, x: number, y: number, width?: number, height?: number }[]} */
   const layout = []
   /** @type {{ line: number, source: string, target: string, label: string }[]} */
   const pendingEdges = []
@@ -121,8 +127,15 @@ export function parseFlow(text) {
 
       if (inLayout) {
         const match = LAYOUT_LINE.exec(content)
-        if (!match) return fail('Expected a position, like `api 120,340`.')
-        layout.push({ line, id: match[1], x: Number(match[2]), y: Number(match[3]) })
+        if (!match)
+          return fail('Expected a position, like `api 120,340`, or `api 120,340 300x120`.')
+        layout.push({
+          line,
+          id: match[1],
+          x: Number(match[2]),
+          y: Number(match[3]),
+          ...(match[4] ? { width: Number(match[4]), height: Number(match[5]) } : {}),
+        })
         return
       }
 
@@ -183,12 +196,13 @@ export function parseFlow(text) {
   })
 
   const positioned = new Set()
-  layout.forEach(({ line, id, x, y }) => {
+  layout.forEach(({ line, id, x, y, width, height }) => {
     const node = byId.get(id)
     if (!node) return errors.push({ line, message: `No node called "${id}".` })
     if (positioned.has(id)) return errors.push({ line, message: `"${id}" already has a position.` })
     positioned.add(id)
     node.position = { x, y }
+    if (width && height) node.size = { width, height }
   })
 
   errors.sort((a, b) => a.line - b.line)

@@ -11,6 +11,7 @@
  * @property {string} name
  * @property {FlowNodeData} data
  * @property {{ x: number, y: number } | null} [position] set once dragged or created
+ * @property {{ width: number, height: number } | null} [size] set once resized
  *
  * @typedef {Object} FlowEdge
  * @property {string} id
@@ -29,6 +30,8 @@
  * @property {string} id
  * @property {string} type
  * @property {{ x: number, y: number }} position
+ * @property {number} width
+ * @property {number} height
  * @property {{ node: FlowNode }} data
  *
  * @typedef {{ id: string, source: string, target: string, label?: string }} VueFlowEdge

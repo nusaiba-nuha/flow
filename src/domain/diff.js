@@ -27,7 +27,7 @@ export function diffDocuments(before, after) {
   const meaning = (node) =>
     JSON.stringify([node.name ?? '', node.type, node.data?.description ?? ''])
   /** @param {Record<string, any>} node */
-  const place = (node) => JSON.stringify(node.position ?? null)
+  const place = (node) => JSON.stringify([node.position ?? null, node.size ?? null])
 
   const both = [...newNodes.keys()].filter((id) => oldNodes.has(id))
 

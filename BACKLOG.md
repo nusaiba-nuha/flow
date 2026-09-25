@@ -144,7 +144,7 @@ On a pull request that changes a `.flow` file, post the before and after as a co
 | ------ | ------------------------------------------------------------------------ | ------ |
 | FL-55  | Multi-select: box, Shift+click, Ctrl+A; move and delete as one undo step | ✅     |
 | FL-56  | Inline text editing on double-click, for shapes and edge labels          | ✅     |
-| FL-57  | Resize shapes, stored on the node                                        | ⏭️     |
+| FL-57  | Resize shapes, stored on the node                                        | ✅     |
 | FL-58  | Connectors: four sides, straight, orthogonal or curved, arrows, dashes   | ⬜     |
 | FL-59  | Copy, cut, paste and duplicate, with the edges between copied shapes     | ⬜     |
 | FL-60  | Grid, snapping, align and distribute                                     | ⬜     |

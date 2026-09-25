@@ -111,7 +111,7 @@ export async function createNode({ title, description, shape, position }) {
 }
 
 /**
- * @param {{ id: string, patch: { name?: string, type?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
+ * @param {{ id: string, patch: { name?: string, type?: string, size?: { width: number, height: number }, position?: { x: number, y: number }, data?: Record<string, any> } }} input
  * @returns {Promise<Record<string, any>>}
  */
 export async function updateNode({ id, patch }) {
@@ -124,6 +124,7 @@ export async function updateNode({ id, patch }) {
     node.type = patch.type
   }
   if (patch.position !== undefined) node.position = clone(patch.position)
+  if (patch.size !== undefined) node.size = clone(patch.size)
   if (patch.data !== undefined) node.data = { ...node.data, ...clone(patch.data) }
 
   save()

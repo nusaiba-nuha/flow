@@ -46,6 +46,7 @@ The full reasoning, and how we will know if it is working, is at the top of the
   sample. Undo brings back whatever was there.
 - **Shape palette.** Drag a shape onto the canvas to drop it there, or click it (or press Enter)
   to add it in a clear spot near the middle.
+- **Resize.** Select a shape and drag its handles; hold Shift to keep its proportions.
 - **Edit in place.** Double-click a shape to rename it, or a connection to add or change its
   label; F2 renames the focused shape. Enter saves, Escape cancels.
 - **Select several.** Shift-click, or Shift-drag a box, to select shapes; move them together, or
@@ -104,7 +105,7 @@ db 276,352
   Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `table`, `text`.
 - `a -> b : label` connects two nodes. The label is optional, and a line may refer to a node
   defined further down.
-- `@layout` starts the positions, one `id x,y` per line. A node with no position is laid out
+- `@layout` starts the positions, one `id x,y` per line, with ` WxH` after it for a resized shape. A node with no position is laid out
   automatically, so a hand-written diagram needs no layout block at all.
 - `#` starts a comment. A newline inside a description or label is written `\n`.
 

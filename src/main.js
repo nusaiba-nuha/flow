@@ -10,6 +10,7 @@ import { migrateLegacyKeys } from './api/storageKeys'
 // Library styles first, so ours win where they overlap.
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
+import '@vue-flow/node-resizer/dist/style.css'
 import './style.css'
 
 // Before any store reads its key.

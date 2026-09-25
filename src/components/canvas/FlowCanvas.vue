@@ -22,6 +22,7 @@ import {
   useDisconnect,
   useMoveNode,
   useMoveNodes,
+  useResizeNode,
   useUpdateEdge,
   useUpdateNode,
 } from '@/composables/useNodeMutations.js'
@@ -38,6 +39,7 @@ import { nodeComponents } from './nodeComponents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
 import { CONNECT_STATE, DETACH_EDGE } from './connectKey.js'
 import { EDIT_TEXT } from './editKey.js'
+import { RESIZE_NODE } from './resizeKey.js'
 import { SHAPE_DRAG_TYPE } from '@/components/palette/dragType.js'
 import { NODE_SIZE } from '@/domain/constants.js'
 import { freeSpotNear } from '@/domain/layout.js'
@@ -57,6 +59,20 @@ const moveNodes = useMoveNodes()
 const deleteNodes = useDeleteNodes()
 const updateNode = useUpdateNode()
 const updateEdge = useUpdateEdge()
+const resizeNode = useResizeNode()
+
+provide(
+  RESIZE_NODE,
+  (
+    /** @type {string} */ id,
+    /** @type {{ x: number, y: number, width: number, height: number }} */ box,
+  ) =>
+    resizeNode.mutate({
+      id,
+      position: { x: Math.round(box.x), y: Math.round(box.y) },
+      size: { width: Math.round(box.width), height: Math.round(box.height) },
+    }),
+)
 
 /** The shape or edge whose text is being edited in place, or empty. */
 const editingId = ref('')
@@ -146,7 +162,17 @@ watch(
 )
 
 // Pan a focused node into view without changing the zoom.
+/**
+ * Set by a click. A shape someone just clicked is on screen already, and
+ * moving the canvas under the pointer made it hard to click anything twice.
+ */
+let focusedByPointer = false
+
 watch(focusedId, async (id) => {
+  if (focusedByPointer) {
+    focusedByPointer = false
+    return
+  }
   // A node the canvas is already moving to owns the movement: two pans at once
   // read as the screen lurching twice.
   if (!id || canvas.focusNodeId === id) return
@@ -185,9 +211,13 @@ function syncGraph(nextNodes, nextEdges, openId, openChanged) {
 
     // The open node is the highlighted one, so a shared link marks it too. Only
     // when it changes: on every save this would undo a selection made by hand.
+    const sized =
+      current.width !== node.width || current.height !== node.height
+        ? { width: node.width, height: node.height }
+        : {}
     const update = openChanged
-      ? { data: node.data, selected: node.id === openId }
-      : { data: node.data }
+      ? { data: node.data, selected: node.id === openId, ...sized }
+      : { data: node.data, ...sized }
     const moved =
       Math.abs(current.position.x - node.position.x) > 0.5 ||
       Math.abs(current.position.y - node.position.y) > 0.5
@@ -247,6 +277,7 @@ function onNodeClick({ node, event }) {
   // A modifier click adds to the selection; opening the drawer would drop it.
   if (event && 'shiftKey' in event && (event.shiftKey || event.ctrlKey || event.metaKey)) return
   if (!isOpenable(node.data.node)) return
+  focusedByPointer = focusedId.value !== node.id
   focus(node.id)
   router.push({ name: ROUTE.NODE_DETAILS, params: { id: node.id } })
 }
@@ -484,8 +515,12 @@ function addShape(shape, at, options = {}) {
     {
       onSuccess(node) {
         const id = toNodeId(node.id)
+        // Selected, with its title ready to type over, where it was put: no
+        // drawer sliding in, and the canvas moves only if the shape is off it.
+        router.push({ name: ROUTE.FLOW })
         canvas.requestFocus(id)
-        router.push({ name: ROUTE.NODE_DETAILS, params: { id } })
+        editingId.value = id
+        waitForNode(id).then((added) => added && addSelectedNodes([added]))
       },
       onError: () => toasts.push('The shape could not be added.', { tone: 'danger' }),
     },

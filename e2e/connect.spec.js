@@ -103,10 +103,8 @@ test('draws the edge at once when a created node is connected', async ({ page })
     .getByRole('complementary', { name: 'Shapes' })
     .getByRole('button', { name: 'Process', exact: true })
     .click()
-  await page.waitForURL(/\/flow\/node\//)
-
-  const created = page.url().split('/').pop()
-  await page.getByRole('button', { name: 'Close details' }).click()
+  const created = await page.locator('.vue-flow__node.selected').getAttribute('data-id')
+  await page.getByRole('textbox', { name: 'Shape title' }).press('Enter')
   expect(await drawnEdges(page)).toBe(4)
 
   await whenStill(node(page, created))
