@@ -7,6 +7,7 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY server/package.json server/package-lock.json server/
 RUN cd server && npm ci
 COPY src/domain src/domain
+COPY src/mcp/protocol.js src/mcp/protocol.js
 COPY server server
 RUN cd server && npm run build && npm prune --omit=dev
 
@@ -16,6 +17,7 @@ ENV NODE_ENV=production PORT=3000
 COPY --from=build /repo/node_modules node_modules
 COPY --from=build /repo/package.json package.json
 COPY --from=build /repo/src/domain src/domain
+COPY --from=build /repo/src/mcp/protocol.js src/mcp/protocol.js
 COPY --from=build /repo/server/node_modules server/node_modules
 COPY --from=build /repo/server/package.json server/package.json
 COPY --from=build /repo/server/migrations server/migrations

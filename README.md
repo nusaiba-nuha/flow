@@ -289,6 +289,12 @@ can read, only the token can change it. Invalid text is refused with line number
 It reads, briefs and draws with the app's own `src/domain` code, so a link shows exactly what the
 editor and the CLI do.
 
+It is also a remote MCP server, at `/mcp` over Streamable HTTP, so an agent that cannot run a local
+process can still work with diagrams by their links: `read_diagram` (as a brief or `.flow` text),
+`publish_diagram` (returning the link and an edit token for the person) and `update_diagram` (with
+that token, saying what changed). Add it to Claude as a custom connector with the server's `/mcp`
+URL, or `claude mcp add --transport http isketch https://your-server/mcp`.
+
 ```bash
 docker compose --profile server up        # the server on :3000, with PostgreSQL
 curl -X POST -H 'content-type: text/plain' --data-binary @examples/architecture.flow \
