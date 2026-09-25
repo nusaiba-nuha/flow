@@ -11,6 +11,7 @@ import { shapePath, textInset } from './shapes.js'
  */
 export const SVG_THEMES = Object.freeze({
   light: {
+    changes: { added: '#16a34a', removed: '#dc2626', changed: '#d97706' },
     canvas: '#ffffff',
     surface: '#ffffff',
     ink: '#14181f',
@@ -27,6 +28,7 @@ export const SVG_THEMES = Object.freeze({
     },
   },
   dark: {
+    changes: { added: '#4ade80', removed: '#f87171', changed: '#fbbf24' },
     canvas: '#0d1117',
     surface: '#161b22',
     ink: '#e6edf3',
@@ -56,10 +58,11 @@ const GLYPH = 0.56
  * lays them out.
  *
  * @param {import('./types.js').FlowDocument} document
- * @param {{ theme?: 'light' | 'dark', padding?: number }} [options]
+ * @param {{ theme?: 'light' | 'dark', padding?: number, highlight?: Map<string, 'added' | 'removed' | 'changed'> }} [options]
+ *   `highlight` marks nodes and edges by id, for a diff
  * @returns {string}
  */
-export function renderSvg(document, { theme = 'light', padding = 32 } = {}) {
+export function renderSvg(document, { theme = 'light', padding = 32, highlight = new Map() } = {}) {
   const colours = SVG_THEMES[theme] ?? SVG_THEMES.light
   const nodes = document.nodes.map(normaliseNode)
   const ids = new Set(nodes.map((node) => node.id))
@@ -79,7 +82,20 @@ export function renderSvg(document, { theme = 'light', padding = 32 } = {}) {
   const parts = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${round(width)}" height="${round(height)}" viewBox="${round(left)} ${round(top)} ${round(width)} ${round(height)}" font-family="${escapeXml(FONT)}">`,
     `<title>${escapeXml(document.title ?? '')}</title>`,
-    `<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${colours.edge}"/></marker></defs>`,
+    `<defs>${[
+      ['arrow', colours.edge],
+      // Coloured heads only for a diff, so an ordinary drawing stays byte for byte the same.
+      ...(highlight.size ? Object.entries(colours.changes) : []).map(([change, colour]) => [
+        `arrow-${change}`,
+        colour,
+      ]),
+    ]
+      .map(
+        ([id, fill]) =>
+          // Heads scale with the stroke, so a diff's thicker lines get smaller ones to match.
+          `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="${id === 'arrow' ? 7 : 4.2}" markerHeight="${id === 'arrow' ? 7 : 4.2}" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${fill}"/></marker>`,
+      )
+      .join('')}</defs>`,
     `<rect x="${round(left)}" y="${round(top)}" width="${round(width)}" height="${round(height)}" fill="${colours.canvas}"/>`,
     ...edges.map((edge) =>
       renderEdge(
@@ -87,9 +103,12 @@ export function renderSvg(document, { theme = 'light', padding = 32 } = {}) {
         /** @type {any} */ (at.get(edge.source)),
         /** @type {any} */ (at.get(edge.target)),
         colours,
+        highlight.get(edge.id),
       ),
     ),
-    ...nodes.map((node) => renderNode(node, /** @type {any} */ (at.get(node.id)), colours)),
+    ...nodes.map((node) =>
+      renderNode(node, /** @type {any} */ (at.get(node.id)), colours, highlight.get(node.id)),
+    ),
     '</svg>',
   ]
 
@@ -102,15 +121,20 @@ export function renderSvg(document, { theme = 'light', padding = 32 } = {}) {
  * @param {{ x: number, y: number }} from
  * @param {{ x: number, y: number }} to
  * @param {typeof SVG_THEMES.light} colours
+ * @param {'added' | 'removed' | 'changed'} [change]
  */
-function renderEdge(edge, from, to, colours) {
+function renderEdge(edge, from, to, colours, change) {
   const x1 = from.x + NODE_SIZE.WIDTH / 2
   const y1 = from.y + NODE_SIZE.HEIGHT
   const x2 = to.x + NODE_SIZE.WIDTH / 2
   const y2 = to.y
   const middle = (y1 + y2) / 2
 
-  const line = `<path d="M${round(x1)},${round(y1)} V${round(middle)} H${round(x2)} V${round(y2)}" fill="none" stroke="${colours.edge}" stroke-width="1.5" marker-end="url(#arrow)"/>`
+  const stroke = change ? colours.changes[change] : colours.edge
+  const style = change
+    ? ` stroke-width="2.5"${change === 'removed' ? ' stroke-dasharray="6 4" opacity="0.75"' : ''}`
+    : ' stroke-width="1.5"'
+  const line = `<path d="M${round(x1)},${round(y1)} V${round(middle)} H${round(x2)} V${round(y2)}" fill="none" stroke="${stroke}"${style} marker-end="url(#${change ? `arrow-${change}` : 'arrow'})"${change ? ` data-change="${change}"` : ''}/>`
   if (!edge.label) return line
 
   const labelWidth = edge.label.length * TEXT_SIZE * GLYPH + 16
@@ -126,13 +150,21 @@ function renderEdge(edge, from, to, colours) {
  * @param {import('./types.js').FlowNode} node
  * @param {{ x: number, y: number }} position
  * @param {typeof SVG_THEMES.light} colours
+ * @param {'added' | 'removed' | 'changed'} [change]
  */
-function renderNode(node, position, colours) {
+function renderNode(node, position, colours, change) {
   const meta = metaFor(node.type)
   const accent =
     colours.accents[/** @type {keyof typeof colours.accents} */ (meta.accent)] ??
     colours.accents.unknown
-  const outline = shapePath(node.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5)
+  // A text shape has no outline of its own, but a change still needs a frame.
+  const outline =
+    shapePath(node.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5) ||
+    (change ? shapePath(SHAPE.PROCESS, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5) : '')
+  const stroke = change ? colours.changes[change] : accent
+  const style = change
+    ? ` stroke-width="3"${change === 'removed' ? ' stroke-dasharray="7 5"' : ''}`
+    : ' stroke-width="1.5"'
   const description = meta.summary(node)
 
   const body =
@@ -141,9 +173,9 @@ function renderNode(node, position, colours) {
       : centredText(node, description, colours)
 
   return [
-    `<g transform="translate(${round(position.x)},${round(position.y)})">`,
+    `<g transform="translate(${round(position.x)},${round(position.y)})"${change === 'removed' ? ' opacity="0.6"' : ''}${change ? ` data-change="${change}"` : ''}>`,
     outline
-      ? `<path d="${outline}" fill="${colours.surface}" stroke="${accent}" stroke-width="1.5" stroke-linejoin="round"/>`
+      ? `<path d="${outline}" fill="${colours.surface}" stroke="${stroke}"${style} stroke-linejoin="round"/>`
       : '',
     body,
     '</g>',

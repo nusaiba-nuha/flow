@@ -1,9 +1,12 @@
 import { parseFlow } from '../domain/flowText.js'
+import { describeDiff, diffDocuments, isUnchanged, mergeForDiff } from '../domain/diff.js'
 import { renderSvg } from '../domain/renderSvg.js'
 
 export const USAGE = `Usage:
   flow render <file.flow> [-o <out.svg>] [--dark]   Draw a diagram as SVG
   flow check <file.flow>...                         Report errors, exit 1 if any
+  flow diff <before.flow> <after.flow> [-o <out.svg>] [--dark]
+                                                    List what changed, and draw it
 `
 
 /**
@@ -23,6 +26,7 @@ export async function run(argv, io) {
 
   if (command === 'render') return render(rest, io)
   if (command === 'check') return check(rest, io)
+  if (command === 'diff') return diff(rest, io)
 
   io.stderr(USAGE)
   return command === undefined || command === '--help' || command === '-h' ? 0 : 2
@@ -33,14 +37,10 @@ export async function run(argv, io) {
  * @param {Parameters<typeof run>[1]} io
  */
 async function render(args, io) {
-  const dark = args.includes('--dark')
-  const outIndex = args.findIndex((arg) => arg === '-o' || arg === '--out')
-  const out = outIndex === -1 ? null : args[outIndex + 1]
-  const input = args.find(
-    (arg, index) => !arg.startsWith('-') && (outIndex === -1 || index !== outIndex + 1),
-  )
+  const { files, out, dark } = options(args)
+  const [input] = files
 
-  if (!input || (outIndex !== -1 && !out)) {
+  if (!input || out === '') {
     io.stderr(USAGE)
     return 2
   }
@@ -56,6 +56,48 @@ async function render(args, io) {
     io.stdout(svg)
   }
   return 0
+}
+
+/**
+ * @param {string[]} args
+ * @param {Parameters<typeof run>[1]} io
+ */
+async function diff(args, io) {
+  const { files, out, dark } = options(args)
+  if (files.length !== 2 || out === '') {
+    io.stderr(USAGE)
+    return 2
+  }
+
+  const [before, after] = await Promise.all(files.map((file) => read(file, io)))
+  if (!before || !after) return 1
+
+  const changes = diffDocuments(before, after)
+  io.stdout(
+    isUnchanged(changes) ? 'No changes.\n' : `${describeDiff(before, after, changes).join('\n')}\n`,
+  )
+
+  if (out) {
+    const { document, highlight } = mergeForDiff(before, after, changes)
+    await io.writeFile(out, renderSvg(document, { theme: dark ? 'dark' : 'light', highlight }))
+  }
+  return 0
+}
+
+/**
+ * Positional files, and the value of `-o`, which is '' when it is given
+ * without one.
+ * @param {string[]} args
+ */
+function options(args) {
+  const outIndex = args.findIndex((arg) => arg === '-o' || arg === '--out')
+  return {
+    out: outIndex === -1 ? null : (args[outIndex + 1] ?? ''),
+    dark: args.includes('--dark'),
+    files: args.filter(
+      (arg, index) => !arg.startsWith('-') && (outIndex === -1 || index !== outIndex + 1),
+    ),
+  }
 }
 
 /**

@@ -129,12 +129,12 @@ as the fallback), so a diagram lives in a repository rather than in the browser.
 A pure SVG renderer in `src/domain/`, and `npx flow render diagram.flow -o diagram.svg`, so CI and
 docs sites can build images.
 
-### FL-53 · Visual diff ⏭️
+### FL-53 · Visual diff ✅
 
 Compare two versions of a diagram: added, removed and changed nodes and edges highlighted, on the
 canvas and as an SVG.
 
-### FL-54 · GitHub Action ⬜
+### FL-54 · GitHub Action ⏭️
 
 On a pull request that changes a `.flow` file, post the before and after as a comment.
 

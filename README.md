@@ -69,6 +69,9 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Open and save `.flow` files** (`Ctrl+O`, `Ctrl+S`). In Chrome and Edge, Save writes back to
   the file you opened, so a diagram can live in a repository next to the code it describes.
   Elsewhere Save downloads a copy.
+- **Compare versions.** Compare the diagram on screen with the file in your repository, or any
+  other version, and see what was added, removed and changed, as a list and as a marked-up
+  picture.
 - **Share as a link.** The whole diagram travels in the link itself, compressed, so nothing is
   uploaded. Opening one gives the visitor their own copy, and undo brings back theirs.
 - **Works offline.** The samples are bundled, so the app makes no network requests.
@@ -147,6 +150,7 @@ docker compose --profile prod up    # production build on http://localhost:8080
 ```bash
 npm run flow -- render diagram.flow -o diagram.svg   # draw it, add --dark for the dark theme
 npm run flow -- check docs/*.flow                    # file:line errors, exit 1 if any
+npm run flow -- diff old.flow new.flow -o diff.svg   # what changed, listed and drawn
 npm run examples                                     # redraw every SVG in examples/
 ```
 
