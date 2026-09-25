@@ -32,7 +32,7 @@ describe('theme', () => {
     store.set(THEME.LIGHT)
     await nextTick()
     expect(root().getAttribute('data-theme')).toBe('light')
-    expect(localStorage.getItem('flow-builder:theme')).toBe('light')
+    expect(localStorage.getItem('flow:theme')).toBe('light')
 
     store.cycle()
     expect(store.preference).toBe(THEME.DARK)

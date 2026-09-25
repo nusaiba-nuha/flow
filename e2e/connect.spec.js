@@ -13,7 +13,7 @@ const drawnEdges = (page) =>
 
 const parentOf = (page, id) =>
   page.evaluate((nodeId) => {
-    const saved = JSON.parse(localStorage.getItem('flow-builder:document:v1'))
+    const saved = JSON.parse(localStorage.getItem('flow:document:v1'))
     return String(saved.find((item) => String(item.id) === nodeId).parentId)
   }, id)
 

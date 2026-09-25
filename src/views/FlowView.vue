@@ -19,7 +19,7 @@ const help = useHelpDialog()
   <div class="flex h-full w-full flex-col bg-canvas">
     <header class="flex items-center justify-between border-b border-line bg-surface px-5 py-3">
       <div>
-        <h1 class="text-sm font-semibold">Flow Builder</h1>
+        <h1 class="text-sm font-semibold">Flow</h1>
         <p class="text-xs text-muted">Click a node to open its details</p>
       </div>
 

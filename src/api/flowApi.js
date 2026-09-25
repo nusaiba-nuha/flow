@@ -3,15 +3,13 @@ import { toNodeId, withNodeRemoved } from '@/domain/graph.js'
 import { creatableByValue } from '@/domain/nodeMeta.js'
 
 import starterDiagram from './starterDiagram.json'
+import { STORAGE_KEYS } from './storageKeys.js'
 
 /** Writes only: it exists to make optimistic updates and rollbacks visible. */
 const LATENCY_MS = 220
 
-/**
- * One document per browser for now. Versioned, so a change to the stored shape
- * can migrate rather than misread an older copy.
- */
-export const STORAGE_KEY = 'flow-builder:document:v1'
+/** One document per browser for now. */
+export const STORAGE_KEY = STORAGE_KEYS.DOCUMENT
 
 /** @type {Record<string, any>[] | null} */
 let flow = null

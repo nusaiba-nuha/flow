@@ -1,7 +1,9 @@
 import { computed, ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 
-const STORAGE_KEY = 'flow-builder:theme'
+import { STORAGE_KEYS } from '@/api/storageKeys.js'
+
+const STORAGE_KEY = STORAGE_KEYS.THEME
 
 /** @typedef {'system' | 'light' | 'dark'} ThemePreference */
 

@@ -18,7 +18,7 @@ standalone diagram tool with its own document format.
 
 - Bundle the starter diagram in `src/api/starterDiagram.json` instead of fetching it
 - Delete `VITE_PAYLOAD_URL`, `PAYLOAD_*`, `.env.example` and every proxy: Vite, nginx, Vercel
-- Version the storage key, `flow-builder:document:v1`
+- Version the storage key
 - Tests seed from the bundle, not a stubbed `fetch`
 
 **Done when** the app, the tests and the container run with no network and no configuration.
@@ -28,12 +28,12 @@ standalone diagram tool with its own document format.
 - Rewrite the README for the product, not the assessment
 - Replace `plan.md` and `task-chunks.md` with this file
 
-### FL-39 · Rename to Flow ⏭️
+### FL-39 · Rename to Flow ✅
 
 - One product name everywhere: page title, header, help dialog, `package.json`
 - Storage keys under a `flow:` prefix, migrating the `flow-builder:` ones once
 
-### FL-40 · Document model v2 ⬜
+### FL-40 · Document model v2 ⏭️
 
 The stored shape is still a bare array of nodes whose edges come from `parentId`, so a node can
 have one incoming connection. Diagrams need any number, in either direction.
