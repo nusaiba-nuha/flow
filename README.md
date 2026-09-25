@@ -31,7 +31,8 @@ isketch aims at that gap:
   an agent reads without guessing. Edit the canvas or the text; the other follows.
 - **Built for the hand-off.** _Copy for AI_ puts a Markdown brief on the clipboard: every shape by
   what it means for the code, every connection in words, and the source to edit and hand back. An
-  MCP server and wireframe shapes are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
+  [MCP server](#connect-your-agent-mcp) lets an agent list, read, update and draw your diagrams
+  itself. Wireframe shapes are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
 - **Git native.** Files diff cleanly, a CLI renders SVG with no browser, and pull requests get a
   visual diff, so the design and the code stop drifting apart.
 - **Start from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with re-import that keeps
@@ -173,11 +174,50 @@ npm run isketch -- render diagram.flow -o diagram.svg   # draw it, add --dark fo
 npm run isketch -- check docs/*.flow                    # file:line errors, exit 1 if any
 npm run isketch -- diff old.flow new.flow -o diff.svg   # what changed, listed and drawn
 npm run isketch -- brief diagram.flow                   # a Markdown brief for a coding agent
+npm run isketch -- mcp docs                             # an MCP server for the diagrams in docs/
 npm run examples                                        # redraw every SVG in examples/
 ```
 
 It needs only Node: the renderer is the same pure code the app uses, so a docs build or CI can
 draw diagrams that match the editor.
+
+## Connect your agent (MCP)
+
+`isketch mcp` is a local [Model Context Protocol](https://modelcontextprotocol.io) server for the
+`.flow` files in a folder, so an agent can work with your diagrams itself rather than being handed
+a screenshot. It has five tools:
+
+| Tool             | What the agent can do                                                    |
+| ---------------- | ------------------------------------------------------------------------ |
+| `list_diagrams`  | See every diagram in the folder, with its title and size                 |
+| `read_diagram`   | Read one as a brief (shapes by meaning, connections in words) or as text |
+| `write_diagram`  | Create or update one; invalid text is refused with line numbers          |
+| `render_diagram` | Draw one as SVG                                                          |
+| `diff_diagrams`  | Compare a diagram with a proposed version                                |
+
+It needs only Node, and only reads and writes inside the folder you give it. isketch is not on npm
+yet, so point at a clone:
+
+```bash
+# Claude Code, from your project
+claude mcp add isketch -- node /path/to/isketch/bin/isketch.mjs mcp .
+```
+
+For Claude Desktop, or any client with a JSON config:
+
+```json
+{
+  "mcpServers": {
+    "isketch": {
+      "command": "node",
+      "args": ["/path/to/isketch/bin/isketch.mjs", "mcp", "/path/to/your/project"]
+    }
+  }
+}
+```
+
+Then ask: _"Read docs/architecture.flow and scaffold the services it shows"_, or _"Add the cache
+you just built to the architecture diagram"_.
 
 ## Diagrams in pull requests
 
@@ -235,6 +275,8 @@ src/
   components/    canvas/, drawer/, ui/
   views/         FlowView
   router/        Routes, including the nested node route
+  cli/           The command line, with its I/O handed in
+  mcp/           The MCP server's protocol and tools; bin/mcp.mjs is its stdio side
 e2e/             Playwright specs
 ```
 
