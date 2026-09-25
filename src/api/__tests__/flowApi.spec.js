@@ -1,83 +1,51 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/payload.json'
+import starter from '../starterDiagram.json'
 import { NODE_TYPE } from '@/domain/constants.js'
 import {
   createNode,
   deleteNode,
   fetchFlow,
-  payloadUrl,
   resetFlow,
   restoreFlow,
-  storageKey,
+  STORAGE_KEY,
   updateNode,
 } from '../flowApi.js'
 
 beforeEach(() => {
   resetFlow()
-  // Pinned, so the suite does not depend on whatever .env holds locally.
-  vi.stubEnv('VITE_PAYLOAD_URL', '')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => ({ ok: true, status: 200, json: async () => structuredClone(payload) })),
-  )
 })
 
 describe('loading', () => {
-  it('reads the source once, then serves from memory, and hands back copies', async () => {
+  it('seeds from the bundled starter and hands back copies', async () => {
     const first = await fetchFlow()
-    first[0].name = 'tampered'
+    first[1].name = 'tampered'
 
     const second = await fetchFlow()
-    expect(fetch).toHaveBeenCalledTimes(1)
-    expect(second).toHaveLength(payload.length)
-    expect(second[0].name).not.toBe('tampered')
+    expect(second).toEqual(starter)
+    expect(second[1].name).not.toBe('tampered')
   })
 
-  it('surfaces a failed load instead of returning nothing', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => ({ ok: false, status: 404 })),
-    )
-    await expect(fetchFlow()).rejects.toThrow(/could not load the flow \(404\)/i)
-  })
-})
-
-describe('payload source', () => {
-  it('defaults to the local file and follows VITE_PAYLOAD_URL', async () => {
-    expect(payloadUrl()).toBe('/payload.json')
-
-    vi.stubEnv('VITE_PAYLOAD_URL', 'https://example.test/flow.json')
-    expect(payloadUrl()).toBe('https://example.test/flow.json')
-
-    await fetchFlow()
-    expect(fetch).toHaveBeenCalledWith('https://example.test/flow.json')
-  })
-
-  it('keys saved state by source, so switching does not serve the old copy', async () => {
-    await updateNode({ id: 'b6a0c1', patch: { name: 'Local only' } })
-    const local = storageKey()
-    resetFlow({ clearStorage: false })
-
-    vi.stubEnv('VITE_PAYLOAD_URL', 'https://example.test/flow.json')
-    expect(storageKey()).not.toBe(local)
-    await expect(fetchFlow()).resolves.toContainEqual(
-      expect.objectContaining({ id: 'b6a0c1', name: 'Away Message' }),
-    )
+  it('needs no network', async () => {
+    const fetchSpy = globalThis.fetch
+    globalThis.fetch = () => Promise.reject(new Error('offline'))
+    try {
+      await expect(fetchFlow()).resolves.toHaveLength(starter.length)
+    } finally {
+      globalThis.fetch = fetchSpy
+    }
   })
 
   it('serves a reload from storage, and falls back when storage holds junk', async () => {
     await updateNode({ id: 'b6a0c1', patch: { name: 'Renamed' } })
     resetFlow({ clearStorage: false })
-    vi.clearAllMocks()
 
     const reloaded = await fetchFlow()
-    expect(fetch).not.toHaveBeenCalled()
     expect(reloaded.find((node) => node.id === 'b6a0c1').name).toBe('Renamed')
 
-    localStorage.setItem(storageKey(), 'not json')
+    localStorage.setItem(STORAGE_KEY, 'not json')
     resetFlow({ clearStorage: false })
-    await expect(fetchFlow()).resolves.toHaveLength(payload.length)
+    await expect(fetchFlow()).resolves.toHaveLength(starter.length)
   })
 })
 

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 const setDark = async (page) => {
   await page.goto('/flow')
-  await page.evaluate(() => localStorage.setItem('flow-builder:theme', 'dark'))
+  await page.evaluate(() => localStorage.setItem('flow:theme', 'dark'))
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
 }

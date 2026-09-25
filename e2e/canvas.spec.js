@@ -9,7 +9,9 @@ test.beforeEach(async ({ page }) => {
   await expect(nodeAt(page, NODE.away)).toBeVisible()
 })
 
-test('renders every node from the payload, with icon, title and description', async ({ page }) => {
+test('renders every node of the starter diagram, with icon, title and description', async ({
+  page,
+}) => {
   await expect(page.locator('.vue-flow__node')).toHaveCount(7)
 
   const card = nodeAt(page, NODE.away)

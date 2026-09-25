@@ -13,7 +13,6 @@ playwright-report
 playwright/.cache
 
 # Environment: .env holds your own values and is never committed.
-# .env.example is, so anyone can see what is needed.
 .env
 .env.local
 .env.*.local

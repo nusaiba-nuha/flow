@@ -13,10 +13,8 @@ const drawnEdges = (page) =>
 
 const parentOf = (page, id) =>
   page.evaluate((nodeId) => {
-    const key = Object.keys(localStorage).find((name) => name.startsWith('flow-builder:flow'))
-    return String(
-      JSON.parse(localStorage.getItem(key)).find((item) => String(item.id) === nodeId).parentId,
-    )
+    const saved = JSON.parse(localStorage.getItem('flow:document:v1'))
+    return String(saved.find((item) => String(item.id) === nodeId).parentId)
   }, id)
 
 /** The canvas eases into place, so coordinates are only safe once it stops. */

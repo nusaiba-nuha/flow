@@ -4,8 +4,7 @@
 
 ## Related ticket
 
-> FL-XX in [task-chunks.md](../task-chunks.md). Link the requirement in
-> [plan.md](../plan.md) if this implements one.
+> FL-XX in [BACKLOG.md](../BACKLOG.md).
 
 ## Tests
 

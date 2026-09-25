@@ -1,19 +1,25 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/payload.json'
+import payload from '@/tests/fixtures/diagram.json'
 import { NODE_TYPE } from '../constants.js'
-import { buildEdges, canConnect, normaliseNode, payloadToGraph, withNodeRemoved } from '../graph.js'
+import {
+  buildEdges,
+  canConnect,
+  normaliseNode,
+  documentToGraph,
+  withNodeRemoved,
+} from '../graph.js'
 
-describe('payloadToGraph', () => {
+describe('documentToGraph', () => {
   it('turns the payload into positioned nodes carrying their domain node', () => {
-    const { nodes, edges } = payloadToGraph(payload)
+    const { nodes, edges } = documentToGraph(payload)
 
     expect(nodes).toHaveLength(payload.length)
     expect(edges).toHaveLength(payload.length - 1)
     // The trigger's id is the number 1 in the payload; route params are strings.
     expect(nodes.find((node) => node.id === '1')).toBeDefined()
     expect(nodes.find((node) => node.id === 'b6a0c1').data.node.name).toBe('Away Message')
-    expect(payloadToGraph([])).toEqual({ nodes: [], edges: [] })
+    expect(documentToGraph([])).toEqual({ nodes: [], edges: [] })
   })
 })
 

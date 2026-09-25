@@ -56,7 +56,7 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
 
     <IconButton
       label="Reset flow"
-      title="Discard every change and reload the original flow"
+      title="Discard every change and start again from the starter diagram"
       :disabled="restoreFlow.isPending.value"
       @click="restoreFlow.mutate()"
     >

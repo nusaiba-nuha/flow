@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/payload.json'
+import payload from '@/tests/fixtures/diagram.json'
 import { NODE_TYPE } from '../constants.js'
 import { normaliseNode } from '../graph.js'
 import { CREATABLE_NODES, creatableByValue, isOpenable, metaFor } from '../nodeMeta.js'

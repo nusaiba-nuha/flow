@@ -1,12 +1,13 @@
 <div align="center">
 
-# Flow Builder
+# Flow
 
-**A flow chart editor built with Vue 3, Vue Flow, and TanStack Query.**
+**Diagrams that live next to your code.**
 
-Nodes load from a payload API, render on a draggable canvas, and are edited through a details drawer that lives at its own URL.
+An open source diagram editor for software engineers: edit on a canvas or as text, keep diagrams
+in git where they can be reviewed, and generate them from the files you already have.
 
-[Requirements](plan.md) · [Task breakdown](task-chunks.md) · [Security](SECURITY.md)
+[Backlog](BACKLOG.md) · [Security](SECURITY.md) · [Agent rules](AGENTS.md)
 
 [![CI](https://github.com/raj-khan/flow/actions/workflows/ci.yml/badge.svg)](https://github.com/raj-khan/flow/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff5a2c.svg)](LICENSE)
@@ -15,181 +16,71 @@ https://github.com/user-attachments/assets/cbfbc844-7373-4891-a985-50e2870fe1b5
 
 </div>
 
-## What it does
+## Why not just draw.io?
 
-- **Draggable canvas.** Nodes render on a Vue Flow canvas and can be repositioned.
-- **Node details drawer.** Nodes open through a nested route, `/flow/node/:id`, so the canvas stays mounted while a node is being edited.
-- **Optimistic mutations.** Create, edit, delete and move operations update the UI immediately and roll back on failure.
-- **Keyboard navigation.** Arrow keys walk the nodes in reading order, `Ctrl+Z` undoes changes, and `?` opens the shortcut reference.
-- **Connecting nodes.** Drag from one node to another to set its parent, and remove a connection from the control on the edge itself. Beyond the brief, which specifies only the three create fields.
-- **Undo and redo.** Every mutation is undoable, over whole-flow snapshots, from the toolbar or `Ctrl+Z`.
-- **Confirmations.** A save or a delete raises a short toast that also offers to undo it.
-- **Automatic layout.** `layoutTree` places nodes based on their relationships and depth while preserving manually dragged positions.
-- **Light and dark themes.** The interface follows the system preference until explicitly changed.
-- **Local persistence.** The mock backend persists changes to `localStorage`, so edits survive a reload.
-- **Attachments.** Attachments are read as data URLs and capped at 2 MB because there is no upload endpoint.
+draw.io is free and great at drawing. The problem it does not solve is that architecture diagrams
+**rot**: a `.drawio` file is an XML blob nobody reviews, so the picture drifts from the code until
+it is wrong. Text tools like Mermaid fix the review problem but take away the canvas.
+
+Flow aims at the gap between them:
+
+- **Text and canvas, both ways.** Edit either; the other follows, and your layout survives.
+- **Git native.** Line based files that diff cleanly, SVG rendering from the command line, and a
+  visual diff on pull requests.
+- **Generated from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with
+  re-import that keeps your layout.
+- **Local first.** No account, no server, works offline, shareable as a link.
+
+The full reasoning, and how we will know if it is working, is at the top of the
+[backlog](BACKLOG.md).
+
+> **Status: early.** Flow started as a flow chart exercise. The canvas, editing, undo and local
+> persistence below work today; the diagram model, text format and importers are being built now.
+
+## What works today
+
+- **Canvas.** Pan, zoom and drag nodes on a Vue Flow canvas. Dragged positions are kept.
+- **Create, edit, delete.** Every change updates the canvas immediately and rolls back if it fails.
+- **Connections.** Drag from one node to another to connect them; remove a connection from the
+  control on the edge.
+- **Undo and redo** for every change, from the toolbar or `Ctrl+Z` / `Ctrl+Shift+Z`.
+- **Deep links.** Each node's details open at `/flow/node/:id`, so a node can be linked to.
+- **Keyboard first.** Arrow keys walk the nodes, Enter opens one, `?` lists every shortcut.
+- **Automatic layout** for anything you have not placed by hand.
+- **Light and dark themes**, following the system until you choose.
+- **Saved locally.** Edits are kept in `localStorage` and survive a reload.
+- **Works offline.** The starter diagram is bundled, so the app makes no network requests.
+
+## Where it is going
+
+| Milestone               | Highlights                                                          |
+| ----------------------- | ------------------------------------------------------------------- |
+| 1. A real diagram model | Nodes and edges, general shapes, new diagram, shape palette         |
+| 2. The wedge            | `.flow` text format, two way editor, Mermaid, compose, OpenAPI, SQL |
+| 3. Git native           | Open and save files, CLI rendering, visual diff, GitHub Action      |
+| 4. Editing essentials   | Multi-select, inline text, resize, connectors, clipboard, export    |
+
+Every ticket, with what "done" means, is in [BACKLOG.md](BACKLOG.md).
 
 ## Quick start
 
-### Docker
-
-With Docker, nothing else is needed:
-
-```bash
-docker compose up
-```
-
-Open http://localhost:5173.
-
-For the production build:
-
-```bash
-docker compose --profile prod up
-```
-
-Open http://localhost:8080.
-
 ### Node
 
-Node 22 or newer is required.
+Node 22 or newer.
 
 ```bash
 npm install
 npm run dev
 ```
 
-The flow is served from `public/payload.json`, so no configuration is needed. To read
-the hosted copy instead, `cp .env.example .env` before starting.
+Open http://localhost:5173. There is nothing to configure.
 
-## Configuration
+### Docker
 
-| Variable           | What it sets                                          |
-| ------------------ | ----------------------------------------------------- |
-| `VITE_PAYLOAD_URL` | The path the browser fetches, default `/payload.json` |
-| `PAYLOAD_ORIGIN`   | Where that path is proxied to                         |
-| `PAYLOAD_PATH`     | The upstream payload path                             |
-| `PAYLOAD_HOST`     | The `Host` header nginx sends upstream                |
-
-The bucket sends no `Access-Control-Allow-Origin`, so the browser cannot call it directly.
-
-The dev server, `vite preview` and nginx all proxy `/api/payload` to it, which makes the request same-origin.
-
-`VITE_*` values are inlined at build time, so the production image takes `VITE_PAYLOAD_URL` as a build argument.
-
-## How it fits together
-
-### Domain
-
-**`src/domain/nodeMeta.js` is the registry.**
-
-Icon, label, accent and whether a node can be opened, edited or deleted all live there, so adding a node type is one entry rather than a branch in five files.
-
-The domain layer also contains the payload adapter, tree layout, validation, time utilities, keyboard shortcuts and other pure logic.
-
-### State
-
-State has three owners:
-
-- **TanStack Query** holds the flow.
-- **The URL** holds which node is open.
-- **Pinia** holds the viewport.
-
-Form edits live in a local draft until saved, so a refetch cannot overwrite typing.
-
-### Routing
-
-The drawer is a nested route:
-
-```text
-/flow/node/:id
+```bash
+docker compose up                   # dev server on http://localhost:5173
+docker compose --profile prod up    # production build on http://localhost:8080
 ```
-
-There is no open flag and the canvas never unmounts.
-
-### Mutations
-
-Mutations use one shared factory:
-
-1. Cancel in-flight queries.
-2. Snapshot the cache.
-3. Apply the change optimistically.
-4. Restore the snapshot on failure.
-5. Invalidate the relevant query.
-
-`useMoveNode` skips the invalidate because the movement is already reflected in the cache.
-
-### Layout
-
-`layoutTree` places the nodes:
-
-- Leaves take a left-to-right cursor.
-- Parents centre over their children.
-- Depth maps to `y`.
-- Cycles are guarded.
-- Orphans are placed.
-- Connectors are anchored to the positioned parent.
-
-Dragged positions persist and win over the automatic layout.
-
-`nextFreePosition` is used when creating a node so that it does not overlap an existing node.
-
-### Keyboard
-
-`domain/shortcuts.js` is the single source for keyboard shortcuts.
-
-It is used by both the shortcut dialog and tooltips.
-
-Keyboard navigation includes:
-
-- Arrow keys
-- Home / End
-- Enter / Space
-- Escape
-- `Ctrl+Z` / `Cmd+Z`
-- `?` for the shortcut reference
-
-Canvas navigation stands down while a dialog is open or a form field has focus, so those keys keep their usual meaning.
-
-### Theme
-
-Light and dark follow the system until explicitly changed.
-
-Colours are tokens that Vue Flow and the date picker read too, so neither ships a second palette.
-
-The interface also respects `prefers-reduced-motion`.
-
-## The payload
-
-The payload has a few details that shape the implementation:
-
-- IDs are mixed types: the trigger is the number `1`, while the rest are hex strings.
-- IDs are normalised to strings at the adapter.
-- Edges come from `parentId` alone.
-- `data.connectors` repeats the same relationship.
-- `businessHours` in the create form is a `dateTime` node whose `data.action` is `businessHours`.
-
-The adapter keeps these payload-specific details out of the rest of the application.
-
-## Mock backend
-
-There is no write API.
-
-`src/api/flowApi.js` seeds from the payload, applies mutations in memory and persists to `localStorage`, so edits survive a reload.
-
-Writes carry a small simulated latency, which is what makes an optimistic update and its rollback visible.
-
-The mock backend supports:
-
-- Fetch
-- Create
-- Update
-- Delete
-- Restore
-- Replace
-
-Persistence is keyed by the payload source URL.
-
-Attachments are read as data URLs and capped at 2 MB, since there is no upload endpoint.
 
 ## Scripts
 
@@ -202,87 +93,94 @@ Attachments are read as data URLs and capped at 2 MB, since there is no upload e
 | `npm run lint`      | ESLint, with fixes                |
 | `npm run typecheck` | Type check the JSDoc types        |
 
+## Stack
+
+Vue 3, [Vue Flow](https://vueflow.dev), TanStack Query, Pinia, Vue Router, Tailwind CSS, Vite.
+Plain JavaScript with JSDoc types checked by `vue-tsc` in strict mode.
+
+## How it fits together
+
+```text
+src/
+  domain/        Pure logic, no Vue imports: node registry, graph, layout,
+                 validation, shortcuts, formatting
+  api/           The storage backend, the bundled starter diagram, query keys
+  composables/   Queries, optimistic mutations, drafts, keyboard, history, theme
+  stores/        Pinia: viewport, undo history, theme, toasts
+  components/    canvas/, drawer/, ui/
+  views/         FlowView
+  router/        Routes, including the nested node route
+e2e/             Playwright specs
+```
+
+**The node registry.** `src/domain/nodeMeta.js` holds everything that differs by node type: icon,
+label, accent, and whether a node can be opened, edited or deleted. Adding a type is one entry,
+not a branch in five components.
+
+**State has three owners.** TanStack Query owns the document. The URL owns which node is open.
+Pinia owns the viewport, undo history, theme and toasts. Nothing is copied from one to another, and
+form edits live in a local draft until saved, so a refetch cannot overwrite typing.
+
+**Storage is behind an API-shaped module.** `src/api/flowApi.js` is the only code that touches
+persistence. Today it seeds from `src/api/starterDiagram.json` and saves to `localStorage`; it is
+async and shaped like a REST client so a real backend can replace it without touching a component.
+Writes carry a small simulated latency so optimistic updates and rollbacks stay honest.
+
+**Optimistic mutations** share one factory: cancel in-flight queries, snapshot the cache, apply the
+change, restore the snapshot on failure, then invalidate.
+
+**Layout.** `layoutTree` gives unplaced nodes a tidy top-down tree; anything dragged keeps its
+position. `nextFreePosition` stops a new node landing on an existing one.
+
+**Keyboard.** `src/domain/shortcuts.js` is the single source for shortcuts, read by both the
+handlers and the help dialog, so a tooltip cannot disagree with the binding. Canvas navigation
+stands down while a dialog is open or a field has focus.
+
+**Theme.** Colours are CSS tokens that Vue Flow and every component read, and the interface
+respects `prefers-reduced-motion`.
+
 ## Tests
 
-| Level      | Count | Covers                                                                                               |
-| ---------- | ----- | ---------------------------------------------------------------------------------------------------- |
-| Unit       | 94    | Domain logic, composables, stores, components                                                        |
-| End to end | 29    | Rendering, drag, zoom, connect, deep links, create, edit, delete, keyboard, undo, theme, affordances |
+| Level      | Covers                                                                 |
+| ---------- | ---------------------------------------------------------------------- |
+| Unit       | Domain logic, storage, composables, stores, components                 |
+| End to end | Rendering, drag, zoom, connect, deep links, create, edit, delete, undo |
 
-Vue Flow measures real DOM that happy-dom cannot provide, so component tests stub it and Playwright covers the canvas.
-
-Where a test goes: domain logic and stores are unit tests, a component's own behaviour is a component test, and anything needing real layout, a real drag or a reload is Playwright.
-
-Playwright needs its browser once:
+happy-dom has no layout, so the canvas is covered by Playwright rather than mocked. Playwright
+needs its browser once:
 
 ```bash
 npx playwright install chromium
 ```
 
-`npm run test:e2e` builds and serves the app itself, so nothing needs starting first. It will reuse a `vite preview` already on port 4173 rather than rebuilding, so stop one before a run or it tests the previous build.
+`npm run test:e2e` builds and serves the app itself. It reuses a `vite preview` already on port
+4173, so stop one first or it tests the previous build.
 
-CI runs lint, typecheck, unit tests and the build in one job, with Playwright in another against the production build.
-
-## Structure
-
-```text
-src/
-  domain/        Pure logic: constants, registry, adapter, layout,
-                 validation, time, shortcuts, platform
-                 No Vue imports
-
-  api/           Mock backend, query keys, query client config
-
-  composables/   Query, mutations, drafts, uploads, keyboard,
-                 history, theme, help
-
-  stores/        Pinia: canvas viewport, undo history, theme preference
-
-  components/    canvas/, drawer/, drawer/bodies/, ui/
-
-  views/         FlowView
-
-  router/        Routes, including the nested drawer route
-
-e2e/             Playwright specs
-```
-
-## Documentation
-
-Requirements are in [plan.md](plan.md).
-
-The branch-sized ticket breakdown is in [task-chunks.md](task-chunks.md).
-
-Security notes are in [SECURITY.md](SECURITY.md).
-
-The rules an AI agent cannot infer from the code are in [AGENTS.md](AGENTS.md), which
-`CLAUDE.md` points at so every agent reads the same file. `.claude/settings.json` adds
-two committed hooks: one refuses writes to generated or secret paths, the other formats
-what was just edited. Before any commit, `scripts/check-secrets.mjs` scans the staged
-changes for credentials, so a leaked key is a fix rather than a rotation. Both are a few lines of Node with no network access, so they can
-be audited in a minute.
+CI runs lint, typecheck, unit tests and the build in one job, and Playwright against the
+production build in another.
 
 ## Deployment
 
-The build is a static SPA, so a host needs two rules:
-
-1. Fall back to `index.html` for client routes.
-2. Proxy `/api/payload`.
-
-`docker/nginx.conf.template` does both for the container, and `vercel.json` does both for Vercel, where the app is deployed.
-
-Vercel reads `vercel.json` before the build, so unlike the dev server and nginx its rewrite cannot come from `.env`. Changing the payload source means changing it in both places.
+The build is a static single page app, so any static host works as long as unknown paths fall back
+to `index.html`. `docker/nginx.conf` does that for the container and `vercel.json` for Vercel.
 
 ## Known limits
 
-- Created nodes are standalone; the brief's create form has no parent field.
-- The mock backend is per browser, so two tabs do not see each other's edits.
-- The app needs the payload API to be reachable; there is no offline mode.
-- There is no write API; mutations currently run through the local mock backend.
-- Attachments are limited to 2 MB and stored as data URLs.
-- Connecting a node moves it, since the payload gives each node a single `parentId` rather than a list of edges.
-- Undo history is held in memory, so it does not survive a reload, though the edits themselves do.
+- One document per browser, and a node has a single incoming connection. The second goes in
+  [FL-40](BACKLOG.md).
+- Node types are still the ones the project started with: Send Message, Add Comment and Business
+  Hours. General shapes are [FL-41](BACKLOG.md).
+- Storage is per browser, so two tabs do not see each other's edits and nothing syncs between
+  devices.
+- Attachments are stored as data URLs and capped at 2 MB.
+- Undo history is in memory; the edits themselves survive a reload, the history does not.
+
+## Contributing
+
+Pick a ticket from [BACKLOG.md](BACKLOG.md), branch, and open a pull request against `main`.
+[AGENTS.md](AGENTS.md) holds the rules the code cannot tell you, for people and AI agents alike;
+`CLAUDE.md` points at it. A pre-commit hook scans staged changes for credentials.
 
 ## License
 
-Released under the [MIT License](LICENSE).
+[MIT](LICENSE)

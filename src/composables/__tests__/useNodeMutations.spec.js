@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import payload from '@/tests/fixtures/payload.json'
+import starter from '@/api/starterDiagram.json'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { useCreateNode, useDeleteNode, useMoveNode } from '../useNodeMutations.js'
@@ -9,7 +9,7 @@ import { withSetup, waitUntil } from '@/tests/utils.js'
 /** Seed the cache the way the query would, then hand back both halves. */
 function withFlow(composable) {
   const setup = withSetup(composable)
-  setup.queryClient.setQueryData(flowKeys.list(), structuredClone(payload))
+  setup.queryClient.setQueryData(flowKeys.list(), structuredClone(starter))
   return setup
 }
 
@@ -18,11 +18,6 @@ const flowIn = (queryClient) => queryClient.getQueryData(flowKeys.list())
 beforeEach(() => {
   vi.restoreAllMocks()
   flowApi.resetFlow()
-  vi.stubEnv('VITE_PAYLOAD_URL', '')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => ({ ok: true, status: 200, json: async () => structuredClone(payload) })),
-  )
 })
 
 describe('rollback', () => {
@@ -33,7 +28,7 @@ describe('rollback', () => {
     result.mutate({ id: 'b6a0c1' })
     await waitUntil(() => result.isError.value)
 
-    expect(flowIn(queryClient)).toHaveLength(payload.length)
+    expect(flowIn(queryClient)).toHaveLength(starter.length)
   })
 
   it('drops an optimistic node when the create fails', async () => {

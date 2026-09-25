@@ -219,7 +219,7 @@ function isValidConnection({ source, target }) {
   return canConnect(flowNodes(), toNodeId(source), toNodeId(target)) === null
 }
 
-/** The payload gives a node one parent, so connecting re-parents rather than adding an edge. */
+/** A node has one parent, so connecting re-parents rather than adding an edge. */
 /** @param {{ source: string, target: string }} connection */
 function onConnect({ source, target }) {
   const refusal = canConnect(flowNodes(), toNodeId(source), toNodeId(target))

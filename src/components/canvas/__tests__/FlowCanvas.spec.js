@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { createRouter, createWebHistory } from 'vue-router'
 
-import payload from '@/tests/fixtures/payload.json'
+import starter from '@/api/starterDiagram.json'
 import { resetFlow } from '@/api/flowApi.js'
 import { createTestQueryClient, waitUntil } from '@/tests/utils.js'
 
@@ -89,11 +89,6 @@ beforeEach(() => {
   vi.clearAllMocks()
   store.nodes = []
   store.edges = []
-  vi.stubEnv('VITE_PAYLOAD_URL', '')
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => ({ ok: true, status: 200, json: async () => structuredClone(payload) })),
-  )
 })
 
 describe('FlowCanvas', () => {
@@ -102,8 +97,8 @@ describe('FlowCanvas', () => {
     expect(wrapper.find('[role="status"]').exists()).toBe(true)
 
     await waitUntil(() => lastNodes().length > 0)
-    expect(lastNodes()).toHaveLength(payload.length)
-    expect(lastEdges()).toHaveLength(payload.length - 1)
+    expect(lastNodes()).toHaveLength(starter.length)
+    expect(lastEdges()).toHaveLength(starter.length - 1)
   })
 
   it('fits only once the nodes are measured, and not at all for a returning viewport', async () => {
