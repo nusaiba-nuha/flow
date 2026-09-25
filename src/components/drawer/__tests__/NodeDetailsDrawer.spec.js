@@ -41,7 +41,8 @@ describe('NodeDetailsDrawer', () => {
   it('loads the node named by the route param, and says so when it is gone', async () => {
     const wrapper = await renderDrawer('b6a0c1')
     expect(wrapper.find('input').element.value).toBe('Away Message')
-    expect(wrapper.text()).toContain('Send Message')
+    expect(wrapper.text()).toContain('Process')
+    expect(wrapper.find('select').element.value).toBe('process')
 
     const missing = await renderDrawer('ghost')
     expect(missing.find('[role="alert"]').text()).toContain('no longer exists')
@@ -64,6 +65,19 @@ describe('NodeDetailsDrawer', () => {
         id: 'b6a0c1',
         patch: expect.objectContaining({ name: 'Renamed' }),
       }),
+    )
+  })
+
+  it('changes the shape of a node', async () => {
+    const update = vi.spyOn(flowApi, 'updateNode')
+    const wrapper = await renderDrawer('b6a0c1')
+
+    await wrapper.find('select').setValue('database')
+    await buttonWith(wrapper, 'Save changes').trigger('click')
+    await waitUntil(() => update.mock.calls.length > 0)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ patch: expect.objectContaining({ type: 'database' }) }),
     )
   })
 

@@ -9,18 +9,16 @@ matter once it has them.
 | -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | A document     | `flowApi.ensureLoaded`       | Untrusted: shape is normalised at the adapter, unknown node types fall back to a safe entry rather than rendering nothing |
 | Form fields    | The drawer and create dialog | Untrusted: validated before a mutation, capped in length                                                                  |
-| Picked files   | `useAttachmentUpload`        | Untrusted: images only, 2 MB, read as a data URL                                                                          |
 | `localStorage` | `ensureLoaded`               | Untrusted: parsed in a try, falls back to the starter diagram when it holds anything unexpected                           |
 
 ## Cross-site scripting
 
-Nothing in the app uses `v-html`. Every document string, node name, description, comment and message
-goes through Vue's text interpolation, which escapes it. Attachment sources are rendered as `<img
-src>`; a hostile data URL cannot execute in that position, and an `onerror` fades the tile rather
-than leaving a hole.
+Nothing in the app uses `v-html`. Every document string, shape title, description and edge label
+goes through Vue's text interpolation, which escapes it. Shape outlines are SVG path data computed
+from numbers in `src/domain/shapes.js`, never from document text.
 
-The one thing to keep watching: if a future requirement asks for formatted message bodies, the
-answer is a sanitiser with an allowlist, not `v-html`.
+The one thing to keep watching: if a future requirement asks for formatted labels, the answer is a
+sanitiser with an allowlist, not `v-html`.
 
 ## Network
 

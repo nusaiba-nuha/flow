@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const NODE = { away: 'b6a0c1', success: '161f52', trigger: '1' }
+const NODE = { away: 'b6a0c1', hours: 'd09c08' }
 
 const nodeAt = (page, id) => page.locator(`.vue-flow__node[data-id="${id}"]`)
 
@@ -9,10 +9,10 @@ test.beforeEach(async ({ page }) => {
   await expect(nodeAt(page, NODE.away)).toBeVisible()
 })
 
-test('renders every node of the starter diagram, with icon, title and description', async ({
+test('renders every node of the starter diagram, with its outline, title and description', async ({
   page,
 }) => {
-  await expect(page.locator('.vue-flow__node')).toHaveCount(7)
+  await expect(page.locator('.vue-flow__node')).toHaveCount(5)
 
   const card = nodeAt(page, NODE.away)
   await expect(card.locator('svg')).toBeVisible()
@@ -43,26 +43,38 @@ test('drags a node and keeps it there after a reload', async ({ page }) => {
   expect(position).not.toBe('')
 })
 
-test('opens a node by clicking it, and ignores the display only ones', async ({ page }) => {
+test('opens a node by clicking it', async ({ page }) => {
   await nodeAt(page, NODE.away).click()
   await expect(page).toHaveURL(/\/flow\/node\/b6a0c1/)
+})
 
-  await page.getByRole('button', { name: 'Close details' }).click()
-  await nodeAt(page, NODE.success).click()
-  await expect(page).toHaveURL(/\/flow$/)
+test('draws each node as its shape, and labels the branches on their edges', async ({ page }) => {
+  await expect(nodeAt(page, NODE.hours).locator('[data-shape]')).toHaveAttribute(
+    'data-shape',
+    'decision',
+  )
+  await expect(page.getByTestId('edge-label')).toHaveText(['Success', 'Failure'], {
+    useInnerText: true,
+  })
 })
 
 test('zoom steps land on round numbers, and the label resets to 100%', async ({ page }) => {
   const zoom = page.getByRole('button', { name: /Reset zoom/i })
 
-  await page.getByRole('button', { name: 'Zoom in' }).click()
+  // From a known zoom: where fit to screen lands depends on the diagram.
+  await zoom.click()
+  await expect(zoom).toHaveText('100%')
+
+  await page.getByRole('button', { name: 'Zoom out' }).click()
   await expect(zoom).toHaveText('75%')
 
   await page.getByRole('button', { name: 'Zoom in' }).click()
   await expect(zoom).toHaveText('100%')
+  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await expect(zoom).toHaveText('150%')
 
   await page.getByRole('button', { name: 'Fit to screen' }).click()
-  await expect(zoom).not.toHaveText('100%')
+  await expect(zoom).not.toHaveText('150%')
 
   await zoom.click()
   await expect(zoom).toHaveText('100%')

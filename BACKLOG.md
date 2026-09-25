@@ -60,7 +60,7 @@ in milestone 2 is possible until diagrams are nodes and edges.
 
 **Done when** a saved v1 document opens unchanged, and two nodes can both point at a third.
 
-### FL-41 · General shapes ⏭️
+### FL-41 · General shapes ✅
 
 - Registry entries for process (rectangle), terminal (rounded), decision (diamond), data
   (parallelogram), database (cylinder), document, note, and text
@@ -68,7 +68,7 @@ in milestone 2 is possible until diagrams are nodes and edges.
 - The chat-bot types migrate onto shapes so nothing drawn is lost; their drawer bodies, the
   business hours logic and `@vuepic/vue-datepicker` are removed
 
-### FL-42 · New diagram, blank canvas and samples ⬜
+### FL-42 · New diagram, blank canvas and samples ⏭️
 
 - "Reset flow" becomes "New diagram", which starts empty with a hint
 - The old support flow and a small architecture diagram become samples

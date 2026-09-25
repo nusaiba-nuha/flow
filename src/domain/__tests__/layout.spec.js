@@ -16,14 +16,15 @@ describe('layoutTree', () => {
     expect(at.size).toBe(nodes.length)
     expect(at.get('1').y).toBe(0)
     expect(at.get('d09c08').y).toBe(STEP_Y)
-    expect(at.get('d09c08').x).toBeCloseTo((at.get('161f52').x + at.get('28c4b9').x) / 2)
-    expect(Math.abs(at.get('161f52').x - at.get('28c4b9').x)).toBeGreaterThanOrEqual(
+    // Business Hours branches to the Welcome and Away messages.
+    expect(at.get('d09c08').x).toBeCloseTo((at.get('b0653a').x + at.get('b6a0c1').x) / 2)
+    expect(Math.abs(at.get('b0653a').x - at.get('b6a0c1').x)).toBeGreaterThanOrEqual(
       NODE_SIZE.WIDTH,
     )
   })
 
   it('terminates on a cycle and still places an orphan', () => {
-    const cyclic = ['a', 'b', 'c'].map((id) => normaliseNode({ id, type: 'addComment' }))
+    const cyclic = ['a', 'b', 'c'].map((id) => normaliseNode({ id, type: 'process' }))
     const loop = [
       { source: 'a', target: 'b' },
       { source: 'b', target: 'a' },
@@ -34,7 +35,7 @@ describe('layoutTree', () => {
   })
 
   it('lays a node with two incoming edges out under the first, once', () => {
-    const three = ['a', 'b', 'c'].map((id) => normaliseNode({ id, type: 'addComment' }))
+    const three = ['a', 'b', 'c'].map((id) => normaliseNode({ id, type: 'process' }))
     const at = layoutTree(three, [
       { source: 'a', target: 'c' },
       { source: 'b', target: 'c' },
@@ -42,23 +43,6 @@ describe('layoutTree', () => {
 
     expect(at.get('c').y).toBe(STEP_Y)
     expect(at.get('c').x).toBe(at.get('a').x)
-  })
-
-  it('moves a dateTime node connectors with it once it has a position', () => {
-    const before = layoutTree(nodes, edges)
-    const offset = {
-      x: before.get('161f52').x - before.get('d09c08').x,
-      y: before.get('161f52').y - before.get('d09c08').y,
-    }
-
-    const dragged = nodes.map((node) =>
-      node.id === 'd09c08' ? { ...node, position: { x: 1000, y: 2000 } } : node,
-    )
-    const after = layoutTree(dragged, edges)
-
-    expect(after.get('161f52')).toEqual({ x: 1000 + offset.x, y: 2000 + offset.y })
-    // A plain child keeps its slot; only connectors belong to the node.
-    expect(after.get('b0653a')).toEqual(before.get('b0653a'))
   })
 })
 

@@ -1,7 +1,6 @@
-import { CONNECTOR_TYPE, NODE_TYPE } from '@/domain/constants.js'
 import { migrate } from '@/domain/document.js'
 import { canConnect, toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
-import { creatableByValue } from '@/domain/nodeMeta.js'
+import { isKnownShape } from '@/domain/nodeMeta.js'
 
 import starterDiagram from './starterDiagram.json'
 import { STORAGE_KEYS } from './storageKeys.js'
@@ -81,51 +80,29 @@ function requireNode(id) {
 }
 
 /**
- * A dateTime node always branches, so a created one gets the same shape as a
- * seeded one.
- * @param {Record<string, any>} parent
- */
-function addBranches(parent) {
-  const branches = [CONNECTOR_TYPE.SUCCESS, CONNECTOR_TYPE.FAILURE].map((connectorType) => ({
-    id: generateNodeId(),
-    type: NODE_TYPE.DATE_TIME_CONNECTOR,
-    name: connectorType === CONNECTOR_TYPE.SUCCESS ? 'Success' : 'Failure',
-    data: { connectorType },
-  }))
-
-  parent.data.connectors = branches.map((branch) => branch.id)
-  current().nodes.push(...branches)
-  branches.forEach((branch) => (flow = withEdge(current(), parent.id, branch.id)))
-}
-
-/**
- * @param {{ title: string, description: string, nodeType: string, position?: { x: number, y: number } }} input
+ * @param {{ title: string, description: string, shape: string, position?: { x: number, y: number } }} input
  * @returns {Promise<Record<string, any>>}
  */
-export async function createNode({ title, description, nodeType, position }) {
+export async function createNode({ title, description, shape, position }) {
   await ensureLoaded()
-
-  const option = creatableByValue(nodeType)
-  if (!option) throw new Error(`Unknown node type: ${nodeType}.`)
+  if (!isKnownShape(shape)) throw new Error(`Unknown shape: ${shape}.`)
 
   const node = {
     id: generateNodeId(),
-    type: option.type,
+    type: shape,
     name: title,
-    data: option.seed(description),
+    data: { description },
     ...(position ? { position } : {}),
   }
 
   current().nodes.push(node)
-  if (node.type === NODE_TYPE.DATE_TIME) addBranches(node)
-
   save()
   await delay(LATENCY_MS)
   return clone(node)
 }
 
 /**
- * @param {{ id: string, patch: { name?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
+ * @param {{ id: string, patch: { name?: string, type?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
  * @returns {Promise<Record<string, any>>}
  */
 export async function updateNode({ id, patch }) {
@@ -133,6 +110,10 @@ export async function updateNode({ id, patch }) {
   const node = requireNode(id)
 
   if (patch.name !== undefined) node.name = patch.name
+  if (patch.type !== undefined) {
+    if (!isKnownShape(patch.type)) throw new Error(`Unknown shape: ${patch.type}.`)
+    node.type = patch.type
+  }
   if (patch.position !== undefined) node.position = clone(patch.position)
   if (patch.data !== undefined) node.data = { ...node.data, ...clone(patch.data) }
 

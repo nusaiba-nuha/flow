@@ -52,7 +52,7 @@ test('the create control does not promise a connection it will not make', async 
 
   await create.click()
   await expect(page.getByRole('dialog', { name: 'Create new node' })).toContainText(
-    'added on its own, below the flow',
+    'added on its own, below the diagram',
   )
 })
 

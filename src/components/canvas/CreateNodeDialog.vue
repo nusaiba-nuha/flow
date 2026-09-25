@@ -9,7 +9,7 @@ import { useFlowQuery } from '@/composables/useFlowQuery.js'
 import { useCreateNode } from '@/composables/useNodeMutations.js'
 import { useDraft } from '@/composables/useDraft.js'
 import { useCanvasStore } from '@/stores/canvas.js'
-import { CREATABLE_NODES } from '@/domain/nodeMeta.js'
+import { SHAPE_OPTIONS } from '@/domain/nodeMeta.js'
 import { nextFreePosition } from '@/domain/layout.js'
 import { FIELD_LIMIT, maxLength, required } from '@/domain/validators.js'
 import { toNodeId } from '@/domain/graph.js'
@@ -22,15 +22,15 @@ const canvas = useCanvasStore()
 const { nodes } = useFlowQuery()
 const createNode = useCreateNode()
 
-const blank = computed(() => ({ id: 'new', title: '', description: '', nodeType: '' }))
+const blank = computed(() => ({ id: 'new', title: '', description: '', shape: '' }))
 
 const { draft, errors, isValid, touch, touchAll } = useDraft(blank, {
   title: [required('Title'), maxLength('Title', FIELD_LIMIT.TITLE_MAX)],
   description: [maxLength('Description', FIELD_LIMIT.DESCRIPTION_MAX)],
-  nodeType: [required('Type of node')],
+  shape: [required('Shape')],
 })
 
-const options = CREATABLE_NODES.map(({ value, label }) => ({ value, label }))
+const options = SHAPE_OPTIONS.map(({ value, label }) => ({ value, label }))
 const failed = ref(false)
 
 function submit() {
@@ -42,7 +42,7 @@ function submit() {
     {
       title: draft.title,
       description: draft.description,
-      nodeType: draft.nodeType,
+      shape: draft.shape,
       // Below the existing tree rather than on top of it.
       position: nextFreePosition(nodes.value),
     },
@@ -68,7 +68,7 @@ function submit() {
       <TextField
         v-model="draft.title"
         label="Title"
-        placeholder="Welcome message"
+        placeholder="Check the order"
         :error="errors.title"
         :maxlength="FIELD_LIMIT.TITLE_MAX"
         @blur="touch('title')"
@@ -85,19 +85,19 @@ function submit() {
       />
 
       <SelectField
-        v-model="draft.nodeType"
-        label="Type of node"
-        placeholder="Select a node type"
+        v-model="draft.shape"
+        label="Shape"
+        placeholder="Select a shape"
         :options="options"
-        :error="errors.nodeType"
-        @blur="touch('nodeType')"
+        :error="errors.shape"
+        @blur="touch('shape')"
       />
 
       <!-- Said here, not only in a tooltip: nobody should be surprised by where
            the node ends up. -->
       <p class="text-xs text-muted">
-        The node is added on its own, below the flow. Connecting nodes to each other is not part of
-        this version.
+        The shape is added on its own, below the diagram. Drag from its bottom handle to another
+        shape to connect them.
       </p>
 
       <p v-if="failed" class="text-xs text-danger" role="alert">

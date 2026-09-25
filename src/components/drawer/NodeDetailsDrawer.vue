@@ -1,20 +1,19 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
 import { useRouter } from 'vue-router'
 
 import TextField from '@/components/ui/TextField.vue'
+import SelectField from '@/components/ui/SelectField.vue'
 import { useNode } from '@/composables/useFlowQuery.js'
 import { useDeleteNode, useUpdateNode } from '@/composables/useNodeMutations.js'
 import { useDraft } from '@/composables/useDraft.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { useToastStore } from '@/stores/toasts.js'
-import { metaFor } from '@/domain/nodeMeta.js'
-import { validateNodeData } from '@/domain/nodeValidation.js'
+import { metaFor, SHAPE_OPTIONS } from '@/domain/nodeMeta.js'
 import { FIELD_LIMIT, maxLength, required } from '@/domain/validators.js'
 import { ROUTE } from '@/router/index.js'
 import DrawerHeader from './DrawerHeader.vue'
 import DrawerFooter from './DrawerFooter.vue'
-import { detailComponentFor } from './detailComponents.js'
 
 const props = defineProps({ id: { type: String, required: true } })
 
@@ -26,7 +25,6 @@ const toasts = useToastStore()
 const { undo } = useFlowHistory()
 
 const meta = computed(() => (node.value ? metaFor(node.value.type) : null))
-const body = computed(() => (node.value ? detailComponentFor(node.value.type) : null))
 
 /** One draft for the whole node, so the footer has a single Save. */
 const editable = computed(() =>
@@ -34,30 +32,23 @@ const editable = computed(() =>
     ? {
         id: node.value.id,
         name: node.value.name,
+        type: node.value.type,
         description: node.value.data.description ?? '',
-        data: node.value.data,
       }
     : null,
 )
 
 const { draft, errors, isValid, isDirty, touch, touchAll, reset } = useDraft(editable, {
   name: [required('Title'), maxLength('Title', FIELD_LIMIT.TITLE_MAX)],
+  type: [],
   description: [maxLength('Description', FIELD_LIMIT.DESCRIPTION_MAX)],
-  data: [],
 })
 
-const bodyError = computed(() =>
-  node.value ? validateNodeData(node.value.type, draft.data) : null,
+const shapeOptions = SHAPE_OPTIONS.map(({ value, label }) => ({ value, label }))
+
+const footerError = computed(() =>
+  updateNode.isError.value ? 'Could not save. Your changes were rolled back.' : null,
 )
-const canSave = computed(() => isValid.value && bodyError.value === null)
-
-// Held back until a save is attempted, the way field errors wait for a touch.
-const showBodyError = ref(false)
-
-const footerError = computed(() => {
-  if (updateNode.isError.value) return 'Could not save. Your changes were rolled back.'
-  return showBodyError.value ? bodyError.value : null
-})
 
 const titleField = useTemplateRef('titleField')
 const footer = useTemplateRef('footer')
@@ -68,13 +59,12 @@ function close() {
 
 function save() {
   touchAll()
-  showBodyError.value = true
-  if (!canSave.value || !isDirty.value) return
+  if (!isValid.value || !isDirty.value) return
 
   updateNode.mutate(
     {
       id: props.id,
-      patch: { name: draft.name, data: { ...draft.data, description: draft.description } },
+      patch: { name: draft.name, type: draft.type, data: { description: draft.description } },
     },
     // The drawer stays open, so this is the only sign the write actually landed.
     { onSuccess: () => toasts.push('Changes saved', { action: { label: 'Undo', run: undo } }) },
@@ -118,7 +108,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
   >
     <DrawerHeader
       :label="meta?.label ?? 'Node'"
-      :icon="meta?.icon ?? ''"
+      :shape="node?.type ?? ''"
       :accent="meta?.accent ?? 'unknown'"
       :name="node?.name ?? 'Loading'"
       @close="close"
@@ -161,7 +151,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
           @blur="touch('description')"
         />
 
-        <component :is="body" v-if="body" v-model="draft.data" />
+        <SelectField v-model="draft.type" label="Shape" :options="shapeOptions" />
       </div>
 
       <DrawerFooter

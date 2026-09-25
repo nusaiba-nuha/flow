@@ -39,7 +39,9 @@ The full reasoning, and how we will know if it is working, is at the top of the
 
 ## What works today
 
-- **Canvas.** Pan, zoom and drag nodes on a Vue Flow canvas. Dragged positions are kept.
+- **Shapes.** Process, start / end, decision, input / output, database, document, note and text,
+  each drawn as its own outline. Change a shape's type at any time.
+- **Canvas.** Pan, zoom and drag shapes on a Vue Flow canvas. Dragged positions are kept.
 - **Create, edit, delete.** Every change updates the canvas immediately and rolls back if it fails.
 - **Connections.** Drag from one node to another to connect them, as many in and out as you like;
   remove a connection from the control on the edge.
@@ -117,9 +119,10 @@ e2e/             Playwright specs
 `src/domain/document.js` lifts anything older, so storage and, later, files only ever hand the
 app the current shape.
 
-**The node registry.** `src/domain/nodeMeta.js` holds everything that differs by node type: icon,
-label, accent, and whether a node can be opened, edited or deleted. Adding a type is one entry,
-not a branch in five components.
+**The shape registry.** `src/domain/nodeMeta.js` holds everything that differs by shape: label,
+hint, accent, and whether it can be opened, edited or deleted. `src/domain/shapes.js` draws each
+outline as SVG path data, a pure function the canvas, the pickers and a future exporter all share.
+Adding a shape is one entry in each.
 
 **State has three owners.** TanStack Query owns the document. The URL owns which node is open.
 Pinia owns the viewport, undo history, theme and toasts. Nothing is copied from one to another, and
@@ -171,11 +174,8 @@ to `index.html`. `docker/nginx.conf` does that for the container and `vercel.jso
 ## Known limits
 
 - One document per browser.
-- Node types are still the ones the project started with: Send Message, Add Comment and Business
-  Hours. General shapes are [FL-41](BACKLOG.md).
 - Storage is per browser, so two tabs do not see each other's edits and nothing syncs between
   devices.
-- Attachments are stored as data URLs and capped at 2 MB.
 - Undo history is in memory; the edits themselves survive a reload, the history does not.
 
 ## Contributing

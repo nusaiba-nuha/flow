@@ -18,6 +18,7 @@ const props = defineProps({
     required: true,
   },
   selected: { type: Boolean, default: false },
+  label: { type: String, default: '' },
 })
 
 /** @type {(edgeId: string) => void} */
@@ -64,13 +65,22 @@ import { DETACH_EDGE } from './connectKey.js'
 
   <EdgeLabelRenderer>
     <div
-      v-if="showRemove"
-      class="nodrag nopan pointer-events-auto absolute"
+      v-if="label || showRemove"
+      class="nodrag nopan pointer-events-auto absolute flex items-center gap-1"
       :style="{ transform: `translate(-50%, -50%) translate(${path[1]}px, ${path[2]}px)` }"
       @mouseenter="hovered = true"
       @mouseleave="hovered = false"
     >
+      <span
+        v-if="label"
+        class="rounded-full border border-line bg-surface px-2 py-0.5 text-[11px] font-medium text-muted"
+        data-testid="edge-label"
+      >
+        {{ label }}
+      </span>
+
       <button
+        v-if="showRemove"
         type="button"
         class="flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-muted shadow-sm hover:text-danger"
         :aria-label="`Remove this connection`"

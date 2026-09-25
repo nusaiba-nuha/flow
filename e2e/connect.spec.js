@@ -57,7 +57,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test('drags between nodes to add a second incoming edge, keeping the first', async ({ page }) => {
-  expect(await drawnEdges(page)).toBe(6)
+  expect(await drawnEdges(page)).toBe(4)
 
   const from = await node(page, 'e879e4').locator('.vue-flow__handle-bottom').boundingBox()
   const to = await node(page, 'b0653a').boundingBox()
@@ -67,24 +67,24 @@ test('drags between nodes to add a second incoming edge, keeping the first', asy
   await page.mouse.move(to.x + to.width / 2, to.y + 6, { steps: 14 })
   await page.mouse.up()
 
-  await expect.poll(() => sourcesInto(page, 'b0653a')).toEqual(['161f52', 'e879e4'])
-  await expect.poll(() => drawnEdges(page)).toBe(7)
+  await expect.poll(() => sourcesInto(page, 'b0653a')).toEqual(['d09c08', 'e879e4'])
+  await expect.poll(() => drawnEdges(page)).toBe(5)
 })
 
 test('removes a connection from the edge, and undo puts it back', async ({ page }) => {
-  await (await removeControl(page, 'e-28c4b9-b6a0c1')).click()
+  await (await removeControl(page, 'e-d09c08-b6a0c1')).click()
   await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual([])
-  expect(await drawnEdges(page)).toBe(5)
+  expect(await drawnEdges(page)).toBe(3)
 
   await page.getByRole('banner').getByRole('button', { name: 'Undo' }).click()
-  await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual(['28c4b9'])
-  await expect.poll(() => drawnEdges(page)).toBe(6)
+  await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual(['d09c08'])
+  await expect.poll(() => drawnEdges(page)).toBe(4)
 })
 
 test('leaves the node where it was when its connection goes', async ({ page }) => {
   const before = await node(page, 'b6a0c1').boundingBox()
 
-  await (await removeControl(page, 'e-28c4b9-b6a0c1')).click()
+  await (await removeControl(page, 'e-d09c08-b6a0c1')).click()
   await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual([])
 
   const after = await node(page, 'b6a0c1').boundingBox()
@@ -95,13 +95,13 @@ test('leaves the node where it was when its connection goes', async ({ page }) =
 test('draws the edge at once when a created node is connected', async ({ page }) => {
   await page.getByRole('button', { name: 'Create new node' }).click()
   await page.getByLabel('Title').fill('Standalone')
-  await page.getByLabel('Type of node').selectOption('sendMessage')
+  await page.getByLabel('Shape').selectOption('process')
   await page.getByRole('button', { name: 'Create node' }).click()
   await page.waitForURL(/\/flow\/node\//)
 
   const created = page.url().split('/').pop()
   await page.getByRole('button', { name: 'Close details' }).click()
-  expect(await drawnEdges(page)).toBe(6)
+  expect(await drawnEdges(page)).toBe(4)
 
   await whenStill(node(page, created))
   const from = await node(page, 'b6a0c1').locator('.vue-flow__handle-bottom').boundingBox()
@@ -112,6 +112,6 @@ test('draws the edge at once when a created node is connected', async ({ page })
   await page.mouse.up()
 
   // No reload: the edge has to appear on its own.
-  await expect.poll(() => drawnEdges(page)).toBe(7)
+  await expect.poll(() => drawnEdges(page)).toBe(5)
   await expect.poll(() => sourcesInto(page, created)).toEqual(['b6a0c1'])
 })

@@ -19,24 +19,25 @@ test('refuses an empty form, then creates the node and opens it', async ({ page 
   await expect(page.getByText('Title is required.')).toBeVisible()
 
   await page.getByLabel('Title').fill('Follow up')
-  await page.getByLabel('Type of node').selectOption('sendMessage')
+  await page.getByLabel('Shape').selectOption('process')
   await page.getByRole('button', { name: 'Create node' }).click()
 
   await expect(page).toHaveURL(/\/flow\/node\//)
   await expect(page.getByLabel('Title')).toHaveValue('Follow up')
 })
 
-test('creates a business hours node with both branches', async ({ page }) => {
-  await page.getByLabel('Title').fill('Opening hours')
-  await page.getByLabel('Type of node').selectOption('businessHours')
+test('creates a decision, drawn as a diamond and connected to nothing', async ({ page }) => {
+  await page.getByLabel('Title').fill('In stock?')
+  await page.getByLabel('Shape').selectOption('decision')
   await page.getByRole('button', { name: 'Create node' }).click()
 
   await expect(page).toHaveURL(/\/flow\/node\//)
-  await expect(page.locator('.vue-flow__node', { hasText: 'Success' })).toHaveCount(2)
-  await expect(page.locator('.vue-flow__node', { hasText: 'Failure' })).toHaveCount(2)
-
-  // No reload: the branches have to be joined to their node on their own.
-  await expect.poll(() => drawnEdges(page)).toBe(8)
+  const id = page.url().split('/').pop()
+  await expect(page.locator(`.vue-flow__node[data-id="${id}"] [data-shape]`)).toHaveAttribute(
+    'data-shape',
+    'decision',
+  )
+  expect(await drawnEdges(page)).toBe(4)
 })
 
 test('closes on Escape without creating anything', async ({ page }) => {
@@ -55,7 +56,7 @@ test('brings a created node into view, clear of the drawer', async ({ page }) =>
     await page.goto('/flow')
     await page.getByRole('button', { name: 'Create new node' }).click()
     await page.getByLabel('Title').fill(name)
-    await page.getByLabel('Type of node').selectOption('sendMessage')
+    await page.getByLabel('Shape').selectOption('process')
     await page.getByRole('button', { name: 'Create node' }).click()
     await page.waitForURL(/\/flow\/node\//)
 

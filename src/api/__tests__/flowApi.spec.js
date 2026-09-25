@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import starter from '../starterDiagram.json'
-import { NODE_TYPE } from '@/domain/constants.js'
+import { SHAPE } from '@/domain/constants.js'
 import {
   createNode,
   connectNodes,
@@ -52,31 +52,27 @@ describe('loading', () => {
 })
 
 describe('mutations', () => {
-  it('creates a node from the selected option, with branches for business hours', async () => {
-    const message = await createNode({
-      title: 'Follow up',
-      description: 'Thanks for waiting',
-      nodeType: NODE_TYPE.SEND_MESSAGE,
+  it('creates a node of the chosen shape, and changes its shape', async () => {
+    const node = await createNode({
+      title: 'Check stock',
+      description: 'Is it in the warehouse?',
+      shape: SHAPE.DECISION,
     })
-    expect(message.data.payload[0].text).toBe('Thanks for waiting')
+    expect(node).toMatchObject({
+      type: 'decision',
+      data: { description: 'Is it in the warehouse?' },
+    })
 
-    const hours = await createNode({ title: 'Hours', description: '', nodeType: 'businessHours' })
-    const flow = await fetchFlow()
-    const branchIds = flow.edges
-      .filter((edge) => edge.source === hours.id)
-      .map((edge) => edge.target)
-    const branches = flow.nodes.filter((node) => branchIds.includes(node.id))
-
-    expect(hours.type).toBe(NODE_TYPE.DATE_TIME)
-    expect(branches.map((branch) => branch.data.connectorType).sort()).toEqual([
-      'failure',
-      'success',
-    ])
+    const changed = await updateNode({ id: node.id, patch: { type: SHAPE.DATABASE } })
+    expect(changed.type).toBe('database')
   })
 
-  it('rejects an unknown type and an id that is not there', async () => {
-    await expect(createNode({ title: 'x', description: '', nodeType: 'nope' })).rejects.toThrow(
-      /unknown node type/i,
+  it('rejects an unknown shape and an id that is not there', async () => {
+    await expect(createNode({ title: 'x', description: '', shape: 'nope' })).rejects.toThrow(
+      /unknown shape/i,
+    )
+    await expect(updateNode({ id: 'b6a0c1', patch: { type: 'nope' } })).rejects.toThrow(
+      /unknown shape/i,
     )
     await expect(updateNode({ id: 'ghost', patch: {} })).rejects.toThrow(/no longer exists/i)
     await expect(deleteNode({ id: 'ghost' })).rejects.toThrow(/no longer exists/i)
@@ -85,11 +81,10 @@ describe('mutations', () => {
   it('merges into data rather than replacing it, and stores a dragged position', async () => {
     const node = await updateNode({
       id: 'd09c08',
-      patch: { data: { timezone: 'Asia/Kuala_Lumpur' }, position: { x: 120, y: 340 } },
+      patch: { data: { colour: 'red' }, position: { x: 120, y: 340 } },
     })
 
-    expect(node.data.timezone).toBe('Asia/Kuala_Lumpur')
-    expect(node.data.times).toHaveLength(7)
+    expect(node.data).toEqual({ description: '09:00 - 17:00 - UTC', colour: 'red' })
     expect(node.position).toEqual({ x: 120, y: 340 })
   })
 
@@ -116,7 +111,7 @@ describe('mutations', () => {
 })
 
 describe('migration', () => {
-  it('opens a v1 document saved by an older version as v2', async () => {
+  it('opens a v1 document saved by an older version as the current one', async () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify([
@@ -127,9 +122,10 @@ describe('migration', () => {
     resetFlow({ clearStorage: false })
 
     const flow = await fetchFlow()
-    expect(flow.version).toBe(2)
+    expect(flow.version).toBe(3)
+    expect(flow.nodes.map((node) => node.type)).toEqual(['terminal', 'note'])
     expect(flow.edges).toEqual([{ id: 'e-1-a1', source: '1', target: 'a1' }])
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)).version).toBe(2)
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)).version).toBe(3)
   })
 })
 

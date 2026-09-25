@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 
 import diagram from '@/tests/fixtures/diagram.json'
+import { SHAPE } from '@/domain/constants.js'
 import { normaliseNode } from '@/domain/graph.js'
 import FlowNodeCard from '../FlowNodeCard.vue'
-import BranchPill from '../BranchPill.vue'
 
 const nodes = Object.fromEntries(diagram.nodes.map((raw) => [String(raw.id), normaliseNode(raw)]))
 
@@ -15,7 +15,7 @@ const render = (node, props = {}) =>
   mount(FlowNodeCard, { props: { id: node.id, data: { node }, ...props }, global })
 
 describe('FlowNodeCard', () => {
-  it('falls back to the registry summary, and truncates a long description', () => {
+  it('shows the title and a truncated description', () => {
     expect(render(nodes['d09c08']).text()).toContain('09:00 - 17:00 - UTC')
 
     const described = { ...nodes['e879e4'], data: { description: 'x'.repeat(200) } }
@@ -24,17 +24,21 @@ describe('FlowNodeCard', () => {
     expect(text.length).toBeLessThan(200)
   })
 
-  it('offers a pointer cursor only on nodes that can be opened', () => {
-    expect(render(nodes['b6a0c1']).classes()).toContain('cursor-pointer')
-    expect(render(nodes['1']).classes()).toContain('cursor-default')
+  it('draws the outline of its own shape, and none for text', () => {
+    const decision = render(nodes['d09c08'])
+    expect(decision.attributes('data-shape')).toBe(SHAPE.DECISION)
+    expect(decision.find('path').attributes('d')).toMatch(/^M/)
+
+    const text = render({ ...nodes['d09c08'], type: SHAPE.TEXT })
+    expect(text.find('svg').exists()).toBe(false)
   })
-})
 
-describe('BranchPill', () => {
-  it('labels a connector and renders nothing clickable', () => {
-    const pill = mount(BranchPill, { props: { data: { node: nodes['161f52'] } }, global })
+  it('thickens the outline when selected, since a ring would be a rectangle', () => {
+    const plain = render(nodes['b6a0c1'])
+    const selected = render(nodes['b6a0c1'], { selected: true })
 
-    expect(pill.text()).toBe('Success')
-    expect(pill.find('button').exists()).toBe(false)
+    expect(Number(selected.find('path').attributes('stroke-width'))).toBeGreaterThan(
+      Number(plain.find('path').attributes('stroke-width')),
+    )
   })
 })
