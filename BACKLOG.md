@@ -99,12 +99,12 @@ line, and the canvas keeps the last good diagram.
 Flowchart subset: nodes, shapes, labelled edges, direction. Paste Mermaid, get an editable diagram;
 export any diagram as Mermaid to drop into a README.
 
-### FL-47 · Import `docker-compose.yml` ⏭️
+### FL-47 · Import `docker-compose.yml` ✅
 
 Services become nodes, `depends_on` and shared networks become edges, ports and images become
 descriptions. Re-importing updates the diagram and keeps the layout.
 
-### FL-48 · Import OpenAPI ⬜
+### FL-48 · Import OpenAPI ⏭️
 
 Tags or path groups become nodes, schemas referenced between them become edges.
 

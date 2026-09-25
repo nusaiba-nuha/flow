@@ -4,7 +4,6 @@ import { computed, ref, useId, useTemplateRef } from 'vue'
 import { useDiagramText } from '@/composables/useDiagramText.js'
 import { useFlowQuery } from '@/composables/useFlowQuery.js'
 import { toMermaid } from '@/domain/mermaid.js'
-import MermaidImportDialog from './MermaidImportDialog.vue'
 
 /** The diagram as `.flow` text, beside the canvas. Either side can be edited. */
 const { text, errors, input, focus, blur } = useDiagramText()
@@ -14,7 +13,6 @@ const errorsId = useId()
 const { document } = useFlowQuery()
 /** Which copy button last worked, so only that one says so. */
 const copied = ref('')
-const isImporting = ref(false)
 
 const status = computed(() => {
   if (errors.value.length === 1) return '1 problem. The canvas shows the last valid diagram.'
@@ -76,14 +74,6 @@ async function copy(format) {
         >
           {{ copied === 'mermaid' ? 'Copied' : 'Copy as Mermaid' }}
         </button>
-        <button
-          type="button"
-          class="rounded-lg border border-line px-2.5 py-1 text-xs transition-colors hover:bg-hover"
-          title="Paste a Mermaid flowchart to edit it here"
-          @click="isImporting = true"
-        >
-          Import Mermaid
-        </button>
       </div>
     </header>
 
@@ -121,6 +111,5 @@ async function copy(format) {
         </button>
       </li>
     </ul>
-    <MermaidImportDialog v-if="isImporting" @close="isImporting = false" />
   </aside>
 </template>
