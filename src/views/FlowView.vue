@@ -11,10 +11,12 @@ import HelpDialog from '@/components/ui/HelpDialog.vue'
 import ToastHost from '@/components/ui/ToastHost.vue'
 import { useHelpDialog } from '@/composables/useHelpDialog.js'
 import { useCanvasStore } from '@/stores/canvas.js'
+import { useOpenSharedLink } from '@/composables/useShareLink.js'
 
 // The route view stays a composition surface: layout, and what is on screen.
 const canvas = useCanvasStore()
 const isImporting = ref(false)
+useOpenSharedLink()
 // Bound at the shell: a dialog that is not mounted cannot listen for its own key.
 const help = useHelpDialog()
 </script>

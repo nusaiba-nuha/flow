@@ -47,6 +47,12 @@ export default [
         KeyboardEvent: 'readonly',
         URL: 'readonly',
         crypto: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
+        Blob: 'readonly',
+        Response: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
       },
     },
     rules: {

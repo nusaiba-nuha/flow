@@ -112,14 +112,14 @@ Tags or path groups become nodes, schemas referenced between them become edges.
 
 `CREATE TABLE` becomes a table node listing its columns; foreign keys become edges.
 
-### FL-50 · Share as a link ⏭️
+### FL-50 · Share as a link ✅
 
 The whole diagram compressed into the URL hash. Opening the link opens a copy; nothing touches a
 server.
 
 ## Milestone 3: Git native
 
-### FL-51 · Open and save files ⬜
+### FL-51 · Open and save files ⏭️
 
 Open a `.flow` file from disk and save back to it (File System Access API, with download and upload
 as the fallback), so a diagram lives in a repository rather than in the browser.

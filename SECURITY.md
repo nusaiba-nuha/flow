@@ -5,12 +5,13 @@ matter once it has them.
 
 ## Trust boundaries
 
-| Input          | Where it enters                     | Treated as                                                                                                                                                   |
-| -------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A document     | `flowApi.ensureLoaded`              | Untrusted: shape is normalised at the adapter, unknown node types fall back to a safe entry rather than rendering nothing                                    |
-| Imported text  | The Import dialog and the text pane | Untrusted: parsed by pure functions that never evaluate it; YAML is read as data only, with no custom tags; the result is rendered as text like any document |
-| Form fields    | The drawer and create dialog        | Untrusted: validated before a mutation, capped in length                                                                                                     |
-| `localStorage` | `ensureLoaded`                      | Untrusted: parsed in a try, falls back to a sample when it holds anything unexpected                                                                         |
+| Input          | Where it enters                     | Treated as                                                                                                                                                       |
+| -------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A document     | `flowApi.ensureLoaded`              | Untrusted: shape is normalised at the adapter, unknown node types fall back to a safe entry rather than rendering nothing                                        |
+| A shared link  | `useOpenSharedLink`                 | Untrusted: the fragment is decompressed and read by `parseFlow`, like typed text; a damaged one is refused with a message, and opening one is an undoable change |
+| Imported text  | The Import dialog and the text pane | Untrusted: parsed by pure functions that never evaluate it; YAML is read as data only, with no custom tags; the result is rendered as text like any document     |
+| Form fields    | The drawer and create dialog        | Untrusted: validated before a mutation, capped in length                                                                                                         |
+| `localStorage` | `ensureLoaded`                      | Untrusted: parsed in a try, falls back to a sample when it holds anything unexpected                                                                             |
 
 ## Cross-site scripting
 
