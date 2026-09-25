@@ -41,6 +41,21 @@ describe('useFlowHistory', () => {
     await waitUntil(() => flowIn(queryClient).length === starter.nodes.length - 1)
   })
 
+  it('waits for a change still being saved, so undo takes back that one', async () => {
+    const { result, queryClient } = setup()
+
+    result.remove.mutate({ id: 'b6a0c1' })
+    await waitUntil(() => result.history.history.canUndo)
+    // A second delete, undone before it has landed.
+    result.remove.mutate({ id: 'e879e4' })
+    await result.history.undo()
+    await waitUntil(() => !queryClient.isMutating() && !queryClient.isFetching())
+
+    expect(flowIn(queryClient)).toHaveLength(starter.nodes.length - 1)
+    expect(flowIn(queryClient).some((node) => node.id === 'e879e4')).toBe(true)
+    expect(flowIn(queryClient).some((node) => node.id === 'b6a0c1')).toBe(false)
+  })
+
   it('names the change it would take back', async () => {
     const { result } = setup()
 

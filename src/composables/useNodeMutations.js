@@ -7,6 +7,7 @@ import {
   toNodeId,
   withEdge,
   withEdgeLabel,
+  withEdgeStyle,
   withNodeRemoved,
   withNodesRemoved,
   withoutEdge,
@@ -139,6 +140,15 @@ export function useUpdateEdge() {
     label: 'Edit label',
     mutationFn: (variables) => flowApi.updateEdge(variables),
     apply: (flow, { id, patch }) => withEdgeLabel(flow, id, patch.label),
+  })
+}
+
+/** Dashed or solid, one arrow or two. */
+export function useStyleEdge() {
+  return useOptimisticFlowMutation({
+    label: 'Change connection',
+    mutationFn: (variables) => flowApi.updateEdge(variables),
+    apply: (flow, { id, patch }) => withEdgeStyle(flow, id, patch),
   })
 }
 

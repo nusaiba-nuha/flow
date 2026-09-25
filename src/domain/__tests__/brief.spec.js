@@ -60,6 +60,15 @@ describe('toBrief', () => {
     )
   })
 
+  it('says which connections run both ways, and which are dashed', () => {
+    const brief = toBrief(
+      flow('a = process "A"\nb = process "B"\nc = process "C"\na <-> b\nb --> c : later'),
+    )
+
+    expect(brief).toContain('- **A** ↔ **B**\n')
+    expect(brief).toContain('- **B** → **C**: later (dashed: optional or asynchronous)\n')
+  })
+
   it('ends with the .flow source, so an agent can edit it and hand it back', () => {
     const brief = toBrief(flow('a = process "A"\nb = database "B"\na -> b\n'))
     const source = brief.slice(brief.indexOf('```text\n') + 8, brief.lastIndexOf('```'))

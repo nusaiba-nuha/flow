@@ -74,8 +74,10 @@ over the `.flow` file or its text.
   between copied shapes. The clipboard holds `.flow` text, so shapes paste between tabs, and any
   `.flow` text an agent writes pastes straight onto the canvas.
 - **Edit and delete.** Every change updates the canvas immediately and rolls back if it fails.
-- **Connections.** Drag from one node to another to connect them, as many in and out as you like;
-  remove a connection from the control on the edge.
+- **Connections.** Drag from one node to another to connect them, as many in and out as you like.
+  Each leaves from the side that faces the shape it goes to, with an arrowhead. From its own
+  controls, make one dashed (optional or asynchronous) or two-way, or remove it. The whole diagram's
+  lines run in steps, curves or straight, from the button under the zoom controls.
 - **Undo and redo** for every change, from the toolbar or `Ctrl+Z` / `Ctrl+Shift+Z`.
 - **Deep links.** Each node's details open at `/flow/node/:id`, so a node can be linked to.
 - **Keyboard first.** Arrow keys walk the nodes, Enter opens one, `?` lists every shortcut.
@@ -142,7 +144,10 @@ db 276,352
 - `note: ...` under the title is a note for the whole diagram, and `id note: ...` a note for one
   shape, one line each: instructions for whoever builds from it, person or agent.
 - `a -> b : label` connects two nodes. The label is optional, and a line may refer to a node
-  defined further down.
+  defined further down. `a --> b` is dashed, `a <-> b` has an arrow at each end, and `a <--> b`
+  is both.
+- `lines: curved` or `lines: straight` under the title changes how every connection runs; the
+  default is steps.
 - `@layout` starts the positions, one `id x,y` per line, with ` WxH` after it for a resized shape. A node with no position is laid out
   automatically, so a hand-written diagram needs no layout block at all.
 - `style: sketch` under the title draws the diagram by hand. Leave it out for clean lines.

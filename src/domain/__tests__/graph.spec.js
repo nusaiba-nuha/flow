@@ -9,6 +9,7 @@ import {
   edgeIdFor,
   withEdge,
   withEdgeLabel,
+  withEdgeStyle,
   withNodeRemoved,
   withNodesRemoved,
   withoutEdge,
@@ -28,14 +29,21 @@ describe('documentToGraph', () => {
 })
 
 describe('buildEdges', () => {
-  it('draws only edges whose ends both exist, and keeps a label', () => {
+  it('draws only edges whose ends both exist, keeping a label and how the line looks', () => {
     const edges = [
-      { id: 'e1', source: 'a', target: 'b', label: 'yes' },
+      { id: 'e1', source: 'a', target: 'b', label: 'yes', dashed: true },
       { id: 'e2', source: 'a', target: 'ghost' },
     ]
 
     expect(buildEdges(edges, new Set(['a', 'b']))).toEqual([
-      { id: 'e1', type: 'flow', source: 'a', target: 'b', label: 'yes' },
+      {
+        id: 'e1',
+        type: 'flow',
+        source: 'a',
+        target: 'b',
+        label: 'yes',
+        data: { dashed: true, both: false },
+      },
     ])
   })
 })
@@ -103,6 +111,21 @@ describe('withNodesRemoved and withPositions', () => {
     const moved = withPositions(diagram, { b6a0c1: { x: 1, y: 2 }, ghost: { x: 0, y: 0 } })
     expect(moved.nodes.find((node) => node.id === 'b6a0c1').position).toEqual({ x: 1, y: 2 })
     expect(moved.nodes).toHaveLength(diagram.nodes.length)
+  })
+})
+
+describe('withEdgeStyle', () => {
+  it('dashes an edge or gives it two arrows, and turning one off removes the key', () => {
+    const edge = { id: 'e-a-b', source: 'a', target: 'b', label: 'x' }
+    const document = { version: 3, title: '', nodes: [], edges: [edge] }
+
+    const styled = withEdgeStyle(document, 'e-a-b', { dashed: true, both: true })
+    expect(styled.edges[0]).toEqual({ ...edge, dashed: true, both: true })
+    expect(withEdgeStyle(styled, 'e-a-b', { dashed: false }).edges[0]).toEqual({
+      ...edge,
+      both: true,
+    })
+    expect(document.edges[0]).toEqual(edge)
   })
 })
 

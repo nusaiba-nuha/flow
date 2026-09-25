@@ -86,6 +86,22 @@ describe('sizes', () => {
     expect(renderSvg(architecture)).not.toContain('<style>')
   })
 
+  it('draws dashed and two-way connections, along curved lines when asked', () => {
+    const svg = renderSvg({
+      version: 3,
+      title: 'T',
+      lines: 'curved',
+      nodes: [
+        { id: 'a', type: 'process', name: 'A', data: {}, position: { x: 0, y: 0 } },
+        { id: 'b', type: 'process', name: 'B', data: {}, position: { x: 0, y: 200 } },
+      ],
+      edges: [{ id: 'e-a-b', source: 'a', target: 'b', dashed: true, both: true }],
+    })
+
+    expect(svg).toMatch(/<path d="M[\d.]+,[\d.]+ C[^"]+" fill="none"[^>]*stroke-dasharray="6 4"/)
+    expect(svg).toContain('marker-start="url(#arrow)" marker-end="url(#arrow)"')
+  })
+
   it('draws a resized node at its size, and frames it', () => {
     const svg = renderSvg(
       {

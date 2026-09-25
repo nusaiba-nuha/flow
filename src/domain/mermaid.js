@@ -102,7 +102,9 @@ export function toMermaid(document, { highlight = new Map() } = {}) {
 
   document.edges.forEach((edge) => {
     const label = edge.label ? `|"${escapeLabel(edge.label)}"|` : ''
-    lines.push(`  ${safe.get(edge.source)} -->${label} ${safe.get(edge.target)}`)
+    // Mermaid's own dotted and two-way arrows.
+    const arrow = `${edge.both ? '<' : ''}${edge.dashed ? '-.->' : '-->'}`
+    lines.push(`  ${safe.get(edge.source)} ${arrow}${label} ${safe.get(edge.target)}`)
   })
 
   if (highlight.size) {

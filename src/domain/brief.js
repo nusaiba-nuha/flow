@@ -99,7 +99,11 @@ export function toBrief(document) {
     lines.push('', '## Connections', '')
     document.edges.forEach((edge) => {
       const text = oneLine(edge.label)
-      lines.push(`- ${label(edge.source)} → ${label(edge.target)}${text ? `: ${text}` : ''}`)
+      const arrow = edge.both ? '↔' : '→'
+      const dashed = edge.dashed ? ' (dashed: optional or asynchronous)' : ''
+      lines.push(
+        `- ${label(edge.source)} ${arrow} ${label(edge.target)}${text ? `: ${text}` : ''}${dashed}`,
+      )
     })
   }
 
@@ -110,7 +114,8 @@ export function toBrief(document) {
     '## Source',
     '',
     'The same diagram in the `.flow` format: `id = shape "Name" -- description`, ' +
-      '`id note: ...`, `a -> b : label`, and positions under `@layout`.',
+      '`id note: ...`, `a -> b : label` (`-->` dashed, `<->` both ways), and positions under ' +
+      '`@layout`.',
     '',
     `${marks}text`,
     source,

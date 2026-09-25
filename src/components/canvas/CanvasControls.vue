@@ -4,6 +4,7 @@ import { useVueFlow } from '@vue-flow/core'
 
 import IconButton from '@/components/ui/IconButton.vue'
 import { nextZoom } from '@/domain/zoom.js'
+import { useLineStyle } from '@/composables/useLineStyle.js'
 
 /**
  * Instead of `@vue-flow/controls`, whose buttons carry no accessible name or
@@ -14,6 +15,10 @@ const { fitView, zoomTo, viewport } = useVueFlow()
 const percentage = computed(() => `${Math.round(viewport.value.zoom * 100)}%`)
 
 const ZOOM_STEP = { duration: 140 }
+
+const { lines, next, cycle } = useLineStyle()
+/** @type {Record<string, string>} */
+const LINE_NAMES = { step: 'in steps', curved: 'curved', straight: 'straight' }
 
 /** @param {1 | -1} direction */
 const step = (direction) => zoomTo(nextZoom(viewport.value.zoom, direction), ZOOM_STEP)
@@ -35,6 +40,16 @@ const step = (direction) => zoomTo(nextZoom(viewport.value.zoom, direction), ZOO
       @click="step(-1)"
     >
       <path d="M5 12h14" />
+    </IconButton>
+
+    <IconButton
+      :label="`Lines: ${lines}`"
+      :title="`Connections run ${LINE_NAMES[lines]}. Click for ${LINE_NAMES[next]}`"
+      @click="cycle"
+    >
+      <path v-if="lines === 'curved'" d="M4 19C4 10 20 14 20 5" />
+      <path v-else-if="lines === 'straight'" d="M4 19 20 5" />
+      <path v-else d="M4 19v-7h16V5" />
     </IconButton>
 
     <IconButton

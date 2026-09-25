@@ -4,6 +4,7 @@ import { layoutTree } from './layout.js'
 import { metaFor } from './nodeMeta.js'
 import { shapePath, textInset } from './shapes.js'
 import { isSketch, SKETCH_FONT, sketchPath } from './sketch.js'
+import { LINE, routeEdge } from './routes.js'
 
 /**
  * The app's colour tokens, copied from `style.css` so the renderer runs where
@@ -114,6 +115,7 @@ export function renderSvg(
         colours,
         highlight.get(edge.id),
         sketch,
+        document.lines,
       ),
     ),
     ...nodes.map((node) =>
@@ -143,35 +145,40 @@ function sketchStyle(font) {
 }
 
 /**
- * Bottom centre to top centre, turning halfway, like the canvas's step edges.
+ * Along the same route the canvas draws: out of the side facing the other shape.
  * @param {import('./types.js').VueFlowEdge} edge
  * @param {{ x?: number, y?: number, width?: number, height?: number }} from
  * @param {{ x?: number, y?: number, width?: number, height?: number }} to
  * @param {typeof SVG_THEMES.light} colours
  * @param {'added' | 'removed' | 'changed'} [change]
  * @param {boolean} [sketch] drawn by hand
+ * @param {string} [lines] step, curved or straight
  */
-function renderEdge(edge, from, to, colours, change, sketch = false) {
-  const x1 = (from.x ?? 0) + (from.width ?? 0) / 2
-  const y1 = (from.y ?? 0) + (from.height ?? 0)
-  const x2 = (to.x ?? 0) + (to.width ?? 0) / 2
-  const y2 = to.y ?? 0
-  const middle = (y1 + y2) / 2
+function renderEdge(edge, from, to, colours, change, sketch = false, lines = LINE.STEP) {
+  const box = (/** @type {typeof from} */ b) => ({
+    x: b.x ?? 0,
+    y: b.y ?? 0,
+    width: b.width ?? 0,
+    height: b.height ?? 0,
+  })
+  const route = routeEdge(box(from), box(to), lines)
+  const { dashed = false, both = false } = edge.data ?? {}
 
   const stroke = change ? colours.changes[change] : colours.edge
+  const dash = change === 'removed' || dashed ? ' stroke-dasharray="6 4"' : ''
   const style = change
-    ? ` stroke-width="2.5"${change === 'removed' ? ' stroke-dasharray="6 4" opacity="0.75"' : ''}`
-    : ' stroke-width="1.5"'
-  const clean = `M${round(x1)},${round(y1)} V${round(middle)} H${round(x2)} V${round(y2)}`
-  const line = `<path d="${sketch ? sketchPath(clean, edge.id) : clean}" fill="none" stroke="${stroke}"${style} marker-end="url(#${change ? `arrow-${change}` : 'arrow'})"${change ? ` data-change="${change}"` : ''}/>`
+    ? ` stroke-width="2.5"${dash}${change === 'removed' ? ' opacity="0.75"' : ''}`
+    : ` stroke-width="1.5"${dash}`
+  const head = `url(#${change ? `arrow-${change}` : 'arrow'})`
+  const line = `<path d="${sketch ? sketchPath(route.d, edge.id) : route.d}" fill="none" stroke="${stroke}"${style}${both ? ` marker-start="${head}"` : ''} marker-end="${head}"${change ? ` data-change="${change}"` : ''}/>`
   if (!edge.label) return line
 
   const labelWidth = edge.label.length * TEXT_SIZE * GLYPH + 16
-  const cx = (x1 + x2) / 2
+  const { x, y } = route.label
   return [
     line,
-    `<rect x="${round(cx - labelWidth / 2)}" y="${round(middle - 10)}" width="${round(labelWidth)}" height="20" rx="10" fill="${colours.surface}" stroke="${colours.line}"/>`,
-    `<text x="${round(cx)}" y="${round(middle)}" font-size="11" fill="${colours.muted}" text-anchor="middle" dominant-baseline="central">${escapeXml(edge.label)}</text>`,
+    `<rect x="${round(x - labelWidth / 2)}" y="${round(y - 10)}" width="${round(labelWidth)}" height="20" rx="10" fill="${colours.surface}" stroke="${colours.line}"/>`,
+    `<text x="${round(x)}" y="${round(y)}" font-size="11" fill="${colours.muted}" text-anchor="middle" dominant-baseline="central">${escapeXml(edge.label)}</text>`,
   ].join('\n')
 }
 

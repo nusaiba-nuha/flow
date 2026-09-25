@@ -142,8 +142,9 @@ describe('toDrawio', () => {
         'page = screen "Sign up page" -- /signup',
         'go = button "Create account"',
         'users = table "users" -- id PK, email',
+        'lines: curved',
         'page -> go : submit & "go"',
-        'go -> users',
+        'go <--> users',
       ].join('\n'),
     ).document
 
@@ -160,8 +161,9 @@ describe('toDrawio', () => {
       ).toEqual(
         document.nodes.map(({ id, type, name, data }) => [id, type, name, data.description ?? '']),
       )
-      expect(back.edges.map(({ id, label }) => [id, label])).toEqual(
-        document.edges.map(({ id, label }) => [id, label]),
+      expect(back.lines).toBe(document.lines)
+      expect(back.edges.map(({ id, label, dashed, both }) => [id, label, dashed, both])).toEqual(
+        document.edges.map(({ id, label, dashed, both }) => [id, label, dashed, both]),
       )
     })
   })

@@ -200,8 +200,26 @@ function readModel(model, warnings) {
       if (label) existing.label = existing.label ? `${existing.label}, ${label}` : label
       return
     }
-    edges.push({ id, source, target, ...(label ? { label } : {}), origin: DRAWIO_ORIGIN })
+    edges.push({
+      id,
+      source,
+      target,
+      ...(label ? { label } : {}),
+      ...(cell.style.dashed === '1' ? { dashed: true } : {}),
+      ...(cell.style.startArrow && cell.style.startArrow !== 'none' ? { both: true } : {}),
+      origin: DRAWIO_ORIGIN,
+    })
   })
+
+  // The diagram's lines, when every arrow agrees: curved, straight, or steps.
+  const arrows = cells.filter((cell) => cell.attrs.edge === '1')
+  const lines = !arrows.length
+    ? null
+    : arrows.every((cell) => cell.style.curved === '1')
+      ? 'curved'
+      : arrows.every((cell) => !cell.style.edgeStyle && cell.style.curved !== '1')
+        ? 'straight'
+        : null
 
   return {
     version: DOCUMENT_VERSION,
@@ -209,6 +227,7 @@ function readModel(model, warnings) {
     ...(nodes.length && sketched === nodes.length
       ? { style: /** @type {'sketch'} */ ('sketch') }
       : {}),
+    ...(lines ? { lines } : {}),
     nodes,
     edges,
   }
@@ -575,8 +594,14 @@ export function toDrawio(document) {
     ]
   })
 
+  const lineStyle =
+    document.lines === 'curved'
+      ? 'curved=1;'
+      : document.lines === 'straight'
+        ? ''
+        : 'edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;'
   const arrows = document.edges.flatMap((edge) => [
-    `        <mxCell id="${escapeAttribute(`e-${edge.source}-${edge.target}`)}" value="${escapeAttribute(escapeHtml(edge.label ?? ''))}" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;${sketch}" edge="1" parent="1" source="${escapeAttribute(cell(edge.source))}" target="${escapeAttribute(cell(edge.target))}">`,
+    `        <mxCell id="${escapeAttribute(`e-${edge.source}-${edge.target}`)}" value="${escapeAttribute(escapeHtml(edge.label ?? ''))}" style="${lineStyle}html=1;${edge.dashed ? 'dashed=1;' : ''}${edge.both ? 'startArrow=classic;' : ''}${sketch}" edge="1" parent="1" source="${escapeAttribute(cell(edge.source))}" target="${escapeAttribute(cell(edge.target))}">`,
     '          <mxGeometry relative="1" as="geometry" />',
     '        </mxCell>',
   ])

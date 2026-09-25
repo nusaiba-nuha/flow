@@ -1,5 +1,6 @@
 import { DEFAULT_TITLE, DOCUMENT_VERSION, edgeIdFor } from './document.js'
 import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
+import { LINE, LINES } from './routes.js'
 
 /**
  * The `.flow` text format: a diagram as lines a person can read, write and
@@ -29,7 +30,8 @@ import { isKnownShape, SHAPE_OPTIONS } from './nodeMeta.js'
 
 const ID = String.raw`[A-Za-z0-9_][\w-]*`
 const NODE_LINE = new RegExp(String.raw`^(${ID})\s*=\s*([A-Za-z][\w-]*)\s*(.*)$`)
-const EDGE_LINE = new RegExp(String.raw`^(${ID})\s*->\s*(${ID})\s*(?::\s?(.*))?$`)
+const EDGE_LINE = new RegExp(String.raw`^(${ID})\s*(<?--?>)\s*(${ID})\s*(?::\s?(.*))?$`)
+const LINES_LINE = /^lines:\s*(\S*)\s*$/
 const LAYOUT_LINE = new RegExp(
   String.raw`^(${ID})\s+(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)(?:\s+(\d+)\s*x\s*(\d+))?$`,
 )
@@ -62,6 +64,12 @@ const noteLines = (notes) =>
     .map((line) => line.trim())
     .filter(Boolean)
 
+/**
+ * `->`, dashed `-->`, both ways `<->`, or both `<-->`.
+ * @param {import('./types.js').FlowEdge} edge
+ */
+const arrowOf = (edge) => `${edge.both ? '<' : ''}${edge.dashed ? '--' : '-'}>`
+
 /** @param {number} value */
 const coordinate = (value) => String(Math.round(value))
 
@@ -74,6 +82,9 @@ export function serialiseFlow(document) {
     [
       `title: ${escapeRest(document.title ?? DEFAULT_TITLE)}`,
       ...(document.style === 'sketch' ? ['style: sketch'] : []),
+      ...(document.lines && LINES.includes(document.lines) && document.lines !== LINE.STEP
+        ? [`lines: ${document.lines}`]
+        : []),
       ...noteLines(document.notes).map((line) => `${DIAGRAM_NOTE} ${line}`),
     ].join('\n'),
   ]
@@ -91,7 +102,7 @@ export function serialiseFlow(document) {
 
   const edges = document.edges.map((edge) => {
     const label = edge.label ? ` : ${escapeRest(edge.label)}` : ''
-    return `${edge.source} -> ${edge.target}${label}`
+    return `${edge.source} ${arrowOf(edge)} ${edge.target}${label}`
   })
   if (edges.length) sections.push(edges.join('\n'))
 
@@ -132,7 +143,7 @@ export function parseFlow(text) {
   const byId = new Map()
   /** @type {{ line: number, id: string, x: number, y: number, width?: number, height?: number }[]} */
   const layout = []
-  /** @type {{ line: number, source: string, target: string, label: string }[]} */
+  /** @type {{ line: number, source: string, target: string, label: string, dashed: boolean, both: boolean }[]} */
   const pendingEdges = []
   /** @type {{ line: number, id: string, text: string }[]} */
   const pendingNotes = []
@@ -142,6 +153,8 @@ export function parseFlow(text) {
   let title = DEFAULT_TITLE
   /** @type {string} */
   let style = 'clean'
+  /** @type {string} */
+  let lines = LINE.STEP
   let inLayout = false
 
   String(text ?? '')
@@ -178,6 +191,15 @@ export function parseFlow(text) {
         return
       }
 
+      const lined = LINES_LINE.exec(content)
+      if (lined) {
+        if (!LINES.includes(lined[1])) {
+          return fail(`Unknown lines "${lined[1]}". Use one of: ${LINES.join(', ')}.`)
+        }
+        lines = lined[1]
+        return
+      }
+
       const styled = STYLE_LINE.exec(content)
       if (styled) {
         if (!STYLES.includes(styled[1])) {
@@ -203,8 +225,10 @@ export function parseFlow(text) {
         pendingEdges.push({
           line,
           source: edge[1],
-          target: edge[2],
-          label: unescapeRest((edge[3] ?? '').trim()),
+          target: edge[3],
+          label: unescapeRest((edge[4] ?? '').trim()),
+          dashed: edge[2].includes('--'),
+          both: edge[2].startsWith('<'),
         })
         return
       }
@@ -237,7 +261,7 @@ export function parseFlow(text) {
 
   // Edges and positions are checked once every node is known, so a line may
   // refer to a node defined further down.
-  pendingEdges.forEach(({ line, source, target, label }) => {
+  pendingEdges.forEach(({ line, source, target, label, dashed, both }) => {
     const missing = [source, target].find((id) => !byId.has(id))
     if (missing) return errors.push({ line, message: `No node called "${missing}".` })
     if (source === target) return errors.push({ line, message: 'A node cannot connect to itself.' })
@@ -246,7 +270,14 @@ export function parseFlow(text) {
     if (edges.some((existing) => existing.id === id)) {
       return errors.push({ line, message: `${source} -> ${target} is already connected.` })
     }
-    edges.push({ id, source, target, ...(label ? { label } : {}) })
+    edges.push({
+      id,
+      source,
+      target,
+      ...(label ? { label } : {}),
+      ...(dashed ? { dashed: true } : {}),
+      ...(both ? { both: true } : {}),
+    })
   })
 
   pendingNotes.forEach(({ line, id, text }) => {
@@ -274,6 +305,7 @@ export function parseFlow(text) {
           version: DOCUMENT_VERSION,
           title,
           ...(style === 'sketch' ? { style: /** @type {'sketch'} */ ('sketch') } : {}),
+          ...(lines !== LINE.STEP ? { lines } : {}),
           ...(diagramNotes.length ? { notes: diagramNotes.join('\n') } : {}),
           nodes,
           edges,
