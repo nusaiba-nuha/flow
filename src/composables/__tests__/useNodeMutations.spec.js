@@ -3,7 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import starter from '@/api/starterDiagram.json'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
-import { useCreateNode, useDeleteNode, useMoveNode } from '../useNodeMutations.js'
+import { edgeIdFor } from '@/domain/graph.js'
+import {
+  useConnectNodes,
+  useCreateNode,
+  useDeleteNode,
+  useDisconnect,
+  useMoveNode,
+} from '../useNodeMutations.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
 
 /** Seed the cache the way the query would, then hand back both halves. */
@@ -13,7 +20,8 @@ function withFlow(composable) {
   return setup
 }
 
-const flowIn = (queryClient) => queryClient.getQueryData(flowKeys.list())
+const flowIn = (queryClient) => queryClient.getQueryData(flowKeys.list()).nodes
+const edgesIn = (queryClient) => queryClient.getQueryData(flowKeys.list()).edges
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -28,7 +36,17 @@ describe('rollback', () => {
     result.mutate({ id: 'b6a0c1' })
     await waitUntil(() => result.isError.value)
 
-    expect(flowIn(queryClient)).toHaveLength(starter.length)
+    expect(flowIn(queryClient)).toHaveLength(starter.nodes.length)
+  })
+
+  it('takes an optimistic edge back when the connect fails', async () => {
+    vi.spyOn(flowApi, 'connectNodes').mockRejectedValue(new Error('nope'))
+    const { result, queryClient } = withFlow(() => useConnectNodes())
+
+    result.mutate({ source: 'e879e4', target: 'b0653a' })
+    await waitUntil(() => result.isError.value)
+
+    expect(edgesIn(queryClient)).toHaveLength(starter.edges.length)
   })
 
   it('drops an optimistic node when the create fails', async () => {
@@ -50,7 +68,7 @@ describe('applied changes', () => {
     await waitUntil(() => flowIn(queryClient).some((node) => node.name === 'Hours'))
 
     const created = flowIn(queryClient).find((node) => node.name === 'Hours')
-    const branches = flowIn(queryClient).filter((node) => node.parentId === created.id)
+    const branches = edgesIn(queryClient).filter((edge) => edge.source === created.id)
     expect(created.type).toBe('dateTime')
     expect(branches).toHaveLength(2)
   })
@@ -63,5 +81,30 @@ describe('applied changes', () => {
 
     const moved = flowIn(queryClient).find((node) => node.id === 'b6a0c1')
     expect(moved.position).toEqual({ x: 400, y: 120 })
+  })
+  it('adds a second incoming edge and pins the target where it was', async () => {
+    const { result, queryClient } = withFlow(() => useConnectNodes())
+
+    // b0653a already has an incoming edge from the Success branch.
+    result.mutate({ source: 'e879e4', target: 'b0653a', position: { x: 10, y: 20 } })
+    await waitUntil(() => result.isSuccess.value)
+
+    const into = edgesIn(queryClient).filter((edge) => edge.target === 'b0653a')
+    expect(into.map((edge) => edge.source).sort()).toEqual(['161f52', 'e879e4'])
+    expect(flowIn(queryClient).find((node) => node.id === 'b0653a').position).toEqual({
+      x: 10,
+      y: 20,
+    })
+  })
+
+  it('removes a connection and keeps both nodes', async () => {
+    const { result, queryClient } = withFlow(() => useDisconnect())
+    const id = edgeIdFor('28c4b9', 'b6a0c1')
+
+    result.mutate({ id, target: 'b6a0c1' })
+    await waitUntil(() => result.isSuccess.value)
+
+    expect(edgesIn(queryClient).some((edge) => edge.id === id)).toBe(false)
+    expect(flowIn(queryClient)).toHaveLength(starter.nodes.length)
   })
 })

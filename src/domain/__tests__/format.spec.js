@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/diagram.json'
+import diagram from '@/tests/fixtures/diagram.json'
 import { WEEKDAYS } from '../constants.js'
 import {
   attachmentName,
@@ -11,8 +11,8 @@ import {
   truncate,
 } from '../format.js'
 
-const welcome = payload.find((node) => node.id === 'b0653a').data.payload
-const hours = payload.find((node) => node.id === 'd09c08').data.times
+const welcome = diagram.nodes.find((node) => node.id === 'b0653a').data.payload
+const hours = diagram.nodes.find((node) => node.id === 'd09c08').data.times
 
 describe('text', () => {
   it('truncates past the limit and keeps the first line', () => {

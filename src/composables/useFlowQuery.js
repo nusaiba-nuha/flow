@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/vue-query'
 
 import { fetchFlow } from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
+import { emptyDocument } from '@/domain/document.js'
 import { documentToGraph, toNodeId } from '@/domain/graph.js'
 
 /** Query owns the flow. Pinia owns only state with no server counterpart. */
@@ -13,9 +14,10 @@ export function useFlowQuery() {
   })
 
   // Once per document change, not once per component: callers share the cache entry.
-  const graph = computed(() => documentToGraph(data.value ?? []))
+  const graph = computed(() => documentToGraph(data.value))
 
   return {
+    document: computed(() => data.value ?? emptyDocument()),
     nodes: computed(() => graph.value.nodes),
     edges: computed(() => graph.value.edges),
     isLoading,

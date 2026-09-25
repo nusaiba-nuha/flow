@@ -17,8 +17,8 @@ describe('useFlowQuery', () => {
     expect(result.nodes.value).toEqual([])
 
     await waitUntil(() => result.nodes.value.length > 0)
-    expect(result.nodes.value).toHaveLength(starter.length)
-    expect(result.edges.value).toHaveLength(starter.length - 1)
+    expect(result.nodes.value).toHaveLength(starter.nodes.length)
+    expect(result.edges.value).toHaveLength(starter.edges.length)
   })
 
   it('reports a failed load instead of hanging on loading', async () => {

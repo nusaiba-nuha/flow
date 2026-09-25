@@ -9,5 +9,5 @@
  */
 export const CONNECT_STATE = Symbol('connect-state')
 
-/** Detach handler, injected so an edge can offer its own remove control. */
+/** Removes an edge by id, injected so an edge can offer its own remove control. */
 export const DETACH_EDGE = Symbol('detach-edge')

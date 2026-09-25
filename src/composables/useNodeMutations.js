@@ -2,10 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
-import { toNodeId, withNodeRemoved } from '@/domain/graph.js'
+import { emptyDocument } from '@/domain/document.js'
+import { toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
 import { creatableByValue } from '@/domain/nodeMeta.js'
-import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from '@/domain/constants.js'
+import { CONNECTOR_TYPE, NODE_TYPE } from '@/domain/constants.js'
 import { useHistoryStore } from '@/stores/history.js'
+
+/** @typedef {import('@/domain/types.js').FlowDocument} FlowDocument */
 
 /**
  * Every mutation shares one shape, so all of them behave the same way when the
@@ -14,7 +17,7 @@ import { useHistoryStore } from '@/stores/history.js'
  *
  * @param {{
  *   mutationFn: (variables: any) => Promise<any>,
- *   apply: (flow: Record<string, any>[], variables: any) => Record<string, any>[],
+ *   apply: (flow: FlowDocument, variables: any) => FlowDocument,
  *   invalidate?: boolean,
  *   label?: string,
  * }} options
@@ -31,10 +34,8 @@ function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true, label
       await queryClient.cancelQueries({ queryKey: flowKeys.list() })
 
       const previous = queryClient.getQueryData(flowKeys.list())
-      queryClient.setQueryData(
-        flowKeys.list(),
-        (/** @type {Record<string, any>[] | undefined} */ current) =>
-          apply(current ?? [], variables),
+      queryClient.setQueryData(flowKeys.list(), (/** @type {FlowDocument | undefined} */ current) =>
+        apply(current ?? emptyDocument(), variables),
       )
 
       return { previous }
@@ -43,12 +44,12 @@ function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true, label
     onSuccess(_data, _variables, context) {
       // On success only: an undo entry for a change that was rolled back would
       // take the user somewhere they have never been.
-      const previous = /** @type {Record<string, any>[] | undefined} */ (context?.previous)
+      const previous = /** @type {FlowDocument | undefined} */ (context?.previous)
       if (label) history.record(label, previous)
     },
 
     onError(_error, _variables, context) {
-      // Restore the whole list rather than reversing the change: one rollback
+      // Restore the whole document rather than reversing the change: one rollback
       // path, and it cannot drift out of step with `apply`.
       if (context?.previous) queryClient.setQueryData(flowKeys.list(), context.previous)
     },
@@ -70,7 +71,6 @@ export function useCreateNode() {
 
       const node = {
         id,
-        parentId: variables.parentId ?? ROOT_PARENT_ID,
         type,
         name: variables.title,
         data: { description: variables.description },
@@ -82,14 +82,16 @@ export function useCreateNode() {
         type === NODE_TYPE.DATE_TIME
           ? [CONNECTOR_TYPE.SUCCESS, CONNECTOR_TYPE.FAILURE].map((connectorType) => ({
               id: `${id}-${connectorType}`,
-              parentId: id,
               type: NODE_TYPE.DATE_TIME_CONNECTOR,
               name: connectorType === CONNECTOR_TYPE.SUCCESS ? 'Success' : 'Failure',
               data: { connectorType },
             }))
           : []
 
-      return [...flow, node, ...branches]
+      return branches.reduce((next, branch) => withEdge(next, id, branch.id), {
+        ...flow,
+        nodes: [...flow.nodes, node, ...branches],
+      })
     },
   })
 }
@@ -98,18 +100,19 @@ export function useUpdateNode() {
   return useOptimisticFlowMutation({
     label: 'Edit node',
     mutationFn: (variables) => flowApi.updateNode(variables),
-    apply: (flow, { id, patch }) =>
-      flow.map((node) =>
+    apply: (flow, { id, patch }) => ({
+      ...flow,
+      nodes: flow.nodes.map((node) =>
         toNodeId(node.id) === id
           ? {
               ...node,
               ...(patch.name !== undefined ? { name: patch.name } : {}),
-              ...(patch.parentId !== undefined ? { parentId: patch.parentId } : {}),
               ...(patch.position !== undefined ? { position: patch.position } : {}),
               ...(patch.data !== undefined ? { data: { ...node.data, ...patch.data } } : {}),
             }
           : node,
       ),
+    }),
   })
 }
 
@@ -122,13 +125,57 @@ export function useDeleteNode() {
   })
 }
 
+/**
+ * Pins the target where it is in the same write: a new incoming edge changes
+ * where the layout would put it, and it should not jump.
+ */
+export function useConnectNodes() {
+  return useOptimisticFlowMutation({
+    label: 'Connect nodes',
+    mutationFn: async ({ source, target, position }) => {
+      if (position) await flowApi.updateNode({ id: target, patch: { position } })
+      return flowApi.connectNodes({ source, target })
+    },
+    apply: (flow, { source, target, position }) =>
+      withEdge(position ? pin(flow, target, position) : flow, source, target),
+  })
+}
+
+/** Removes the line only; both nodes stay, pinned where they are. */
+export function useDisconnect() {
+  return useOptimisticFlowMutation({
+    label: 'Remove connection',
+    mutationFn: async ({ id, target, position }) => {
+      if (position) await flowApi.updateNode({ id: target, patch: { position } })
+      return flowApi.disconnect({ id })
+    },
+    apply: (flow, { id, target, position }) =>
+      withoutEdge(position ? pin(flow, target, position) : flow, id),
+  })
+}
+
+/**
+ * @param {FlowDocument} flow
+ * @param {string} id
+ * @param {{ x: number, y: number }} position
+ * @returns {FlowDocument}
+ */
+function pin(flow, id, position) {
+  return {
+    ...flow,
+    nodes: flow.nodes.map((node) => (toNodeId(node.id) === id ? { ...node, position } : node)),
+  }
+}
+
 /** Drag persistence. Skips the invalidate: a refetch mid-drag snaps the node back. */
 export function useMoveNode() {
   return useOptimisticFlowMutation({
     label: 'Move node',
     mutationFn: ({ id, position }) => flowApi.updateNode({ id, patch: { position } }),
-    apply: (flow, { id, position }) =>
-      flow.map((node) => (toNodeId(node.id) === id ? { ...node, position } : node)),
+    apply: (flow, { id, position }) => ({
+      ...flow,
+      nodes: flow.nodes.map((node) => (toNodeId(node.id) === id ? { ...node, position } : node)),
+    }),
     invalidate: false,
   })
 }

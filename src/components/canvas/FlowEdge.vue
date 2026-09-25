@@ -17,11 +17,10 @@ const props = defineProps({
     type: /** @type {import('vue').PropType<import('@vue-flow/core').Position>} */ (String),
     required: true,
   },
-  target: { type: String, required: true },
   selected: { type: Boolean, default: false },
 })
 
-/** @type {(targetId: string) => void} */
+/** @type {(edgeId: string) => void} */
 const detach = inject(DETACH_EDGE, () => {})
 const hovered = ref(false)
 
@@ -75,8 +74,8 @@ import { DETACH_EDGE } from './connectKey.js'
         type="button"
         class="flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-muted shadow-sm hover:text-danger"
         :aria-label="`Remove this connection`"
-        title="Remove this connection. The node stays, detached from the flow"
-        @click.stop="detach(target)"
+        title="Remove this connection. Both nodes stay"
+        @click.stop="detach(id)"
       >
         <svg
           width="10"

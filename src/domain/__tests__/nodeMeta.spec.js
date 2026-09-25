@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/diagram.json'
+import diagram from '@/tests/fixtures/diagram.json'
 import { NODE_TYPE } from '../constants.js'
 import { normaliseNode } from '../graph.js'
 import { CREATABLE_NODES, creatableByValue, isOpenable, metaFor } from '../nodeMeta.js'
 
-const nodes = Object.fromEntries(payload.map((raw) => [String(raw.id), normaliseNode(raw)]))
+const nodes = Object.fromEntries(diagram.nodes.map((raw) => [String(raw.id), normaliseNode(raw)]))
 
 describe('metaFor', () => {
-  it('covers every payload type and falls back rather than throwing', () => {
-    payload.forEach((raw) => expect(metaFor(raw.type).label).not.toBe('Unknown'))
+  it('covers every sample type and falls back rather than throwing', () => {
+    diagram.nodes.forEach((raw) => expect(metaFor(raw.type).label).not.toBe('Unknown'))
     expect(metaFor('somethingNew').label).toBe('Unknown')
   })
 

@@ -1,5 +1,6 @@
-import { CONNECTOR_TYPE, NODE_TYPE, ROOT_PARENT_ID } from '@/domain/constants.js'
-import { toNodeId, withNodeRemoved } from '@/domain/graph.js'
+import { CONNECTOR_TYPE, NODE_TYPE } from '@/domain/constants.js'
+import { migrate } from '@/domain/document.js'
+import { canConnect, toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
 import { creatableByValue } from '@/domain/nodeMeta.js'
 
 import starterDiagram from './starterDiagram.json'
@@ -11,7 +12,7 @@ const LATENCY_MS = 220
 /** One document per browser for now. */
 export const STORAGE_KEY = STORAGE_KEYS.DOCUMENT
 
-/** @type {Record<string, any>[] | null} */
+/** @type {import('@/domain/types.js').FlowDocument | null} */
 let flow = null
 
 /** @param {number} ms */
@@ -50,32 +51,31 @@ export function resetFlow({ clearStorage = true } = {}) {
 /**
  * Bundled rather than fetched, so the app has no server to reach and nothing
  * to configure. Async anyway, so a real backend can replace this module.
- * @returns {Promise<Record<string, any>[]>}
+ * @returns {Promise<import('@/domain/types.js').FlowDocument>}
  */
 async function ensureLoaded() {
   if (flow) return flow
 
   const saved = safely(() => localStorage.getItem(STORAGE_KEY))
-  const parsed = saved ? safely(() => JSON.parse(saved)) : null
-  if (Array.isArray(parsed)) {
-    flow = parsed
-    return flow
-  }
-
-  flow = clone(starterDiagram)
+  const parsed = saved ? safely(() => migrate(JSON.parse(saved))) : null
+  flow = parsed ?? migrate(clone(starterDiagram))
+  // Written back at once, so an older shape is only ever migrated once.
   save()
   return flow
 }
 
-/** @returns {Promise<Record<string, any>[]>} */
+/** @returns {Promise<import('@/domain/types.js').FlowDocument>} */
 export async function fetchFlow() {
   const loaded = await ensureLoaded()
   return clone(loaded)
 }
 
+/** @returns {import('@/domain/types.js').FlowDocument} */
+const current = () => /** @type {import('@/domain/types.js').FlowDocument} */ (flow)
+
 /** @param {string} id @returns {Record<string, any>} */
 function requireNode(id) {
-  const node = flow?.find((candidate) => toNodeId(candidate.id) === id)
+  const node = current().nodes.find((candidate) => toNodeId(candidate.id) === id)
   if (!node) throw new Error(`Node ${id} no longer exists.`)
   return node
 }
@@ -84,32 +84,25 @@ function requireNode(id) {
  * A dateTime node always branches, so a created one gets the same shape as a
  * seeded one.
  * @param {Record<string, any>} parent
- * @returns {Record<string, any>[]}
  */
-function branchesFor(parent) {
+function addBranches(parent) {
   const branches = [CONNECTOR_TYPE.SUCCESS, CONNECTOR_TYPE.FAILURE].map((connectorType) => ({
     id: generateNodeId(),
-    parentId: parent.id,
     type: NODE_TYPE.DATE_TIME_CONNECTOR,
     name: connectorType === CONNECTOR_TYPE.SUCCESS ? 'Success' : 'Failure',
     data: { connectorType },
   }))
 
   parent.data.connectors = branches.map((branch) => branch.id)
-  return branches
+  current().nodes.push(...branches)
+  branches.forEach((branch) => (flow = withEdge(current(), parent.id, branch.id)))
 }
 
 /**
- * @param {{ title: string, description: string, nodeType: string, parentId?: string, position?: { x: number, y: number } }} input
+ * @param {{ title: string, description: string, nodeType: string, position?: { x: number, y: number } }} input
  * @returns {Promise<Record<string, any>>}
  */
-export async function createNode({
-  title,
-  description,
-  nodeType,
-  parentId = ROOT_PARENT_ID,
-  position,
-}) {
+export async function createNode({ title, description, nodeType, position }) {
   await ensureLoaded()
 
   const option = creatableByValue(nodeType)
@@ -117,15 +110,14 @@ export async function createNode({
 
   const node = {
     id: generateNodeId(),
-    parentId,
     type: option.type,
     name: title,
     data: option.seed(description),
     ...(position ? { position } : {}),
   }
 
-  flow?.push(node)
-  if (node.type === NODE_TYPE.DATE_TIME) flow?.push(...branchesFor(node))
+  current().nodes.push(node)
+  if (node.type === NODE_TYPE.DATE_TIME) addBranches(node)
 
   save()
   await delay(LATENCY_MS)
@@ -133,7 +125,7 @@ export async function createNode({
 }
 
 /**
- * @param {{ id: string, patch: { name?: string, parentId?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
+ * @param {{ id: string, patch: { name?: string, position?: { x: number, y: number }, data?: Record<string, any> } }} input
  * @returns {Promise<Record<string, any>>}
  */
 export async function updateNode({ id, patch }) {
@@ -141,7 +133,6 @@ export async function updateNode({ id, patch }) {
   const node = requireNode(id)
 
   if (patch.name !== undefined) node.name = patch.name
-  if (patch.parentId !== undefined) node.parentId = patch.parentId
   if (patch.position !== undefined) node.position = clone(patch.position)
   if (patch.data !== undefined) node.data = { ...node.data, ...clone(patch.data) }
 
@@ -155,7 +146,36 @@ export async function deleteNode({ id }) {
   await ensureLoaded()
   requireNode(id)
 
-  flow = withNodeRemoved(flow ?? [], id)
+  flow = withNodeRemoved(current(), id)
+  save()
+  await delay(LATENCY_MS)
+  return { id }
+}
+
+/**
+ * @param {{ source: string, target: string }} input
+ * @returns {Promise<import('@/domain/types.js').FlowEdge>}
+ */
+export async function connectNodes({ source, target }) {
+  await ensureLoaded()
+
+  const refusal = canConnect(current(), source, target)
+  if (refusal) throw new Error(refusal)
+
+  flow = withEdge(current(), source, target)
+  save()
+  await delay(LATENCY_MS)
+  return clone(/** @type {import('@/domain/types.js').FlowEdge} */ (current().edges.at(-1)))
+}
+
+/** @param {{ id: string }} input @returns {Promise<{ id: string }>} */
+export async function disconnect({ id }) {
+  await ensureLoaded()
+  if (!current().edges.some((edge) => edge.id === id)) {
+    throw new Error('That connection no longer exists.')
+  }
+
+  flow = withoutEdge(current(), id)
   save()
   await delay(LATENCY_MS)
   return { id }
@@ -169,8 +189,8 @@ export async function restoreFlow() {
 
 /**
  * Undo and redo. No latency: taking a change back should not make you wait.
- * @param {Record<string, any>[]} next
- * @returns {Promise<Record<string, any>[]>}
+ * @param {import('@/domain/types.js').FlowDocument} next
+ * @returns {Promise<import('@/domain/types.js').FlowDocument>}
  */
 export async function replaceFlow(next) {
   flow = clone(next)

@@ -5,13 +5,12 @@ import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 
 import { useFlowQuery } from '@/composables/useFlowQuery.js'
-import { useMoveNode, useUpdateNode } from '@/composables/useNodeMutations.js'
+import { useConnectNodes, useDisconnect, useMoveNode } from '@/composables/useNodeMutations.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
 import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
-import { canConnect, toNodeId } from '@/domain/graph.js'
+import { canConnect, edgeIdFor, toNodeId } from '@/domain/graph.js'
 import { isInView, panDuration } from '@/domain/motion.js'
-import { ROOT_PARENT_ID } from '@/domain/constants.js'
 import { useToastStore } from '@/stores/toasts.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
@@ -24,9 +23,10 @@ import CanvasState from './CanvasState.vue'
 const route = useRoute()
 const router = useRouter()
 const canvas = useCanvasStore()
-const { nodes, edges, isLoading, isError, error, refetch } = useFlowQuery()
+const { document: diagram, nodes, edges, isLoading, isError, error, refetch } = useFlowQuery()
 const moveNode = useMoveNode()
-const updateNode = useUpdateNode()
+const connectNodes = useConnectNodes()
+const disconnect = useDisconnect()
 const toasts = useToastStore()
 const {
   addEdges,
@@ -165,10 +165,9 @@ watch(
 let fromData = false
 
 /**
- * Vue Flow runs `isValidConnection` for `addEdges` too, and the rules that refuse
- * a drag refuse most of the payload: a branch already has its parent, and nobody
- * may draw into a connector. An edge that only depicts the data goes in with the
- * gate open.
+ * Vue Flow runs `isValidConnection` for `addEdges` too, and would refuse an edge
+ * the document already holds as a duplicate. An edge that only depicts the data
+ * goes in with the gate open.
  *
  * @param {import('@/domain/types.js').VueFlowEdge[]} list
  */
@@ -188,12 +187,10 @@ function onNodeClick({ node }) {
 /** The node a connection is being dragged from, or empty. */
 const connectingFrom = ref('')
 
-const flowNodes = () => nodes.value.map((node) => node.data.node)
-
 provide(CONNECT_STATE, {
   from: connectingFrom,
   accepts: (/** @type {string} */ id) =>
-    Boolean(connectingFrom.value) && canConnect(flowNodes(), connectingFrom.value, id) === null,
+    Boolean(connectingFrom.value) && canConnect(diagram.value, connectingFrom.value, id) === null,
 })
 
 /** @param {{ nodeId?: string | null }} event */
@@ -216,32 +213,31 @@ function isValidConnection({ source, target }) {
   if (fromData) return true
   if (!source || !target) return false
 
-  return canConnect(flowNodes(), toNodeId(source), toNodeId(target)) === null
+  return canConnect(diagram.value, toNodeId(source), toNodeId(target)) === null
 }
 
-/** A node has one parent, so connecting re-parents rather than adding an edge. */
 /** @param {{ source: string, target: string }} connection */
 function onConnect({ source, target }) {
-  const refusal = canConnect(flowNodes(), toNodeId(source), toNodeId(target))
+  const from = toNodeId(source)
+  const to = toNodeId(target)
+  const refusal = canConnect(diagram.value, from, to)
 
   if (refusal) {
     toasts.push(refusal, { tone: 'danger' })
     return
   }
 
-  const id = toNodeId(target)
-
   // Drawn here, with the id the adapter will use. Vue Flow remembers the
   // connection the drag just made and refuses to add it again afterwards, so an
   // edge left to the next sync never appears.
-  addEdges([{ id: `e-${id}`, source: toNodeId(source), target: id, type: 'flow' }])
+  addEdges([{ id: edgeIdFor(from, to), source: from, target: to, type: 'flow' }])
 
-  updateNode.mutate({ id, patch: { parentId: toNodeId(source), position: pinnedPosition(id) } })
+  connectNodes.mutate({ source: from, target: to, position: pinnedPosition(to) })
 }
 
 /**
- * Re-parenting changes where the layout would put a node, so its current position
- * is pinned in the same write. Otherwise detaching a node makes it jump.
+ * A new or removed edge changes where the layout would put a node, so its
+ * current position is pinned in the same write. Otherwise it jumps.
  *
  * @param {string} id
  * @returns {{ x: number, y: number } | undefined}
@@ -251,21 +247,19 @@ function pinnedPosition(id) {
   return node ? { x: node.position.x, y: node.position.y } : undefined
 }
 
-/** @param {string} targetId */
-function detach(targetId) {
-  const id = toNodeId(targetId)
-  updateNode.mutate({
-    id,
-    patch: { parentId: ROOT_PARENT_ID, position: pinnedPosition(id) },
-  })
+/** @param {string} edgeId */
+function detach(edgeId) {
+  const edge = edges.value.find((candidate) => candidate.id === edgeId)
+  if (!edge) return
+  disconnect.mutate({ id: edge.id, target: edge.target, position: pinnedPosition(edge.target) })
 }
 
 provide(DETACH_EDGE, detach)
 
-/** Detach, rather than delete the node the edge points at. */
-/** @param {{ edges: { target: string }[] }} event */
+/** Removes the line, never the node it points at. */
+/** @param {{ edges: { id: string }[] }} event */
 function onEdgesDelete({ edges: removed }) {
-  for (const edge of removed) detach(edge.target)
+  for (const edge of removed) detach(edge.id)
 }
 
 /** @param {{ node: import('@vue-flow/core').GraphNode }} event */

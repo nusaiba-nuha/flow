@@ -49,7 +49,7 @@ original build (FL-00 to FL-36, in the git history).
 The app still stores a bare array of chat-bot nodes whose one edge comes from `parentId`. Nothing
 in milestone 2 is possible until diagrams are nodes and edges.
 
-### FL-40 · Document model v2 ⏭️
+### FL-40 · Document model v2 ✅
 
 - `{ version: 2, title, nodes: [], edges: [] }` with explicit edges
   `{ id, source, target, label? }`
@@ -60,7 +60,7 @@ in milestone 2 is possible until diagrams are nodes and edges.
 
 **Done when** a saved v1 document opens unchanged, and two nodes can both point at a third.
 
-### FL-41 · General shapes ⬜
+### FL-41 · General shapes ⏭️
 
 - Registry entries for process (rectangle), terminal (rounded), decision (diamond), data
   (parallelogram), database (cylinder), document, note, and text

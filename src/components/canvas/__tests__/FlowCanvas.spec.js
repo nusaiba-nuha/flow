@@ -97,8 +97,8 @@ describe('FlowCanvas', () => {
     expect(wrapper.find('[role="status"]').exists()).toBe(true)
 
     await waitUntil(() => lastNodes().length > 0)
-    expect(lastNodes()).toHaveLength(starter.length)
-    expect(lastEdges()).toHaveLength(starter.length - 1)
+    expect(lastNodes()).toHaveLength(starter.nodes.length)
+    expect(lastEdges()).toHaveLength(starter.edges.length)
   })
 
   it('fits only once the nodes are measured, and not at all for a returning viewport', async () => {

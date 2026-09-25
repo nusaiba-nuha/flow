@@ -1,71 +1,91 @@
 import { describe, expect, it } from 'vitest'
 
-import payload from '@/tests/fixtures/diagram.json'
-import { NODE_TYPE } from '../constants.js'
+import diagram from '@/tests/fixtures/diagram.json'
+import { emptyDocument } from '../document.js'
 import {
   buildEdges,
   canConnect,
-  normaliseNode,
   documentToGraph,
+  edgeIdFor,
+  withEdge,
   withNodeRemoved,
+  withoutEdge,
 } from '../graph.js'
 
 describe('documentToGraph', () => {
-  it('turns the payload into positioned nodes carrying their domain node', () => {
-    const { nodes, edges } = documentToGraph(payload)
+  it('turns a document into positioned nodes carrying their domain node', () => {
+    const { nodes, edges } = documentToGraph(diagram)
 
-    expect(nodes).toHaveLength(payload.length)
-    expect(edges).toHaveLength(payload.length - 1)
-    // The trigger's id is the number 1 in the payload; route params are strings.
-    expect(nodes.find((node) => node.id === '1')).toBeDefined()
+    expect(nodes).toHaveLength(diagram.nodes.length)
+    expect(edges).toHaveLength(diagram.edges.length)
     expect(nodes.find((node) => node.id === 'b6a0c1').data.node.name).toBe('Away Message')
-    expect(documentToGraph([])).toEqual({ nodes: [], edges: [] })
+    expect(documentToGraph(emptyDocument())).toEqual({ nodes: [], edges: [] })
+    expect(documentToGraph(null)).toEqual({ nodes: [], edges: [] })
   })
 })
 
 describe('buildEdges', () => {
-  it('derives branches from parentId, ignoring data.connectors and missing parents', () => {
-    const nodes = payload.map(normaliseNode)
-    const branches = buildEdges(nodes).filter((edge) => edge.source === 'd09c08')
+  it('draws only edges whose ends both exist, and keeps a label', () => {
+    const edges = [
+      { id: 'e1', source: 'a', target: 'b', label: 'yes' },
+      { id: 'e2', source: 'a', target: 'ghost' },
+    ]
 
-    expect(branches.map((edge) => edge.target).sort()).toEqual(['161f52', '28c4b9'])
-    expect(
-      buildEdges([normaliseNode({ id: 'a', parentId: 'ghost', type: NODE_TYPE.ADD_COMMENT })]),
-    ).toEqual([])
+    expect(buildEdges(edges, new Set(['a', 'b']))).toEqual([
+      { id: 'e1', type: 'flow', source: 'a', target: 'b', label: 'yes' },
+    ])
   })
 })
 
 describe('withNodeRemoved', () => {
-  it('re-parents children, but takes a dateTime node connectors with it', () => {
-    // Away Message sits between the Failure connector and Add Comment #1.
-    expect(withNodeRemoved(payload, 'b6a0c1').find((n) => n.id === 'e879e4').parentId).toBe(
-      '28c4b9',
-    )
+  it('takes every edge touching the node, and leaves its neighbours alone', () => {
+    // Away Message sits between the Failure branch and Add Comment #1.
+    const next = withNodeRemoved(diagram, 'b6a0c1')
 
-    const flow = withNodeRemoved(payload, 'd09c08')
-    const ids = flow.map((node) => String(node.id))
+    expect(next.nodes.map((node) => node.id)).toContain('e879e4')
+    expect(next.edges.some((edge) => edge.source === 'b6a0c1' || edge.target === 'b6a0c1')).toBe(
+      false,
+    )
+    expect(next.edges).toHaveLength(diagram.edges.length - 2)
+  })
+
+  it('takes a business hours node branches with it', () => {
+    const ids = withNodeRemoved(diagram, 'd09c08').nodes.map((node) => node.id)
+
     expect(ids).not.toContain('161f52')
     expect(ids).not.toContain('28c4b9')
-    expect(flow.find((node) => node.id === 'b0653a').parentId).toBe('1')
+    expect(ids).toContain('b0653a')
+    expect(withNodeRemoved(diagram, 'ghost')).toBe(diagram)
+  })
+})
 
-    expect(withNodeRemoved(payload, 'ghost')).toBe(payload)
+describe('withEdge and withoutEdge', () => {
+  it('adds an edge once, keyed by its ends, and removes it by id', () => {
+    const once = withEdge(diagram, 'e879e4', 'b0653a')
+    expect(once.edges.at(-1)).toEqual({
+      id: edgeIdFor('e879e4', 'b0653a'),
+      source: 'e879e4',
+      target: 'b0653a',
+    })
+    expect(withEdge(once, 'e879e4', 'b0653a')).toBe(once)
+    expect(withoutEdge(once, edgeIdFor('e879e4', 'b0653a')).edges).toEqual(diagram.edges)
   })
 })
 
 describe('canConnect', () => {
-  it('allows a node to move under another', () => {
-    expect(canConnect(payload, 'd09c08', 'e879e4')).toBeNull()
+  it('allows any number of edges in and out, including a cycle', () => {
+    // b0653a already has an incoming edge from the Success branch.
+    expect(canConnect(diagram, 'e879e4', 'b0653a')).toBeNull()
+    expect(canConnect(diagram, 'e879e4', 'd09c08')).toBeNull()
   })
 
-  it('refuses a loop, a self link and the branch connectors', () => {
-    // b6a0c1 already sits under 28c4b9, which sits under d09c08.
-    expect(canConnect(payload, 'e879e4', 'd09c08')).toMatch(/loop/i)
-    expect(canConnect(payload, 'b6a0c1', 'b6a0c1')).toMatch(/itself/i)
-    expect(canConnect(payload, 'b6a0c1', '161f52')).toMatch(/branches belong/i)
-    expect(canConnect(payload, 'b6a0c1', '1')).toMatch(/trigger/i)
+  it('refuses a self link, a missing node and a duplicate', () => {
+    expect(canConnect(diagram, 'b6a0c1', 'b6a0c1')).toMatch(/itself/i)
+    expect(canConnect(diagram, 'b6a0c1', 'ghost')).toMatch(/no longer exists/i)
+    expect(canConnect(diagram, 'b6a0c1', 'e879e4')).toMatch(/already connected/i)
   })
 
-  it('says when two nodes are already connected', () => {
-    expect(canConnect(payload, 'b6a0c1', 'e879e4')).toMatch(/already connected/i)
+  it('treats the reverse of an edge as a different edge', () => {
+    expect(canConnect(diagram, 'e879e4', 'b6a0c1')).toBeNull()
   })
 })

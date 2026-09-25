@@ -1,6 +1,6 @@
 /** Every key Flow writes to `localStorage`, so a rename happens in one place. */
 export const STORAGE_KEYS = Object.freeze({
-  DOCUMENT: 'flow:document:v1',
+  DOCUMENT: 'flow:document',
   THEME: 'flow:theme',
 })
 
@@ -10,11 +10,7 @@ export const STORAGE_KEYS = Object.freeze({
  * @type {Readonly<Record<string, readonly string[]>>}
  */
 const LEGACY_KEYS = Object.freeze({
-  [STORAGE_KEYS.DOCUMENT]: [
-    'flow-builder:document:v1',
-    'flow-builder:flow:/payload.json',
-    'flow-builder:flow:/api/payload',
-  ],
+  [STORAGE_KEYS.DOCUMENT]: ['flow-builder:flow:/payload.json', 'flow-builder:flow:/api/payload'],
   [STORAGE_KEYS.THEME]: ['flow-builder:theme'],
 })
 
