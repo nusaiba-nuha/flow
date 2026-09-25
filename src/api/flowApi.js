@@ -1,8 +1,8 @@
 import { migrate } from '@/domain/document.js'
+import { FIRST_RUN_SAMPLE, sampleById } from '@/domain/samples.js'
 import { canConnect, toNodeId, withEdge, withNodeRemoved, withoutEdge } from '@/domain/graph.js'
 import { isKnownShape } from '@/domain/nodeMeta.js'
 
-import starterDiagram from './starterDiagram.json'
 import { STORAGE_KEYS } from './storageKeys.js'
 
 /** Writes only: it exists to make optimistic updates and rollbacks visible. */
@@ -38,7 +38,7 @@ const safely = (action) => {
 
 const save = () => safely(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(flow)))
 
-/** Six hex characters, to match the starter diagram's ids. */
+/** Six hex characters: short enough to read in a URL. */
 export const generateNodeId = () => Math.random().toString(16).slice(2, 8).padEnd(6, '0')
 
 /** @param {{ clearStorage?: boolean }} [options] keep the saved flow to simulate a reload */
@@ -57,7 +57,7 @@ async function ensureLoaded() {
 
   const saved = safely(() => localStorage.getItem(STORAGE_KEY))
   const parsed = saved ? safely(() => migrate(JSON.parse(saved))) : null
-  flow = parsed ?? migrate(clone(starterDiagram))
+  flow = parsed ?? migrate(clone(sampleById(FIRST_RUN_SAMPLE)?.document))
   // Written back at once, so an older shape is only ever migrated once.
   save()
   return flow
@@ -162,14 +162,9 @@ export async function disconnect({ id }) {
   return { id }
 }
 
-/** Discard local changes and start again from the starter diagram. */
-export async function restoreFlow() {
-  resetFlow()
-  return fetchFlow()
-}
-
 /**
- * Undo and redo. No latency: taking a change back should not make you wait.
+ * Undo, redo and starting a new diagram. No latency: none of them should make
+ * you wait.
  * @param {import('@/domain/types.js').FlowDocument} next
  * @returns {Promise<import('@/domain/types.js').FlowDocument>}
  */

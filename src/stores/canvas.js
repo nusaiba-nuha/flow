@@ -14,6 +14,11 @@ export const useCanvasStore = defineStore('canvas', () => {
     viewport.value = next
   }
 
+  /** A different diagram should be fitted to the screen, not shown where the last one was. */
+  function forgetViewport() {
+    viewport.value = null
+  }
+
   /** @param {string} id */
   function requestFocus(id) {
     focusNodeId.value = id
@@ -23,5 +28,5 @@ export const useCanvasStore = defineStore('canvas', () => {
     focusNodeId.value = ''
   }
 
-  return { viewport, focusNodeId, setViewport, requestFocus, clearFocus }
+  return { viewport, focusNodeId, setViewport, forgetViewport, requestFocus, clearFocus }
 })

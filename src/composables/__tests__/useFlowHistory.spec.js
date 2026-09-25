@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
-import starter from '@/api/starterDiagram.json'
+import starter from '@/domain/samples/support.json'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
 import { useDeleteNode } from '../useNodeMutations.js'

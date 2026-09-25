@@ -5,7 +5,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { createRouter, createWebHistory } from 'vue-router'
 
-import starter from '@/api/starterDiagram.json'
+import starter from '@/domain/samples/support.json'
 import { resetFlow } from '@/api/flowApi.js'
 import { createTestQueryClient, waitUntil } from '@/tests/utils.js'
 

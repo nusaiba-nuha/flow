@@ -163,17 +163,14 @@ export function useMoveNode() {
   })
 }
 
-/** Discard local changes and re-seed from the starter diagram. */
-export function useRestoreFlow() {
-  const queryClient = useQueryClient()
-  const history = useHistoryStore()
-
-  return useMutation({
-    mutationFn: () => flowApi.restoreFlow(),
-    onSuccess(flow) {
-      queryClient.setQueryData(flowKeys.list(), flow)
-      // Nothing coherent to go back to once the flow is re-seeded.
-      history.clear()
-    },
+/**
+ * Replaces the whole diagram: with an empty one, or a sample. Recorded like any
+ * other change, so undo brings back what was there instead of asking first.
+ */
+export function useNewDiagram() {
+  return useOptimisticFlowMutation({
+    label: 'New diagram',
+    mutationFn: (/** @type {FlowDocument} */ document) => flowApi.replaceFlow(document),
+    apply: (_flow, document) => document,
   })
 }

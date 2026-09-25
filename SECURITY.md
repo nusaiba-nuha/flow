@@ -9,7 +9,7 @@ matter once it has them.
 | -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | A document     | `flowApi.ensureLoaded`       | Untrusted: shape is normalised at the adapter, unknown node types fall back to a safe entry rather than rendering nothing |
 | Form fields    | The drawer and create dialog | Untrusted: validated before a mutation, capped in length                                                                  |
-| `localStorage` | `ensureLoaded`               | Untrusted: parsed in a try, falls back to the starter diagram when it holds anything unexpected                           |
+| `localStorage` | `ensureLoaded`               | Untrusted: parsed in a try, falls back to a sample when it holds anything unexpected                                      |
 
 ## Cross-site scripting
 
@@ -22,7 +22,7 @@ sanitiser with an allowlist, not `v-html`.
 
 ## Network
 
-The app makes no requests of its own. The starter diagram is bundled into the build and every edit
+The app makes no requests of its own. The samples are bundled into the build and every edit
 is saved to `localStorage`, so there is no proxy, no CORS surface and nothing to configure. When a
 real backend lands (see [BACKLOG.md](BACKLOG.md)), it replaces `src/api/flowApi.js` and this section
 returns.

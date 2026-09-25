@@ -42,6 +42,8 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Shapes.** Process, start / end, decision, input / output, database, document, note and text,
   each drawn as its own outline. Change a shape's type at any time.
 - **Canvas.** Pan, zoom and drag shapes on a Vue Flow canvas. Dragged positions are kept.
+- **New diagram and samples.** Start empty, or from a web app architecture or support flow
+  sample. Undo brings back whatever was there.
 - **Create, edit, delete.** Every change updates the canvas immediately and rolls back if it fails.
 - **Connections.** Drag from one node to another to connect them, as many in and out as you like;
   remove a connection from the control on the edge.
@@ -51,7 +53,7 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Automatic layout** for anything you have not placed by hand.
 - **Light and dark themes**, following the system until you choose.
 - **Saved locally.** Edits are kept in `localStorage` and survive a reload.
-- **Works offline.** The starter diagram is bundled, so the app makes no network requests.
+- **Works offline.** The samples are bundled, so the app makes no network requests.
 
 ## Where it is going
 
@@ -104,9 +106,9 @@ Plain JavaScript with JSDoc types checked by `vue-tsc` in strict mode.
 
 ```text
 src/
-  domain/        Pure logic, no Vue imports: node registry, graph, layout,
+  domain/        Pure logic, no Vue imports: document, shapes, samples, graph, layout,
                  validation, shortcuts, formatting
-  api/           The storage backend, the bundled starter diagram, query keys
+  api/           The storage backend and query keys
   composables/   Queries, optimistic mutations, drafts, keyboard, history, theme
   stores/        Pinia: viewport, undo history, theme, toasts
   components/    canvas/, drawer/, ui/
@@ -129,7 +131,8 @@ Pinia owns the viewport, undo history, theme and toasts. Nothing is copied from 
 form edits live in a local draft until saved, so a refetch cannot overwrite typing.
 
 **Storage is behind an API-shaped module.** `src/api/flowApi.js` is the only code that touches
-persistence. Today it seeds from `src/api/starterDiagram.json` and saves to `localStorage`; it is
+persistence. Today it seeds a first visit from the samples in `src/domain/samples/` and saves to
+`localStorage`; it is
 async and shaped like a REST client so a real backend can replace it without touching a component.
 Writes carry a small simulated latency so optimistic updates and rollbacks stay honest.
 

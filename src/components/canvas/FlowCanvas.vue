@@ -6,6 +6,7 @@ import { Background } from '@vue-flow/background'
 
 import { useFlowQuery } from '@/composables/useFlowQuery.js'
 import { useConnectNodes, useDisconnect, useMoveNode } from '@/composables/useNodeMutations.js'
+import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
 import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
@@ -27,6 +28,7 @@ const { document: diagram, nodes, edges, isLoading, isError, error, refetch } = 
 const moveNode = useMoveNode()
 const connectNodes = useConnectNodes()
 const disconnect = useDisconnect()
+const { start } = useStartDiagram()
 const toasts = useToastStore()
 const {
   addEdges,
@@ -50,6 +52,14 @@ const nodeTypes = /** @type {import('@vue-flow/core').NodeTypesObject} */ (
 const edgeTypes = /** @type {any} */ (markRaw({ flow: FlowEdge }))
 
 const hasFitted = ref(false)
+
+// An emptied canvas unmounts Vue Flow, so whatever fills it next is fitted afresh.
+watch(
+  () => nodes.value.length === 0,
+  (empty) => {
+    if (empty) hasFitted.value = false
+  },
+)
 
 /** Matches the drawer width in NodeDetailsDrawer. */
 const DRAWER_WIDTH = 380
@@ -353,6 +363,7 @@ watch(
       :is-error="isError"
       :message="error?.message"
       @retry="refetch"
+      @sample="start"
     />
 
     <!-- nodes-deletable stays false: deleting a node keeps its confirmation. -->

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 
-import starter from '@/api/starterDiagram.json'
+import starter from '@/domain/samples/support.json'
 import * as flowApi from '@/api/flowApi.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
 import { useFlowQuery, useNode } from '../useFlowQuery.js'
