@@ -1,6 +1,17 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
+import { STORAGE_KEYS } from '@/api/storageKeys.js'
+
+/** A viewer's own habit, so it is kept in this browser, not in the diagram. */
+function savedSnap() {
+  try {
+    return localStorage.getItem(STORAGE_KEYS.SNAP) !== 'off'
+  } catch {
+    return true
+  }
+}
+
 /** The half of the state the server has no opinion about, so it never belongs in the cache. */
 export const useCanvasStore = defineStore('canvas', () => {
   /** @type {import('vue').Ref<{ x: number, y: number, zoom: number } | null>} */
@@ -14,6 +25,18 @@ export const useCanvasStore = defineStore('canvas', () => {
 
   function toggleText() {
     isTextOpen.value = !isTextOpen.value
+  }
+
+  /** Whether dragged shapes snap to the grid of dots. On unless turned off. */
+  const snap = ref(savedSnap())
+
+  function toggleSnap() {
+    snap.value = !snap.value
+    try {
+      localStorage.setItem(STORAGE_KEYS.SNAP, snap.value ? 'on' : 'off')
+    } catch {
+      // A private window refuses storage; the choice still holds until reload.
+    }
   }
 
   /**
@@ -56,6 +79,8 @@ export const useCanvasStore = defineStore('canvas', () => {
     pendingShape,
     isTextOpen,
     toggleText,
+    snap,
+    toggleSnap,
     setViewport,
     forgetViewport,
     requestFocus,

@@ -36,6 +36,8 @@ import { isOpenable, metaFor } from '@/domain/nodeMeta.js'
 import { canConnect, edgeIdFor, toNodeId } from '@/domain/graph.js'
 import { isInView, panDuration } from '@/domain/motion.js'
 import { isSketch } from '@/domain/sketch.js'
+import { GRID } from '@/domain/arrange.js'
+import SelectionToolbar from './SelectionToolbar.vue'
 import { useToastStore } from '@/stores/toasts.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
@@ -375,8 +377,16 @@ provide(
   computed(() => diagram.value?.lines ?? 'step'),
 )
 
+/**
+ * Snapping is on only while dragging: Vue Flow also snaps shapes as they are
+ * first drawn, which would put laid-out shapes somewhere the diagram, and its
+ * SVG, do not.
+ */
+const isDragging = ref(false)
+
 /** @param {{ node: import('@vue-flow/core').GraphNode, nodes: import('@vue-flow/core').GraphNode[] }} event */
 function onNodeDragStop({ node, nodes: dragged }) {
+  isDragging.value = false
   // Plain objects, not Vue Flow's reactive positions.
   if (dragged?.length > 1) {
     moveNodes.mutate({
@@ -650,6 +660,8 @@ watch(
       :node-types="nodeTypes"
       :edge-types="edgeTypes"
       :default-edge-options="{ type: 'flow' }"
+      :snap-to-grid="canvas.snap && isDragging"
+      :snap-grid="[GRID, GRID]"
       :min-zoom="0.2"
       :max-zoom="2"
       :nodes-connectable="true"
@@ -664,13 +676,15 @@ watch(
       class="h-full w-full"
       @nodes-initialized="onNodesInitialized"
       @node-click="onNodeClick"
+      @node-drag-start="isDragging = true"
       @node-drag-stop="onNodeDragStop"
       @connect="onConnect"
       @connect-start="onConnectStart"
       @connect-end="onConnectEnd"
       @viewport-change="canvas.setViewport"
     >
-      <Background :gap="18" :size="1.2" />
+      <Background :gap="GRID" :size="1.2" />
+      <SelectionToolbar />
       <CanvasControls />
 
       <!-- Arrowheads, defined once; their colours follow the theme. -->

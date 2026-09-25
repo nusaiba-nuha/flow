@@ -5,6 +5,7 @@ import { useVueFlow } from '@vue-flow/core'
 import IconButton from '@/components/ui/IconButton.vue'
 import { nextZoom } from '@/domain/zoom.js'
 import { useLineStyle } from '@/composables/useLineStyle.js'
+import { useCanvasStore } from '@/stores/canvas.js'
 
 /**
  * Instead of `@vue-flow/controls`, whose buttons carry no accessible name or
@@ -17,6 +18,7 @@ const percentage = computed(() => `${Math.round(viewport.value.zoom * 100)}%`)
 const ZOOM_STEP = { duration: 140 }
 
 const { lines, next, cycle } = useLineStyle()
+const canvas = useCanvasStore()
 /** @type {Record<string, string>} */
 const LINE_NAMES = { step: 'in steps', curved: 'curved', straight: 'straight' }
 
@@ -50,6 +52,18 @@ const step = (direction) => zoomTo(nextZoom(viewport.value.zoom, direction), ZOO
       <path v-if="lines === 'curved'" d="M4 19C4 10 20 14 20 5" />
       <path v-else-if="lines === 'straight'" d="M4 19 20 5" />
       <path v-else d="M4 19v-7h16V5" />
+    </IconButton>
+
+    <IconButton
+      label="Snap to grid"
+      :title="canvas.snap ? 'Shapes snap to the grid as you drag them' : 'Shapes move freely'"
+      :pressed="canvas.snap"
+      @click="canvas.toggleSnap"
+    >
+      <path
+        d="M4 4h.01M12 4h.01M20 4h.01M4 12h.01M12 12h.01M20 12h.01M4 20h.01M12 20h.01M20 20h.01"
+        stroke-width="3"
+      />
     </IconButton>
 
     <IconButton
