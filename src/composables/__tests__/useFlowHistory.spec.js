@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import starter from '@/domain/samples/support.json'
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
-import { useDeleteNode } from '../useNodeMutations.js'
+import { useDeleteNode, useReplaceDocument } from '../useNodeMutations.js'
 import { useFlowHistory } from '../useFlowHistory.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
 
@@ -54,6 +54,26 @@ describe('useFlowHistory', () => {
     expect(flowIn(queryClient)).toHaveLength(starter.nodes.length - 1)
     expect(flowIn(queryClient).some((node) => node.id === 'e879e4')).toBe(true)
     expect(flowIn(queryClient).some((node) => node.id === 'b6a0c1')).toBe(false)
+  })
+
+  it('stacks changes in the order they were made, not the order they were saved', async () => {
+    const slow = flowApi.deleteNode
+    vi.spyOn(flowApi, 'deleteNode').mockImplementation(async (input) => {
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      return slow(input)
+    })
+    const { result, queryClient } = withSetup(() => ({
+      remove: useDeleteNode(),
+      replace: useReplaceDocument('Tidy up'),
+      history: useFlowHistory(),
+    }))
+    queryClient.setQueryData(flowKeys.list(), structuredClone(starter))
+
+    result.remove.mutate({ id: 'b6a0c1' })
+    result.replace.mutate({ ...structuredClone(starter), title: 'Tidied' })
+    await waitUntil(() => !queryClient.isMutating())
+
+    expect(result.history.history.undoLabel).toBe('Tidy up')
   })
 
   it('names the change it would take back', async () => {

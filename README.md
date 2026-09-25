@@ -85,7 +85,10 @@ over the `.flow` file or its text.
 - **Undo and redo** for every change, from the toolbar or `Ctrl+Z` / `Ctrl+Shift+Z`.
 - **Deep links.** Each node's details open at `/flow/node/:id`, so a node can be linked to.
 - **Keyboard first.** Arrow keys walk the nodes, Enter opens one, `?` lists every shortcut.
-- **Automatic layout** for anything you have not placed by hand.
+- **Automatic layout** for anything you have not placed by hand: a tidy tree for a tree, and layers
+  for any other graph, so merges, skipped steps and loops still read top down, with long
+  connections given a lane of their own. _Tidy up_ under the zoom controls lays out the whole
+  diagram, and undo puts it back.
 - **Sketch style.** One switch draws the whole diagram by hand, like a whiteboard: wobbly outlines
   (drawn by [Rough.js](https://roughjs.com), as in Excalidraw) and a handwritten font. The
   diagram underneath is the same, so switching back is lossless, and exported SVGs carry the font.

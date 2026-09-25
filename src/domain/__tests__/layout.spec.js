@@ -8,6 +8,7 @@ import { freeSpotNear, layoutTree } from '../layout.js'
 const nodes = diagram.nodes.map(normaliseNode)
 const { edges } = diagram
 const STEP_Y = NODE_SIZE.HEIGHT + NODE_GAP.Y
+const STEP_X = NODE_SIZE.WIDTH + NODE_GAP.X
 
 describe('layoutTree', () => {
   it('places every node, with depth on y and parents centred over their children', () => {
@@ -34,15 +35,49 @@ describe('layoutTree', () => {
     expect(layoutTree([]).size).toBe(0)
   })
 
-  it('lays a node with two incoming edges out under the first, once', () => {
+  it('puts a node with two sources below both, centred between them', () => {
     const three = ['a', 'b', 'c'].map((id) => normaliseNode({ id, type: 'process' }))
     const at = layoutTree(three, [
       { source: 'a', target: 'c' },
       { source: 'b', target: 'c' },
     ])
 
+    expect(at.get('a').y).toBe(0)
+    expect(at.get('b').y).toBe(0)
     expect(at.get('c').y).toBe(STEP_Y)
-    expect(at.get('c').x).toBe(at.get('a').x)
+    expect(at.get('c').x).toBe((at.get('a').x + at.get('b').x) / 2)
+  })
+
+  it('lays out any graph in layers: merges, skips and cycles all point down', () => {
+    const ids = ['start', 'check', 'retry', 'save', 'done']
+    const nodes = ids.map((id) => normaliseNode({ id, type: 'process' }))
+    const edges = [
+      { source: 'start', target: 'check' },
+      { source: 'check', target: 'retry' },
+      { source: 'retry', target: 'check' },
+      { source: 'check', target: 'save' },
+      { source: 'start', target: 'save' },
+      { source: 'save', target: 'done' },
+    ]
+    const at = layoutTree(nodes, edges)
+    const layer = (id) => at.get(id).y / STEP_Y
+
+    expect(ids.map(layer)).toEqual([0, 1, 2, 2, 3])
+    // No two shapes share a spot, and the layout does not depend on edge order.
+    expect(new Set(ids.map((id) => `${at.get(id).x},${at.get(id).y}`)).size).toBe(ids.length)
+    expect(layoutTree(nodes, [...edges].reverse())).toEqual(at)
+  })
+
+  it('keeps shapes in a layer at least a step apart', () => {
+    const nodes = ['a', 'b', 'c', 'd'].map((id) => normaliseNode({ id, type: 'process' }))
+    const at = layoutTree(nodes, [
+      { source: 'a', target: 'c' },
+      { source: 'a', target: 'd' },
+      { source: 'b', target: 'c' },
+      { source: 'b', target: 'd' },
+    ])
+
+    expect(Math.abs(at.get('c').x - at.get('d').x)).toBeGreaterThanOrEqual(STEP_X)
   })
 })
 

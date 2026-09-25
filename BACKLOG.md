@@ -191,7 +191,7 @@ A sketch or clean switch per diagram (`style: sketch`): outlines and edges redra
 seeded by id so they hold still, and a handwritten font (Patrick Hand, bundled, embedded in
 exported SVGs). The same diagram underneath, in the app and in SVG.
 
-### FL-69 · Freehand pen and arrows ⬜
+### FL-69 · Freehand pen and arrows ⏭️
 
 Draw freely, and draw an arrow between two shapes by dragging from one to the other anywhere, not
 only from a handle.
@@ -223,7 +223,7 @@ The MCP tools over HTTP, so an agent in the cloud can read and update hosted dia
 | FL-58  | Connectors: four sides, straight, orthogonal or curved, arrows, dashes   | ✅     |
 | FL-59  | Copy, cut, paste and duplicate, with the edges between copied shapes     | ✅     |
 | FL-60  | Grid, snapping, align and distribute                                     | ✅     |
-| FL-61  | Automatic layout for any graph, not only trees                           | ⏭️     |
+| FL-61  | Automatic layout for any graph, not only trees                           | ✅     |
 | FL-62  | Export PNG and SVG from the app                                          | ✅     |
 
 ## Later, if the wedge holds
