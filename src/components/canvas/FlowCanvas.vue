@@ -26,6 +26,7 @@ import {
   useUpdateEdge,
   useUpdateNode,
 } from '@/composables/useNodeMutations.js'
+import { useCanvasClipboard } from '@/composables/useCanvasClipboard.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useCanvasStore } from '@/stores/canvas.js'
@@ -376,6 +377,46 @@ function onNodeDragStop({ node, nodes: dragged }) {
 }
 
 /**
+ * Keys meant for a field or a dialog are theirs, not the canvas's.
+ * @param {Event} event
+ */
+function isBlocked(event) {
+  const target = /** @type {HTMLElement | null} */ (event.target)
+  if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return true
+  if (target?.isContentEditable) return true
+  return Boolean(document.querySelector('[role="dialog"][aria-modal="true"]'))
+}
+
+/**
+ * Delete shapes, with their edges, as one undoable change.
+ * @param {string[]} ids
+ */
+function removeShapes(ids) {
+  router.push({ name: ROUTE.FLOW })
+  deleteNodes.mutate(
+    { ids },
+    {
+      onSuccess: () =>
+        toasts.push(ids.length === 1 ? 'Deleted a shape' : `Deleted ${ids.length} shapes`, {
+          action: { label: 'Undo', run: undo },
+        }),
+    },
+  )
+}
+
+useCanvasClipboard({
+  selectedIds: () => getSelectedNodes.value.map((node) => node.id),
+  remove: removeShapes,
+  isBlocked,
+  // Pasted shapes arrive selected, so they can be dragged straight into place.
+  select: async (ids) => {
+    removeSelectedNodes(getSelectedNodes.value)
+    const added = (await Promise.all(ids.map(waitForNode))).filter(Boolean)
+    addSelectedNodes(/** @type {any[]} */ (added))
+  },
+})
+
+/**
  * Select all, and delete a selection as one undoable step. Vue Flow's own
  * delete key is off: it removed shapes from the canvas without touching the
  * diagram. The drawer's button confirms; the key does not, and the toast's Undo
@@ -384,9 +425,7 @@ function onNodeDragStop({ node, nodes: dragged }) {
  * @param {KeyboardEvent} event
  */
 function onSelectionKeys(event) {
-  const target = /** @type {HTMLElement | null} */ (event.target)
-  if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return
-  if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+  if (isBlocked(event)) return
 
   // F2 renames the shape the keyboard is on, as in a file manager.
   if (event.key === 'F2' && focusedId.value) {
@@ -418,16 +457,7 @@ function onSelectionKeys(event) {
     return
   }
 
-  router.push({ name: ROUTE.FLOW })
-  deleteNodes.mutate(
-    { ids },
-    {
-      onSuccess: () =>
-        toasts.push(ids.length === 1 ? 'Deleted a shape' : `Deleted ${ids.length} shapes`, {
-          action: { label: 'Undo', run: undo },
-        }),
-    },
-  )
+  removeShapes(ids)
 }
 
 onMounted(() => window.addEventListener('keydown', onSelectionKeys))
