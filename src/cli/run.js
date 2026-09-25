@@ -1,10 +1,12 @@
 import { parseFlow } from '../domain/flowText.js'
 import { describeDiff, diffDocuments, isUnchanged, mergeForDiff } from '../domain/diff.js'
 import { renderSvg } from '../domain/renderSvg.js'
+import { toBrief } from '../domain/brief.js'
 
 export const USAGE = `Usage:
   isketch render <file.flow> [-o <out.svg>] [--dark]   Draw a diagram as SVG
   isketch check <file.flow>...                         Report errors, exit 1 if any
+  isketch brief <file.flow>                            A Markdown brief for a coding agent
   isketch diff <before.flow> <after.flow> [-o <out.svg>] [--dark]
                                                        List what changed, and draw it
 `
@@ -27,6 +29,7 @@ export async function run(argv, io) {
   if (command === 'render') return render(rest, io)
   if (command === 'check') return check(rest, io)
   if (command === 'diff') return diff(rest, io)
+  if (command === 'brief') return brief(rest, io)
 
   io.stderr(USAGE)
   return command === undefined || command === '--help' || command === '-h' ? 0 : 2
@@ -55,6 +58,24 @@ async function render(args, io) {
   } else {
     io.stdout(svg)
   }
+  return 0
+}
+
+/**
+ * @param {string[]} args
+ * @param {Parameters<typeof run>[1]} io
+ */
+async function brief(args, io) {
+  const { files } = options(args)
+  if (files.length !== 1) {
+    io.stderr(USAGE)
+    return 2
+  }
+
+  const document = await read(files[0], io)
+  if (!document) return 1
+
+  io.stdout(toBrief(document))
   return 0
 }
 

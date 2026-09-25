@@ -5,6 +5,7 @@ import IconButton from '@/components/ui/IconButton.vue'
 import ThemeToggle from '@/components/ui/ThemeToggle.vue'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useShareLink } from '@/composables/useShareLink.js'
+import { useCopyBrief } from '@/composables/useCopyBrief.js'
 import { useDiagramFile } from '@/composables/useDiagramFile.js'
 import { useFlowHistory } from '@/composables/useFlowHistory.js'
 import { usePlatform } from '@/composables/usePlatform.js'
@@ -21,6 +22,7 @@ const { start, isPending: isStarting } = useStartDiagram()
 const toasts = useToastStore()
 const canvas = useCanvasStore()
 const { share } = useShareLink()
+const { copyBrief } = useCopyBrief()
 // The one place Ctrl+S and Ctrl+O are bound, like undo.
 const { open, save } = useDiagramFile({ bindKeys: true })
 
@@ -42,6 +44,15 @@ const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
 
 <template>
   <div class="flex items-center gap-2">
+    <button
+      type="button"
+      class="mr-1 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-brand-ink transition-opacity hover:opacity-90"
+      title="Copy the diagram as a Markdown brief for Claude, Copilot or any coding agent"
+      @click="copyBrief"
+    >
+      Copy for AI
+    </button>
+
     <div class="mr-1 flex items-center gap-1">
       <IconButton
         label="Undo"

@@ -156,15 +156,15 @@ On a pull request that changes a `.flow` file, post the before and after as a co
 - The positioning above, in the README
 - The repository rename to `isketch.online` and the domain are the owner's to do
 
-### FL-64 · Copy for AI ⏭️
+### FL-64 · Copy for AI ✅
 
 - One button that puts a Markdown brief on the clipboard: what the diagram is, every shape with
-  its kind and notes, every connection in words, then the `.flow` source and Mermaid
+  its kind and notes, every connection in words, then the `.flow` source to edit and hand back
 - Kinds read as intent: a database becomes "a data store", a decision "a branch the code must
   handle", a table lists its columns
 - `isketch brief diagram.flow` prints the same, for scripts and agents
 
-### FL-65 · MCP server ⬜
+### FL-65 · MCP server ⏭️
 
 - `isketch mcp` runs a local MCP server over stdio, pointed at a folder of `.flow` files
 - Tools: list diagrams, read one as a brief or as text, write one (validated, with line errors

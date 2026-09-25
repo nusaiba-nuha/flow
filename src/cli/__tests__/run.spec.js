@@ -77,6 +77,18 @@ describe('isketch diff', () => {
   })
 })
 
+describe('isketch brief', () => {
+  it('prints a Markdown brief, and needs exactly one file', async () => {
+    const { io, out } = fakeIo({ 'd.flow': GOOD })
+
+    expect(await run(['brief', 'd.flow'], io)).toBe(0)
+    expect(out.join('')).toContain('- **A** → **B**: reads')
+
+    expect(await run(['brief'], fakeIo().io)).toBe(2)
+    expect(await run(['brief', 'missing.flow'], fakeIo().io)).toBe(1)
+  })
+})
+
 describe('usage', () => {
   it('prints usage for help, and exits 2 for a mistake', async () => {
     const help = fakeIo()

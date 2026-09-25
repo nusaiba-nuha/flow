@@ -29,8 +29,9 @@ isketch aims at that gap:
 
 - **Every sketch is exact text.** Ids, kinds, directions and notes, in a line-based `.flow` file
   an agent reads without guessing. Edit the canvas or the text; the other follows.
-- **Built for the hand-off.** Copy as Mermaid today; a Markdown brief, an MCP server and wireframe
-  shapes are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
+- **Built for the hand-off.** _Copy for AI_ puts a Markdown brief on the clipboard: every shape by
+  what it means for the code, every connection in words, and the source to edit and hand back. An
+  MCP server and wireframe shapes are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
 - **Git native.** Files diff cleanly, a CLI renders SVG with no browser, and pull requests get a
   visual diff, so the design and the code stop drifting apart.
 - **Start from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with re-import that keeps
@@ -78,6 +79,10 @@ over the `.flow` file or its text.
   with keys marked and foreign keys as labelled connections.
   Re-importing updates the diagram and keeps its layout and anything added by
   hand. Anything skipped is listed by line.
+- **Copy for AI.** One button copies a Markdown brief for Claude, Copilot or any coding agent: each
+  shape with its id and what it means ("a data store", "a branch the code must handle"), each
+  connection in words, and the `.flow` source at the end so the agent can change the diagram and
+  hand it back. `isketch brief` prints the same from the command line.
 - **Copy as Mermaid** from the text pane, for a README.
 - **Open and save `.flow` files** (`Ctrl+O`, `Ctrl+S`). In Chrome and Edge, Save writes back to
   the file you opened, so a diagram can live in a repository next to the code it describes.
@@ -167,6 +172,7 @@ docker compose --profile prod up    # production build on http://localhost:8080
 npm run isketch -- render diagram.flow -o diagram.svg   # draw it, add --dark for the dark theme
 npm run isketch -- check docs/*.flow                    # file:line errors, exit 1 if any
 npm run isketch -- diff old.flow new.flow -o diff.svg   # what changed, listed and drawn
+npm run isketch -- brief diagram.flow                   # a Markdown brief for a coding agent
 npm run examples                                        # redraw every SVG in examples/
 ```
 
