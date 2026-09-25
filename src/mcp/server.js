@@ -2,6 +2,7 @@ import { toBrief } from '../domain/brief.js'
 import { describeDiff, diffDocuments, isUnchanged } from '../domain/diff.js'
 import { FLOW_EXTENSION, parseFlow, serialiseFlow } from '../domain/flowText.js'
 import { renderSvg } from '../domain/renderSvg.js'
+import { SHAPE_OPTIONS } from '../domain/nodeMeta.js'
 
 /**
  * A Model Context Protocol server for a folder of `.flow` files, so a coding
@@ -28,7 +29,8 @@ const INSTRUCTIONS = `Diagrams in this folder are .flow files, sketched by a per
 Read one as a brief before building from it, and refer to shapes by their ids. When the code
 changes what a diagram shows, update the diagram with write_diagram so the two stay true.
 Format: \`id = shape "Name" -- description\`, \`a -> b : label\`, positions under \`@layout\`.
-Shapes: process, terminal, decision, data, database, document, note, table, text.`
+Shapes: ${SHAPE_OPTIONS.map((option) => option.value).join(', ')}.
+Screen, button, input, card, list and image sketch an interface.`
 
 const PATH = { type: 'string', description: 'Path of a .flow file, relative to the folder' }
 

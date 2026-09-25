@@ -52,12 +52,62 @@ export function shapePath(shape, width, height, inset = 1) {
     }
     case SHAPE.TEXT:
       return ''
-    default: {
-      const radius = Math.min(6, h / 4)
-      return `M${l + radius},${t} H${r - radius} Q${r},${t} ${r},${t + radius} V${b - radius} Q${r},${b} ${r - radius},${b} H${l + radius} Q${l},${b} ${l},${b - radius} V${t + radius} Q${l},${t} ${l + radius},${t} Z`
+    case SHAPE.SCREEN: {
+      // A browser window: a title bar with three dots.
+      const bar = t + Math.min(h * 0.2, 18)
+      const dot = Math.min(2.5, (bar - t) / 5)
+      const dots = [1, 2, 3]
+        .map((n) => {
+          const x = l + n * dot * 3.5
+          const y = t + (bar - t) / 2
+          return `M${x - dot},${y} A${dot},${dot} 0 1 0 ${x + dot},${y} A${dot},${dot} 0 1 0 ${x - dot},${y}`
+        })
+        .join(' ')
+      return `M${l},${t} H${r} V${b} H${l} Z M${l},${bar} H${r} ${dots}`
     }
+    case SHAPE.BUTTON: {
+      const radius = Math.min(h / 2, 12)
+      return roundedRect(l, t, r, b, radius)
+    }
+    case SHAPE.INPUT: {
+      // A field with a caret at the start.
+      const caret = l + Math.min(10, w * 0.08)
+      return `M${l},${t} H${r} V${b} H${l} Z M${caret},${t + h * 0.3} V${b - h * 0.3}`
+    }
+    case SHAPE.CARD: {
+      // Raised: a second edge along the bottom and right.
+      const lift = Math.min(4, w * 0.04, h * 0.04)
+      return `${roundedRect(l, t, r - lift, b - lift, Math.min(8, h / 4))} M${l + 6},${b} H${r - 6} Q${r},${b} ${r},${b - 6} V${t + 6}`
+    }
+    case SHAPE.LIST: {
+      // Rows down the left, clear of the text.
+      const rows = [0.3, 0.5, 0.7]
+        .map((at) => `M${l + 8},${t + h * at} H${l + Math.min(w * 0.25, 40)}`)
+        .join(' ')
+      return `M${l},${t} H${r} V${b} H${l} Z ${rows}`
+    }
+    case SHAPE.IMAGE: {
+      // A frame with hills along the bottom and a sun in the corner, clear of the text.
+      const sun = Math.min(w, h) * 0.07
+      const sx = r - sun * 3
+      const sy = t + sun * 3
+      const hill = (/** @type {number} */ at) => b - h * at
+      return `M${l},${t} H${r} V${b} H${l} Z M${l},${hill(0.08)} L${l + w * 0.25},${hill(0.22)} L${l + w * 0.45},${hill(0.1)} L${l + w * 0.7},${hill(0.25)} L${r},${hill(0.06)} M${sx - sun},${sy} A${sun},${sun} 0 1 0 ${sx + sun},${sy} A${sun},${sun} 0 1 0 ${sx - sun},${sy}`
+    }
+    default:
+      return roundedRect(l, t, r, b, Math.min(6, h / 4))
   }
 }
+
+/**
+ * @param {number} l
+ * @param {number} t
+ * @param {number} r
+ * @param {number} b
+ * @param {number} radius
+ */
+const roundedRect = (l, t, r, b, radius) =>
+  `M${l + radius},${t} H${r - radius} Q${r},${t} ${r},${t + radius} V${b - radius} Q${r},${b} ${r - radius},${b} H${l + radius} Q${l},${b} ${l},${b - radius} V${t + radius} Q${l},${t} ${l + radius},${t} Z`
 
 /**
  * How far in from each side a shape's text must sit to stay inside the outline.
@@ -77,6 +127,14 @@ export function textInset(shape, width, height) {
       return { x: height / 3, y: 0 }
     case SHAPE.DATABASE:
       return { x: 0, y: Math.min(height * 0.12, 12) }
+    // Below the title bar.
+    case SHAPE.SCREEN:
+      return { x: 0, y: Math.min(height * 0.2, 18) / 2 }
+    // Clear of the caret, the bullets and the sun.
+    case SHAPE.INPUT:
+      return { x: 16, y: 0 }
+    case SHAPE.LIST:
+      return { x: Math.min(width * 0.25, 40) + 4, y: 0 }
     default:
       return { x: 0, y: 0 }
   }

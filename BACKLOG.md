@@ -171,12 +171,13 @@ On a pull request that changes a `.flow` file, post the before and after as a co
   back), render to SVG, diff two versions
 - A setup line for Claude Code and Claude Desktop in the README
 
-### FL-66 · Wireframe shapes ⏭️
+### FL-66 · Wireframe shapes ✅
 
-Screen, button, input, card, list, image and navigation shapes, so a UI can be sketched and handed
-over as a component tree, not only boxes and arrows.
+Screen, button, input, card, list and image shapes, in their own palette section, so a UI can be
+sketched and handed over as an interface to build, not only boxes and arrows. Navigation is a
+screen connected to screens.
 
-### FL-67 · Notes an agent can act on ⬜
+### FL-67 · Notes an agent can act on ⏭️
 
 A free-text note on the diagram and on each shape ("paginate this", "must be idempotent") that
 travels with the brief, the `.flow` file and MCP.

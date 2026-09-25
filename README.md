@@ -29,10 +29,12 @@ isketch aims at that gap:
 
 - **Every sketch is exact text.** Ids, kinds, directions and notes, in a line-based `.flow` file
   an agent reads without guessing. Edit the canvas or the text; the other follows.
+- **Sketch the interface too.** Wireframe shapes (screen, button, input, card, list, image) sit
+  on the same canvas as the architecture, so a whole feature is one sketch.
 - **Built for the hand-off.** _Copy for AI_ puts a Markdown brief on the clipboard: every shape by
   what it means for the code, every connection in words, and the source to edit and hand back. An
   [MCP server](#connect-your-agent-mcp) lets an agent list, read, update and draw your diagrams
-  itself. Wireframe shapes are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
+  itself. Notes an agent can act on are next ([Milestone 5](BACKLOG.md#milestone-5-built-for-agents-)).
 - **Git native.** Files diff cleanly, a CLI renders SVG with no browser, and pull requests get a
   visual diff, so the design and the code stop drifting apart.
 - **Start from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with re-import that keeps
@@ -51,6 +53,8 @@ over the `.flow` file or its text.
 
 - **Shapes.** Process, start / end, decision, input / output, database, document, note, table and text,
   each drawn as its own outline. Change a shape's type at any time.
+- **Wireframes.** Screen, button, input, card, list and image, to sketch an interface next to the
+  architecture behind it. The brief reads them as a UI to build: "a screen", "a form field", "a button".
 - **Canvas.** Pan, zoom and drag shapes on a Vue Flow canvas. Dragged positions are kept.
 - **New diagram and samples.** Start empty, or from a web app architecture or support flow
   sample. Undo brings back whatever was there.
@@ -116,7 +120,8 @@ db 276,352
 ```
 
 - `id = shape "Name" -- description` declares a node. The name and description are optional.
-  Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `table`, `text`.
+  Shapes are `process`, `terminal`, `decision`, `data`, `database`, `document`, `note`, `table`, `text`,
+  and for wireframes `screen`, `button`, `input`, `card`, `list`, `image`.
 - `a -> b : label` connects two nodes. The label is optional, and a line may refer to a node
   defined further down.
 - `@layout` starts the positions, one `id x,y` per line, with ` WxH` after it for a resized shape. A node with no position is laid out
@@ -127,6 +132,10 @@ The full example, [`examples/architecture.flow`](examples/architecture.flow), dr
 `isketch render` with no browser. CI fails if this picture falls out of date:
 
 ![The web app architecture example, rendered to SVG](examples/architecture.svg)
+
+A wireframe, [`examples/signup.flow`](examples/signup.flow), drawn the same way:
+
+![A sign-up page wireframe, rendered to SVG](examples/signup.svg)
 
 One node or edge per line, in a stable order, with the layout kept apart: moving a box changes
 one line at the end, and never the lines that say what the system is. `parseFlow` and

@@ -16,6 +16,12 @@ const INTENT = Object.freeze({
   [SHAPE.NOTE]: 'a note for whoever builds this',
   [SHAPE.TABLE]: 'a database table',
   [SHAPE.TEXT]: 'a label',
+  [SHAPE.SCREEN]: 'a screen or page of the interface',
+  [SHAPE.BUTTON]: 'a button',
+  [SHAPE.INPUT]: 'a form field',
+  [SHAPE.CARD]: 'a card or panel',
+  [SHAPE.LIST]: 'a list of repeated items',
+  [SHAPE.IMAGE]: 'an image or media',
 })
 
 /** @param {string} type */

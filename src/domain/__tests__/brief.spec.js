@@ -33,6 +33,18 @@ describe('toBrief', () => {
     )
   })
 
+  it('reads a wireframe as an interface to build', () => {
+    const brief = toBrief(
+      flow(
+        'page = screen "Sign up" -- /signup\nemail = input "Email"\ngo = button "Create account"\n',
+      ),
+    )
+
+    expect(brief).toContain('- **Sign up** `page`: a screen or page of the interface. /signup\n')
+    expect(brief).toContain('- **Email** `email`: a form field.\n')
+    expect(brief).toContain('- **Create account** `go`: a button.\n')
+  })
+
   it('ends with the .flow source, so an agent can edit it and hand it back', () => {
     const brief = toBrief(flow('a = process "A"\nb = database "B"\na -> b\n'))
     const source = brief.slice(brief.indexOf('```text\n') + 8, brief.lastIndexOf('```'))

@@ -6,6 +6,7 @@ import { truncate } from './format.js'
  * @property {string} label
  * @property {string} hint      what the shape conventionally means
  * @property {string} accent    token name, resolved to classes by the canvas
+ * @property {'diagram' | 'wireframe'} group where the palette lists it
  * @property {boolean} openable can the drawer be opened
  * @property {boolean} editable
  * @property {boolean} deletable
@@ -19,12 +20,14 @@ const describe = (node) => (node.data.description ? truncate(node.data.descripti
  * @param {string} label
  * @param {string} hint
  * @param {string} accent
+ * @param {NodeMeta['group']} [group]
  * @returns {NodeMeta}
  */
-const shape = (label, hint, accent) => ({
+const shape = (label, hint, accent, group = 'diagram') => ({
   label,
   hint,
   accent,
+  group,
   openable: true,
   editable: true,
   deletable: true,
@@ -48,6 +51,12 @@ export const NODE_META = Object.freeze({
   [SHAPE.NOTE]: shape('Note', 'An annotation', 'comment'),
   [SHAPE.TABLE]: shape('Table', 'A database table and its columns', 'branch'),
   [SHAPE.TEXT]: shape('Text', 'A label with no outline', 'unknown'),
+  [SHAPE.SCREEN]: shape('Screen', 'A page or screen of the interface', 'trigger', 'wireframe'),
+  [SHAPE.BUTTON]: shape('Button', 'Something to press', 'message', 'wireframe'),
+  [SHAPE.INPUT]: shape('Input', 'A form field', 'branch', 'wireframe'),
+  [SHAPE.CARD]: shape('Card', 'A panel that groups content', 'comment', 'wireframe'),
+  [SHAPE.LIST]: shape('List', 'Repeated items, such as rows or results', 'hours', 'wireframe'),
+  [SHAPE.IMAGE]: shape('Image', 'A picture, video or chart', 'comment', 'wireframe'),
 })
 
 /**
@@ -72,7 +81,12 @@ export const isKnownShape = (type) => Object.hasOwn(NODE_META, type)
 
 /** Every shape, in palette order, for pickers. */
 export const SHAPE_OPTIONS = Object.freeze(
-  Object.entries(NODE_META).map(([value, meta]) => ({ value, label: meta.label, hint: meta.hint })),
+  Object.entries(NODE_META).map(([value, meta]) => ({
+    value,
+    label: meta.label,
+    hint: meta.hint,
+    group: meta.group,
+  })),
 )
 
 /**

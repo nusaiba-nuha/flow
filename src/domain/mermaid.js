@@ -10,8 +10,9 @@ import { DEFAULT_TITLE, DOCUMENT_VERSION, edgeIdFor } from './document.js'
  */
 
 /**
- * Mermaid's bracket for each shape. Document, table and text have no bracket of their
- * own in the classic syntax, so they leave as rectangles.
+ * Mermaid's bracket for each shape. Document, table, text and the wireframe shapes
+ * have no bracket of their own in the classic syntax, so they leave as rectangles,
+ * and a button as a rounded one.
  * @type {Readonly<Record<string, [string, string]>>}
  */
 const BRACKETS = Object.freeze({
@@ -24,6 +25,12 @@ const BRACKETS = Object.freeze({
   [SHAPE.NOTE]: ['>', ']'],
   [SHAPE.TABLE]: ['[', ']'],
   [SHAPE.TEXT]: ['[', ']'],
+  [SHAPE.SCREEN]: ['[', ']'],
+  [SHAPE.BUTTON]: ['(', ')'],
+  [SHAPE.INPUT]: ['[', ']'],
+  [SHAPE.CARD]: ['[', ']'],
+  [SHAPE.LIST]: ['[', ']'],
+  [SHAPE.IMAGE]: ['[', ']'],
 })
 
 /**
