@@ -220,9 +220,9 @@ The MCP tools over HTTP, so an agent in the cloud can read and update hosted dia
 | FL-55  | Multi-select: box, Shift+click, Ctrl+A; move and delete as one undo step | ✅     |
 | FL-56  | Inline text editing on double-click, for shapes and edge labels          | ✅     |
 | FL-57  | Resize shapes, stored on the node                                        | ✅     |
-| FL-58  | Connectors: four sides, straight, orthogonal or curved, arrows, dashes   | ⏭️     |
+| FL-58  | Connectors: four sides, straight, orthogonal or curved, arrows, dashes   | ✅     |
 | FL-59  | Copy, cut, paste and duplicate, with the edges between copied shapes     | ✅     |
-| FL-60  | Grid, snapping, align and distribute                                     | ⬜     |
+| FL-60  | Grid, snapping, align and distribute                                     | ⏭️     |
 | FL-61  | Automatic layout for any graph, not only trees                           | ⬜     |
 | FL-62  | Export PNG and SVG from the app                                          | ✅     |
 

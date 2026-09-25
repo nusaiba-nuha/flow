@@ -5,6 +5,7 @@ import {
   toNodeId,
   withEdge,
   withEdgeLabel,
+  withEdgeStyle,
   withNodeRemoved,
   withNodesRemoved,
   withoutEdge,
@@ -191,7 +192,7 @@ export async function connectNodes({ source, target }) {
 }
 
 /**
- * @param {{ id: string, patch: { label: string } }} input
+ * @param {{ id: string, patch: { label?: string, dashed?: boolean, both?: boolean } }} input
  * @returns {Promise<import('@/domain/types.js').FlowEdge>}
  */
 export async function updateEdge({ id, patch }) {
@@ -200,7 +201,10 @@ export async function updateEdge({ id, patch }) {
     throw new Error('That connection no longer exists.')
   }
 
-  flow = withEdgeLabel(current(), id, patch.label)
+  if (patch.label !== undefined) flow = withEdgeLabel(current(), id, patch.label)
+  if (patch.dashed !== undefined || patch.both !== undefined) {
+    flow = withEdgeStyle(current(), id, patch)
+  }
   save()
   await delay(LATENCY_MS)
   return clone(

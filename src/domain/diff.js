@@ -34,6 +34,11 @@ export function diffDocuments(before, after) {
   /** @param {Record<string, any>} node */
   const place = (node) => JSON.stringify([node.position ?? null, node.size ?? null])
 
+  /** What an edge says and how it is drawn; moving its ends is not a change. */
+  /** @param {import('./types.js').FlowEdge | undefined} edge */
+  const look = (edge) =>
+    JSON.stringify([edge?.label ?? '', Boolean(edge?.dashed), Boolean(edge?.both)])
+
   const both = [...newNodes.keys()].filter((id) => oldNodes.has(id))
 
   return {
@@ -53,8 +58,7 @@ export function diffDocuments(before, after) {
       added: [...newEdges.keys()].filter((id) => !oldEdges.has(id)),
       removed: [...oldEdges.keys()].filter((id) => !newEdges.has(id)),
       changed: [...newEdges.keys()].filter(
-        (id) =>
-          oldEdges.has(id) && (oldEdges.get(id)?.label ?? '') !== (newEdges.get(id)?.label ?? ''),
+        (id) => oldEdges.has(id) && look(oldEdges.get(id)) !== look(newEdges.get(id)),
       ),
     },
   }

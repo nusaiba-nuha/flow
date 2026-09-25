@@ -5,6 +5,27 @@ import { fromMermaid, toMermaid } from '../mermaid.js'
 
 const architecture = sampleById('architecture').document
 
+describe('toMermaid, edge styles', () => {
+  it('writes dashed edges dotted and two-way edges with both heads', () => {
+    const text = toMermaid({
+      version: 3,
+      title: 'T',
+      nodes: [
+        { id: 'a', type: 'process', name: 'A', data: {} },
+        { id: 'b', type: 'process', name: 'B', data: {} },
+        { id: 'c', type: 'process', name: 'C', data: {} },
+      ],
+      edges: [
+        { id: 'e-a-b', source: 'a', target: 'b', dashed: true },
+        { id: 'e-b-c', source: 'b', target: 'c', both: true },
+      ],
+    })
+
+    expect(text).toContain('  a -.-> b\n')
+    expect(text).toContain('  b <--> c\n')
+  })
+})
+
 describe('toMermaid', () => {
   it('writes a titled flowchart with each shape in its own bracket', () => {
     const text = toMermaid({

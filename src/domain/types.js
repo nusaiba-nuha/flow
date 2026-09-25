@@ -19,6 +19,8 @@
  * @property {string} source
  * @property {string} target
  * @property {string} [label]
+ * @property {boolean} [dashed] drawn dashed, for something optional or asynchronous
+ * @property {boolean} [both] an arrow at each end
  * @property {string} [origin] the importer that made it, so a re-import can tell its own from yours
  *
  * @typedef {Object} FlowDocument
@@ -26,6 +28,7 @@
  * @property {string} title
  * @property {string} [notes] instructions for the whole diagram, such as the stack to use
  * @property {'sketch'} [style] drawn by hand; absent for the clean look
+ * @property {string} [lines] how connections run: 'curved' or 'straight'; absent for steps
  * @property {Record<string, any>[]} nodes stored as saved; `normaliseNode` makes them FlowNodes
  * @property {FlowEdge[]} edges
  *
@@ -37,6 +40,6 @@
  * @property {number} height
  * @property {{ node: FlowNode }} data
  *
- * @typedef {{ id: string, source: string, target: string, label?: string }} VueFlowEdge
+ * @typedef {{ id: string, source: string, target: string, label?: string, data?: { dashed?: boolean, both?: boolean } }} VueFlowEdge
  */
 export {}

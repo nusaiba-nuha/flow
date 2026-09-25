@@ -31,7 +31,8 @@ const PROTOCOL_VERSIONS = Object.freeze(['2025-06-18', '2025-03-26', '2024-11-05
 const INSTRUCTIONS = `Diagrams in this folder are .flow files, sketched by a person in isketch.
 Read one as a brief before building from it, and refer to shapes by their ids. When the code
 changes what a diagram shows, update the diagram with write_diagram so the two stay true.
-Format: \`id = shape "Name" -- description\`, \`a -> b : label\`, positions under \`@layout\`.
+Format: \`id = shape "Name" -- description\`, \`a -> b : label\` (\`-->\` dashed, \`<->\` both ways),
+positions under \`@layout\`.
 Notes (\`note: ...\` for the diagram, \`id note: ...\` for a shape) are the person's instructions:
 follow them, and add one when you leave something for them to decide.
 Shapes: ${SHAPE_OPTIONS.map((option) => option.value).join(', ')}.

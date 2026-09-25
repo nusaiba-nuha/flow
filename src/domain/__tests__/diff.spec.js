@@ -48,6 +48,19 @@ describe('diffDocuments', () => {
   })
 })
 
+describe('diffDocuments, edge styles', () => {
+  it('counts a dashed or two-way edge as a changed one', () => {
+    const after = structuredClone(before)
+    after.edges[0].dashed = true
+    after.edges[1].both = true
+
+    expect(diffDocuments(before, after).edges.changed).toEqual([
+      after.edges[0].id,
+      after.edges[1].id,
+    ])
+  })
+})
+
 describe('describeDiff', () => {
   it('lists changes the way a review reads them', () => {
     const after = edited()

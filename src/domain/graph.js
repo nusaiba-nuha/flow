@@ -35,6 +35,7 @@ export function buildEdges(edges, ids) {
       source: edge.source,
       target: edge.target,
       ...(edge.label ? { label: edge.label } : {}),
+      data: { dashed: Boolean(edge.dashed), both: Boolean(edge.both) },
     }))
 }
 
@@ -122,6 +123,29 @@ export function withEdge(document, source, target) {
   const id = edgeIdFor(source, target)
   if (document.edges.some((edge) => edge.id === id)) return document
   return { ...document, edges: [...document.edges, { id, source, target }] }
+}
+
+/**
+ * Dashed, or with an arrow at each end. A key left out stays as it is.
+ * @param {import('./types.js').FlowDocument} document
+ * @param {string} id
+ * @param {{ dashed?: boolean, both?: boolean }} style
+ * @returns {import('./types.js').FlowDocument}
+ */
+export function withEdgeStyle(document, id, style) {
+  return {
+    ...document,
+    edges: document.edges.map((edge) => {
+      if (edge.id !== id) return edge
+      const next = { ...edge }
+      ;/** @type {const} */ (['dashed', 'both']).forEach((key) => {
+        if (style[key] === undefined) return
+        if (style[key]) next[key] = true
+        else delete next[key]
+      })
+      return next
+    }),
+  }
 }
 
 /**

@@ -24,6 +24,7 @@ import {
   useMoveNodes,
   useResizeNode,
   useUpdateEdge,
+  useStyleEdge,
   useUpdateNode,
 } from '@/composables/useNodeMutations.js'
 import { useCanvasClipboard } from '@/composables/useCanvasClipboard.js'
@@ -39,10 +40,10 @@ import { useToastStore } from '@/stores/toasts.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
-import { CONNECT_STATE, DETACH_EDGE } from './connectKey.js'
+import { ARROW, CONNECT_STATE, DETACH_EDGE, STYLE_EDGE } from './connectKey.js'
 import { EDIT_TEXT } from './editKey.js'
 import { RESIZE_NODE } from './resizeKey.js'
-import { SKETCH } from './sketchKey.js'
+import { LINE_STYLE, SKETCH } from './sketchKey.js'
 import { SHAPE_DRAG_TYPE } from '@/components/palette/dragType.js'
 import { NODE_SIZE } from '@/domain/constants.js'
 import { freeSpotNear } from '@/domain/layout.js'
@@ -62,6 +63,7 @@ const moveNodes = useMoveNodes()
 const deleteNodes = useDeleteNodes()
 const updateNode = useUpdateNode()
 const updateEdge = useUpdateEdge()
+const styleEdge = useStyleEdge()
 const resizeNode = useResizeNode()
 
 provide(
@@ -251,6 +253,12 @@ function syncGraph(nextNodes, nextEdges, openId, openChanged) {
     if (edge.target !== next.target) edge.target = next.target
     // Labels change too, from the text pane or in place, and an edge is never re-added.
     if ((edge.label ?? '') !== (next.label ?? '')) edge.label = next.label
+    if (
+      Boolean(edge.data?.dashed) !== Boolean(next.data?.dashed) ||
+      Boolean(edge.data?.both) !== Boolean(next.data?.both)
+    ) {
+      edge.data = { ...next.data }
+    }
     edge.hidden = false
     wantedEdges.delete(edge.id)
   }
@@ -361,6 +369,11 @@ function detach(edgeId) {
 }
 
 provide(DETACH_EDGE, detach)
+provide(STYLE_EDGE, (id, style) => styleEdge.mutate({ id, patch: style }))
+provide(
+  LINE_STYLE,
+  computed(() => diagram.value?.lines ?? 'step'),
+)
 
 /** @param {{ node: import('@vue-flow/core').GraphNode, nodes: import('@vue-flow/core').GraphNode[] }} event */
 function onNodeDragStop({ node, nodes: dragged }) {
@@ -659,6 +672,28 @@ watch(
     >
       <Background :gap="18" :size="1.2" />
       <CanvasControls />
+
+      <!-- Arrowheads, defined once; their colours follow the theme. -->
+      <svg class="absolute h-0 w-0" aria-hidden="true">
+        <defs>
+          <marker
+            v-for="[id, colour] in [
+              [ARROW.PLAIN, 'var(--edge)'],
+              [ARROW.SELECTED, 'var(--focus)'],
+            ]"
+            :id="id"
+            :key="id"
+            viewBox="0 0 10 10"
+            refX="9"
+            refY="5"
+            markerWidth="7"
+            markerHeight="7"
+            orient="auto-start-reverse"
+          >
+            <path d="M0,0 L10,5 L0,10 z" :style="{ fill: colour }" />
+          </marker>
+        </defs>
+      </svg>
 
       <!-- The canvas is a graph, so a screen reader has nothing else to go on. -->
       <div class="sr-only" role="status" aria-live="polite">{{ focusAnnouncement }}</div>

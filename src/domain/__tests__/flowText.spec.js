@@ -186,6 +186,35 @@ describe('sizes', () => {
     ])
   })
 
+  it('writes dashed and two-way connections as arrows, and the lines under the title', () => {
+    const text = [
+      'title: T',
+      'lines: curved',
+      '',
+      'a = note "A"',
+      'b = note "B"',
+      'c = note "C"',
+      '',
+      'a --> b : maybe',
+      'b <-> c',
+      'c <--> a',
+      '',
+    ].join('\n')
+    const { document, errors } = parseFlow(text)
+
+    expect(errors).toEqual([])
+    expect(document.lines).toBe('curved')
+    expect(document.edges).toEqual([
+      { id: 'e-a-b', source: 'a', target: 'b', label: 'maybe', dashed: true },
+      { id: 'e-b-c', source: 'b', target: 'c', both: true },
+      { id: 'e-c-a', source: 'c', target: 'a', dashed: true, both: true },
+    ])
+    expect(serialiseFlow(document)).toBe(text)
+    expect(parseFlow('lines: wavy').errors[0].message).toBe(
+      'Unknown lines "wavy". Use one of: step, curved, straight.',
+    )
+  })
+
   it('keep a resized node size on its layout line, and read it back', () => {
     const sized = structuredClone(small)
     sized.nodes[1].size = { width: 300, height: 140 }
