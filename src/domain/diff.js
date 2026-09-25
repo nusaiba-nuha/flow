@@ -121,7 +121,11 @@ export function describeDiff(before, after, diff) {
   const name = (
     /** @type {import('./types.js').FlowDocument} */ document,
     /** @type {string} */ id,
-  ) => document.nodes.find((node) => String(node.id) === id)?.name ?? id
+  ) => {
+    const node = document.nodes.find((candidate) => String(candidate.id) === id)
+    // A stroke is usually unnamed, so it is named for what it is.
+    return node?.name || (node?.type === 'ink' ? 'pen stroke' : id)
+  }
   const edgeName = (
     /** @type {import('./types.js').FlowDocument} */ document,
     /** @type {string} */ id,

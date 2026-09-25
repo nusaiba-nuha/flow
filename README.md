@@ -89,6 +89,9 @@ over the `.flow` file or its text.
   for any other graph, so merges, skipped steps and loops still read top down, with long
   connections given a lane of their own. _Tidy up_ under the zoom controls lays out the whole
   diagram, and undo puts it back.
+- **Pen.** Pick up the pen (`P`) to circle, underline or scribble over the diagram by hand. Each
+  stroke moves, resizes and undoes like a shape, clicks pass through it to what it circles, and the
+  brief leaves strokes out: they are marks on the picture, not parts of the design.
 - **Sketch style.** One switch draws the whole diagram by hand, like a whiteboard: wobbly outlines
   (drawn by [Rough.js](https://roughjs.com), as in Excalidraw) and a handwritten font. The
   diagram underneath is the same, so switching back is lossless, and exported SVGs carry the font.
@@ -157,6 +160,8 @@ db 276,352
   default is steps.
 - `@layout` starts the positions, one `id x,y` per line, with ` WxH` after it for a resized shape. A node with no position is laid out
   automatically, so a hand-written diagram needs no layout block at all.
+- Pen strokes are `id = ink` shapes, with their points in an `@ink` block after the layout, so
+  they never clutter the lines that say what the system is.
 - `style: sketch` under the title draws the diagram by hand. Leave it out for clean lines.
 - `#` starts a comment. A newline inside a description or label is written `\n`.
 

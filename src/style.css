@@ -349,3 +349,17 @@ optgroup {
   opacity: 0;
   transform: none;
 }
+
+/*
+ * A pen stroke's box often lies over the shape it circles, so the box lets
+ * clicks through to it and only the line itself can be picked up.
+ */
+/* Important: Vue Flow sets the node's pointer-events inline. */
+.vue-flow__node:has(> [data-shape='ink']) {
+  pointer-events: none !important;
+}
+
+.ink-hit {
+  pointer-events: stroke;
+  cursor: move;
+}

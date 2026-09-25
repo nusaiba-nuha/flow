@@ -25,6 +25,7 @@ export const SHORTCUT_GROUPS = Object.freeze([
         description: 'Rename a shape, or add or edit a connection label, in place',
       },
       { combos: [['Esc']], description: 'Clear the focused shape' },
+      { combos: [['P']], description: 'Pick up the pen to draw by hand; P or Esc puts it down' },
     ],
   },
   {

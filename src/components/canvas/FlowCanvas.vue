@@ -38,6 +38,7 @@ import { isInView, panDuration } from '@/domain/motion.js'
 import { isSketch } from '@/domain/sketch.js'
 import { GRID } from '@/domain/arrange.js'
 import SelectionToolbar from './SelectionToolbar.vue'
+import PenLayer from './PenLayer.vue'
 import { useToastStore } from '@/stores/toasts.js'
 import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
@@ -685,6 +686,7 @@ watch(
     >
       <Background :gap="GRID" :size="1.2" />
       <SelectionToolbar />
+      <PenLayer />
       <CanvasControls />
 
       <!-- Arrowheads, defined once; their colours follow the theme. -->

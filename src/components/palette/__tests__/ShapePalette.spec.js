@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { createPinia } from 'pinia'
 
 import { SHAPE_OPTIONS } from '@/domain/nodeMeta.js'
 import ShapePalette from '../ShapePalette.vue'
@@ -7,7 +8,9 @@ import { SHAPE_DRAG_TYPE } from '../dragType.js'
 
 describe('ShapePalette', () => {
   it('lists every shape, each explaining how to use it', () => {
-    const buttons = mount(ShapePalette).findAll('button')
+    const buttons = mount(ShapePalette, { global: { plugins: [createPinia()] } }).findAll(
+      'button[data-shape]',
+    )
 
     expect(buttons.map((button) => button.find('span').text())).toEqual(
       SHAPE_OPTIONS.map((o) => o.label),
@@ -16,7 +19,9 @@ describe('ShapePalette', () => {
   })
 
   it('lists the wireframe shapes in a section of their own', () => {
-    const sections = mount(ShapePalette).findAll('section')
+    const sections = mount(ShapePalette, { global: { plugins: [createPinia()] } }).findAll(
+      'section',
+    )
 
     expect(sections.map((section) => section.find('h2').text())).toEqual(['Shapes', 'Wireframe'])
     expect(
@@ -25,7 +30,7 @@ describe('ShapePalette', () => {
   })
 
   it('asks for a shape on click, and carries it on a drag', async () => {
-    const wrapper = mount(ShapePalette)
+    const wrapper = mount(ShapePalette, { global: { plugins: [createPinia()] } })
     const decision = wrapper.find('[data-shape="decision"]')
 
     await decision.trigger('click')
