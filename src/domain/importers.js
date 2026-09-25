@@ -1,5 +1,6 @@
 import { COMPOSE_ORIGIN, fromCompose } from './compose.js'
 import { fromMermaid } from './mermaid.js'
+import { fromOpenApi, OPENAPI_ORIGIN } from './openapi.js'
 
 /**
  * @typedef {Object} ImportFormat
@@ -30,6 +31,15 @@ export const IMPORT_FORMATS = Object.freeze([
       'services:\n  api:\n    image: node:22\n    depends_on: [db]\n  db:\n    image: postgres:16',
     origin: COMPOSE_ORIGIN,
     read: fromCompose,
+  },
+  {
+    id: 'openapi',
+    label: 'OpenAPI',
+    accept: '.yml,.yaml,.json',
+    placeholder:
+      "openapi: 3.1.0\ninfo: { title: Shop API }\npaths:\n  /orders:\n    get:\n      tags: [Orders]\n      responses:\n        '200': { $ref: '#/components/schemas/Order' }\ncomponents:\n  schemas:\n    Order: { properties: { id: {} } }",
+    origin: OPENAPI_ORIGIN,
+    read: fromOpenApi,
   },
 ])
 

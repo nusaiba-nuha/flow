@@ -80,7 +80,7 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
 
     <IconButton
       label="Import"
-      title="Import Mermaid or a docker-compose file"
+      title="Import Mermaid, a docker-compose file or an OpenAPI spec"
       @click="emit('import')"
     >
       <path d="M12 3v12M7 10l5 5 5-5" />
