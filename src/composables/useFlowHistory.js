@@ -36,8 +36,26 @@ export function useFlowHistory({ bindKeys = false } = {}) {
   /** @returns {import('@/domain/types.js').FlowDocument} */
   const currentFlow = () => queryClient.getQueryData(flowKeys.list()) ?? emptyDocument()
 
+  /**
+   * Resolves once no change is still being saved. A change records its undo
+   * entry when it lands, so an undo pressed before then would take back the
+   * change before it instead.
+   * @returns {Promise<void>}
+   */
+  function settled() {
+    if (!queryClient.isMutating()) return Promise.resolve()
+    return new Promise((resolve) => {
+      const unsubscribe = queryClient.getMutationCache().subscribe(() => {
+        if (queryClient.isMutating()) return
+        unsubscribe()
+        resolve()
+      })
+    })
+  }
+
   /** @param {'undo' | 'redo'} direction */
-  function step(direction) {
+  async function step(direction) {
+    await settled()
     const current = currentFlow()
     const entry = direction === 'undo' ? history.takeUndo(current) : history.takeRedo(current)
     if (!entry) return
