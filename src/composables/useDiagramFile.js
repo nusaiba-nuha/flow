@@ -9,6 +9,7 @@ import { ROUTE } from '@/router/index.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 import { useFileStore } from '@/stores/file.js'
 import { useToastStore } from '@/stores/toasts.js'
+import { downloadText } from '@/composables/download.js'
 
 const PICKER_TYPES = [
   { description: 'isketch diagram', accept: { 'text/plain': [FLOW_EXTENSION] } },
@@ -112,12 +113,7 @@ export function useDiagramFile({ bindKeys = false } = {}) {
     }
 
     const name = flowFileName(document.value.title)
-    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }))
-    const link = window.document.createElement('a')
-    link.href = url
-    link.download = name
-    link.click()
-    setTimeout(() => URL.revokeObjectURL(url), 0)
+    downloadText(name, text)
     toasts.push(`Downloaded ${name}`)
   }
 

@@ -39,8 +39,8 @@ isketch aims at that gap:
   itself, and notes on the diagram and its shapes travel as instructions to follow.
 - **Git native.** Files diff cleanly, a CLI renders SVG with no browser, and pull requests get a
   visual diff, so the design and the code stop drifting apart.
-- **Start from real files.** `docker-compose.yml`, OpenAPI and SQL DDL, with re-import that keeps
-  your layout.
+- **Start from real files.** Your existing `.drawio` diagrams, `docker-compose.yml`, OpenAPI and
+  SQL DDL, with re-import that keeps your layout. And a `.drawio` back out whenever you want one.
 - **Local first.** No account, no server, works offline, shareable as a link.
 
 What is honestly not there yet: a share link keeps the diagram after the `#`, which browsers never
@@ -92,6 +92,10 @@ over the `.flow` file or its text.
   with keys marked and foreign keys as labelled connections.
   Re-importing updates the diagram and keeps its layout and anything added by
   hand. Anything skipped is listed by line.
+- **draw.io, both ways.** Import a `.drawio` file, compressed or not, or the XML from Extras > Edit
+  Diagram: shapes map to the nearest one here, entity tables keep their rows, and lanes are
+  flattened with their shapes kept. _Download .drawio_ in the text pane writes a file draw.io
+  opens as it is, sketch style included, and that comes back into isketch unchanged.
 - **Copy for AI.** One button copies a Markdown brief for Claude, Copilot or any coding agent: each
   shape with its id and what it means ("a data store", "a branch the code must handle"), each
   connection in words, and the `.flow` source at the end so the agent can change the diagram and

@@ -196,9 +196,11 @@ exported SVGs). The same diagram underneath, in the app and in SVG.
 Draw freely, and draw an arrow between two shapes by dragging from one to the other anywhere, not
 only from a handle.
 
-### FL-70 · draw.io XML import and export ⏭️
+### FL-70 · draw.io XML import and export ✅
 
-Open a `.drawio` file, and save one, for the shapes isketch has, saying what was skipped.
+Import a `.drawio` file (compressed or plain, first page) or Edit Diagram XML, mapping styles to
+the nearest shape, reading entity tables with their rows, and flattening lanes; skipped arrows and
+pages are listed. Export plain XML, marked with an `isketch` style key so a round trip is exact.
 
 ## Milestone 7: Links an agent can read
 
@@ -222,7 +224,7 @@ The MCP tools over HTTP, so an agent in the cloud can read and update hosted dia
 | FL-59  | Copy, cut, paste and duplicate, with the edges between copied shapes     | ⬜     |
 | FL-60  | Grid, snapping, align and distribute                                     | ⬜     |
 | FL-61  | Automatic layout for any graph, not only trees                           | ⬜     |
-| FL-62  | Export PNG and SVG from the app                                          | ⬜     |
+| FL-62  | Export PNG and SVG from the app                                          | ⏭️     |
 
 ## Later, if the wedge holds
 

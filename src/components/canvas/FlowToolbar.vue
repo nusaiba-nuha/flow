@@ -143,7 +143,7 @@ const saveHint = computed(() => comboLabel(COMBO.SAVE, isMac.value))
 
     <IconButton
       label="Import"
-      title="Import Mermaid, docker-compose, an OpenAPI spec or SQL tables"
+      title="Import Mermaid, draw.io, docker-compose, an OpenAPI spec or SQL tables"
       @click="emit('import')"
     >
       <path d="M12 3v12M7 10l5 5 5-5" />
