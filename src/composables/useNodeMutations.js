@@ -164,13 +164,18 @@ export function useMoveNode() {
 }
 
 /**
- * Replaces the whole diagram: with an empty one, or a sample. Recorded like any
- * other change, so undo brings back what was there instead of asking first.
+ * Replaces the whole document in one undoable step: starting over, opening a
+ * sample, or an edit made as text.
+ *
+ * @param {string} label what undo will say it takes back
  */
-export function useNewDiagram() {
+export function useReplaceDocument(label) {
   return useOptimisticFlowMutation({
-    label: 'New diagram',
+    label,
     mutationFn: (/** @type {FlowDocument} */ document) => flowApi.replaceFlow(document),
     apply: (_flow, document) => document,
   })
 }
+
+/** Undo brings back what was there, so starting over needs no confirmation. */
+export const useNewDiagram = () => useReplaceDocument('New diagram')

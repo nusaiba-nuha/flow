@@ -88,13 +88,13 @@ add it at the centre. Replaces the create dialog.
 - Layout is kept apart from meaning: positions live in a block at the end, so moving a box never
   touches the lines that describe the system
 
-### FL-45 · Two way text editor ⏭️
+### FL-45 · Two way text editor ✅
 
 A split pane: text on the left, canvas on the right. Typing re-renders the canvas as you type,
 keeping every position it can; editing the canvas rewrites the text. Parse errors are shown on the
 line, and the canvas keeps the last good diagram.
 
-### FL-46 · Mermaid import and export ⬜
+### FL-46 · Mermaid import and export ⏭️
 
 Flowchart subset: nodes, shapes, labelled edges, direction. Paste Mermaid, get an editable diagram;
 export any diagram as Mermaid to drop into a README.

@@ -4,6 +4,7 @@ import { RouterView } from 'vue-router'
 import FlowCanvas from '@/components/canvas/FlowCanvas.vue'
 import FlowToolbar from '@/components/canvas/FlowToolbar.vue'
 import ShapePalette from '@/components/palette/ShapePalette.vue'
+import TextPanel from '@/components/text/TextPanel.vue'
 import HelpDialog from '@/components/ui/HelpDialog.vue'
 import ToastHost from '@/components/ui/ToastHost.vue'
 import { useHelpDialog } from '@/composables/useHelpDialog.js'
@@ -28,6 +29,7 @@ const help = useHelpDialog()
 
     <div class="flex min-h-0 flex-1">
       <ShapePalette @add="canvas.requestShape" />
+      <TextPanel v-if="canvas.isTextOpen" />
 
       <main class="relative min-w-0 flex-1">
         <FlowCanvas />
