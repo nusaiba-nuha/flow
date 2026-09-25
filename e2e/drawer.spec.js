@@ -23,7 +23,7 @@ test('saves an edited title and keeps it across a reload', async ({ page }) => {
   await expect(titleField(page)).toHaveValue('Away Message v2')
 })
 
-test('deletes a node behind a confirmation and re-parents its children', async ({ page }) => {
+test('deletes a node behind a confirmation and keeps its neighbours', async ({ page }) => {
   await page.goto(`/flow/node/${NODE.away}`)
 
   await page.getByRole('button', { name: 'Delete node' }).click()
@@ -31,7 +31,7 @@ test('deletes a node behind a confirmation and re-parents its children', async (
 
   await expect(page).toHaveURL(/\/flow$/)
   await expect(nodeAt(page, NODE.away)).toHaveCount(0)
-  // The comment beneath it survives, attached higher up.
+  // The comment it pointed at survives; only the edges between them go.
   await expect(nodeAt(page, 'e879e4')).toBeVisible()
 })
 

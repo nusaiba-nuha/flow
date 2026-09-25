@@ -11,10 +11,14 @@ const drawnEdges = (page) =>
       ).length,
   )
 
-const parentOf = (page, id) =>
+/** The saved edges into a node, as their source ids. */
+const sourcesInto = (page, id) =>
   page.evaluate((nodeId) => {
-    const saved = JSON.parse(localStorage.getItem('flow:document:v1'))
-    return String(saved.find((item) => String(item.id) === nodeId).parentId)
+    const saved = JSON.parse(localStorage.getItem('flow:document'))
+    return saved.edges
+      .filter((edge) => edge.target === nodeId)
+      .map((edge) => edge.source)
+      .sort()
   }, id)
 
 /** The canvas eases into place, so coordinates are only safe once it stops. */
@@ -52,7 +56,7 @@ test.beforeEach(async ({ page }) => {
   await expect(node(page, 'b6a0c1')).toBeVisible()
 })
 
-test('drags between nodes to set a parent, and keeps every other edge', async ({ page }) => {
+test('drags between nodes to add a second incoming edge, keeping the first', async ({ page }) => {
   expect(await drawnEdges(page)).toBe(6)
 
   const from = await node(page, 'e879e4').locator('.vue-flow__handle-bottom').boundingBox()
@@ -63,25 +67,25 @@ test('drags between nodes to set a parent, and keeps every other edge', async ({
   await page.mouse.move(to.x + to.width / 2, to.y + 6, { steps: 14 })
   await page.mouse.up()
 
-  await expect.poll(() => parentOf(page, 'b0653a')).toBe('e879e4')
-  expect(await drawnEdges(page)).toBe(6)
+  await expect.poll(() => sourcesInto(page, 'b0653a')).toEqual(['161f52', 'e879e4'])
+  await expect.poll(() => drawnEdges(page)).toBe(7)
 })
 
 test('removes a connection from the edge, and undo puts it back', async ({ page }) => {
-  await (await removeControl(page, 'e-b6a0c1')).click()
-  await expect.poll(() => parentOf(page, 'b6a0c1')).toBe('-1')
+  await (await removeControl(page, 'e-28c4b9-b6a0c1')).click()
+  await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual([])
   expect(await drawnEdges(page)).toBe(5)
 
   await page.getByRole('banner').getByRole('button', { name: 'Undo' }).click()
-  await expect.poll(() => parentOf(page, 'b6a0c1')).toBe('28c4b9')
+  await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual(['28c4b9'])
   await expect.poll(() => drawnEdges(page)).toBe(6)
 })
 
 test('leaves the node where it was when its connection goes', async ({ page }) => {
   const before = await node(page, 'b6a0c1').boundingBox()
 
-  await (await removeControl(page, 'e-b6a0c1')).click()
-  await expect.poll(() => parentOf(page, 'b6a0c1')).toBe('-1')
+  await (await removeControl(page, 'e-28c4b9-b6a0c1')).click()
+  await expect.poll(() => sourcesInto(page, 'b6a0c1')).toEqual([])
 
   const after = await node(page, 'b6a0c1').boundingBox()
   expect(Math.abs(after.y - before.y)).toBeLessThan(4)
@@ -109,5 +113,5 @@ test('draws the edge at once when a created node is connected', async ({ page })
 
   // No reload: the edge has to appear on its own.
   await expect.poll(() => drawnEdges(page)).toBe(7)
-  await expect.poll(() => parentOf(page, created)).toBe('b6a0c1')
+  await expect.poll(() => sourcesInto(page, created)).toEqual(['b6a0c1'])
 })

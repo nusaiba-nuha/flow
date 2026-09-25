@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import payload from '@/tests/fixtures/diagram.json'
+import diagram from '@/tests/fixtures/diagram.json'
 import SendMessageBody from '../SendMessageBody.vue'
 
-const welcome = payload.find((node) => node.id === 'b0653a')
+const welcome = diagram.nodes.find((node) => node.id === 'b0653a')
 
 const render = (data = structuredClone(welcome.data)) =>
   mount(SendMessageBody, { props: { modelValue: data, 'onUpdate:modelValue': () => {} } })

@@ -41,8 +41,8 @@ The full reasoning, and how we will know if it is working, is at the top of the
 
 - **Canvas.** Pan, zoom and drag nodes on a Vue Flow canvas. Dragged positions are kept.
 - **Create, edit, delete.** Every change updates the canvas immediately and rolls back if it fails.
-- **Connections.** Drag from one node to another to connect them; remove a connection from the
-  control on the edge.
+- **Connections.** Drag from one node to another to connect them, as many in and out as you like;
+  remove a connection from the control on the edge.
 - **Undo and redo** for every change, from the toolbar or `Ctrl+Z` / `Ctrl+Shift+Z`.
 - **Deep links.** Each node's details open at `/flow/node/:id`, so a node can be linked to.
 - **Keyboard first.** Arrow keys walk the nodes, Enter opens one, `?` lists every shortcut.
@@ -113,6 +113,10 @@ src/
 e2e/             Playwright specs
 ```
 
+**The document.** A diagram is `{ version, title, nodes, edges }`. `migrate()` in
+`src/domain/document.js` lifts anything older, so storage and, later, files only ever hand the
+app the current shape.
+
 **The node registry.** `src/domain/nodeMeta.js` holds everything that differs by node type: icon,
 label, accent, and whether a node can be opened, edited or deleted. Adding a type is one entry,
 not a branch in five components.
@@ -166,8 +170,7 @@ to `index.html`. `docker/nginx.conf` does that for the container and `vercel.jso
 
 ## Known limits
 
-- One document per browser, and a node has a single incoming connection. The second goes in
-  [FL-40](BACKLOG.md).
+- One document per browser.
 - Node types are still the ones the project started with: Send Message, Add Comment and Business
   Hours. General shapes are [FL-41](BACKLOG.md).
 - Storage is per browser, so two tabs do not see each other's edits and nothing syncs between

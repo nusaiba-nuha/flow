@@ -55,7 +55,7 @@ defineExpose({ cancelConfirm, confirming })
         v-if="!confirming"
         type="button"
         class="text-xs font-medium text-danger hover:underline"
-        title="Delete this node. Its children move up to its parent"
+        title="Delete this node and its connections"
         @click="confirming = true"
       >
         Delete node

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 
-import payload from '@/tests/fixtures/diagram.json'
+import diagram from '@/tests/fixtures/diagram.json'
 import { normaliseNode } from '@/domain/graph.js'
 import FlowNodeCard from '../FlowNodeCard.vue'
 import BranchPill from '../BranchPill.vue'
 
-const nodes = Object.fromEntries(payload.map((raw) => [String(raw.id), normaliseNode(raw)]))
+const nodes = Object.fromEntries(diagram.nodes.map((raw) => [String(raw.id), normaliseNode(raw)]))
 
 /** Handle needs Vue Flow's injected store, which a unit test has no business providing. */
 const global = { stubs: { Handle: true } }

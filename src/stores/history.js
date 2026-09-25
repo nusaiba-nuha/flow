@@ -2,11 +2,11 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 /**
- * Whole-flow snapshots, not inverse commands: deleting re-parents children and
- * creating assigns an id, so each inverse would be a second implementation free
+ * Whole-document snapshots, not inverse commands: deleting takes a node's edges
+ * and branches with it and creating assigns an id, so each inverse would be a second implementation free
  * to drift from the forward one. Seven nodes is a few kilobytes.
  *
- * @typedef {{ label: string, flow: Record<string, any>[] }} HistoryEntry
+ * @typedef {{ label: string, flow: import('@/domain/types.js').FlowDocument }} HistoryEntry
  */
 const DEPTH_LIMIT = 50
 
@@ -24,7 +24,7 @@ export const useHistoryStore = defineStore('history', () => {
   /**
    * The state as it was before a change that has now succeeded.
    * @param {string} label
-   * @param {Record<string, any>[] | undefined} flow
+   * @param {import('@/domain/types.js').FlowDocument | undefined} flow
    */
   function record(label, flow) {
     if (!flow) return
@@ -35,7 +35,7 @@ export const useHistoryStore = defineStore('history', () => {
     redoStack.value = []
   }
 
-  /** @param {Record<string, any>[]} current @returns {HistoryEntry | null} */
+  /** @param {import('@/domain/types.js').FlowDocument} current @returns {HistoryEntry | null} */
   function takeUndo(current) {
     const entry = undoStack.value.pop()
     if (!entry) return null
@@ -44,7 +44,7 @@ export const useHistoryStore = defineStore('history', () => {
     return entry
   }
 
-  /** @param {Record<string, any>[]} current @returns {HistoryEntry | null} */
+  /** @param {import('@/domain/types.js').FlowDocument} current @returns {HistoryEntry | null} */
   function takeRedo(current) {
     const entry = redoStack.value.pop()
     if (!entry) return null

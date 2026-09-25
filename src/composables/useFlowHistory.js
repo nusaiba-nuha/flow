@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/vue-query'
 
 import * as flowApi from '@/api/flowApi.js'
 import { flowKeys } from '@/api/queryKeys.js'
+import { emptyDocument } from '@/domain/document.js'
 import { useHistoryStore } from '@/stores/history.js'
 
 /** Applying a snapshot is a mutation, so the cache and the backend stay in step. */
@@ -11,7 +12,8 @@ export function useFlowHistory() {
   const queryClient = useQueryClient()
 
   const applyFlow = useMutation({
-    mutationFn: (/** @type {Record<string, any>[]} */ flow) => flowApi.replaceFlow(flow),
+    mutationFn: (/** @type {import('@/domain/types.js').FlowDocument} */ flow) =>
+      flowApi.replaceFlow(flow),
 
     async onMutate(flow) {
       // The undone mutation invalidated on its way out, so a refetch may still be
@@ -24,8 +26,8 @@ export function useFlowHistory() {
     // race with the next edit.
   })
 
-  /** @returns {Record<string, any>[]} */
-  const currentFlow = () => queryClient.getQueryData(flowKeys.list()) ?? []
+  /** @returns {import('@/domain/types.js').FlowDocument} */
+  const currentFlow = () => queryClient.getQueryData(flowKeys.list()) ?? emptyDocument()
 
   /** @param {'undo' | 'redo'} direction */
   function step(direction) {

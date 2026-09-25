@@ -3,11 +3,11 @@ import { computed, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 
-import payload from '@/tests/fixtures/diagram.json'
+import diagram from '@/tests/fixtures/diagram.json'
 import { documentToGraph } from '@/domain/graph.js'
 import { useCanvasKeyboard } from '../useCanvasKeyboard.js'
 
-const graph = documentToGraph(payload)
+const graph = documentToGraph(diagram)
 
 const press = (key) => window.dispatchEvent(new KeyboardEvent('keydown', { key }))
 

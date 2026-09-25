@@ -8,7 +8,7 @@ import { useDeleteNode } from '../useNodeMutations.js'
 import { useFlowHistory } from '../useFlowHistory.js'
 import { withSetup, waitUntil } from '@/tests/utils.js'
 
-const flowIn = (queryClient) => queryClient.getQueryData(flowKeys.list())
+const flowIn = (queryClient) => queryClient.getQueryData(flowKeys.list()).nodes
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -32,13 +32,13 @@ describe('useFlowHistory', () => {
 
     result.remove.mutate({ id: 'b6a0c1' })
     await waitUntil(() => result.history.history.canUndo)
-    expect(flowIn(queryClient)).toHaveLength(starter.length - 1)
+    expect(flowIn(queryClient)).toHaveLength(starter.nodes.length - 1)
 
     result.history.undo()
-    await waitUntil(() => flowIn(queryClient).length === starter.length)
+    await waitUntil(() => flowIn(queryClient).length === starter.nodes.length)
 
     result.history.redo()
-    await waitUntil(() => flowIn(queryClient).length === starter.length - 1)
+    await waitUntil(() => flowIn(queryClient).length === starter.nodes.length - 1)
   })
 
   it('names the change it would take back', async () => {

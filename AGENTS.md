@@ -25,9 +25,15 @@ tests the previous build.
   like a real API so it can be swapped for one.
 - Per node type behaviour lives in `src/domain/nodeMeta.js`. Add an entry there
   rather than branching on node type in a component.
-- State has three owners and no copies: TanStack Query owns the flow, the route
+- State has three owners and no copies: TanStack Query owns the document, the route
   owns which node is open, Pinia owns viewport, history, theme and toasts. Do not
   mirror one in another.
+
+## Documents
+
+- A document is `{ version, title, nodes, edges }`. Anything read from storage or a file goes
+  through `migrate()` in `src/domain/document.js`, which lifts every older shape. Bump
+  `DOCUMENT_VERSION` and extend `migrate()` rather than reading two shapes elsewhere.
 
 ## Canvas
 
@@ -35,7 +41,8 @@ Vue Flow measures node handles after mount, and it owns its own graph:
 
 - Sync nodes as a diff. Replacing the array discards measured handle bounds and
   every edge disappears.
-- Hide edges rather than removing them, and key an edge by its child.
+- Hide edges rather than removing them, and key an edge by its ends (`edgeIdFor`), so an
+  undone removal redraws the same edge.
 - `isValidConnection` runs for programmatic `addEdges` too, not just for a drag.
 
 ## Conventions
