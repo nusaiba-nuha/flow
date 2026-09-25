@@ -8,6 +8,7 @@ import {
   documentToGraph,
   edgeIdFor,
   withEdge,
+  withEdgeLabel,
   withNodeRemoved,
   withNodesRemoved,
   withoutEdge,
@@ -102,5 +103,16 @@ describe('withNodesRemoved and withPositions', () => {
     const moved = withPositions(diagram, { b6a0c1: { x: 1, y: 2 }, ghost: { x: 0, y: 0 } })
     expect(moved.nodes.find((node) => node.id === 'b6a0c1').position).toEqual({ x: 1, y: 2 })
     expect(moved.nodes).toHaveLength(diagram.nodes.length)
+  })
+})
+
+describe('withEdgeLabel', () => {
+  it('sets a trimmed label, and an empty one removes it', () => {
+    const id = 'e-d09c08-b0653a'
+    const labelled = withEdgeLabel(diagram, id, '  In hours  ')
+    expect(labelled.edges.find((edge) => edge.id === id).label).toBe('In hours')
+
+    const cleared = withEdgeLabel(diagram, id, '   ')
+    expect('label' in cleared.edges.find((edge) => edge.id === id)).toBe(false)
   })
 })

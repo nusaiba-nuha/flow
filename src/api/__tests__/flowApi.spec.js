@@ -13,6 +13,7 @@ import {
   resetFlow,
   replaceFlow,
   STORAGE_KEY,
+  updateEdge,
   updateNode,
 } from '../flowApi.js'
 
@@ -124,6 +125,18 @@ describe('selections', () => {
     expect(flow.nodes.map((node) => node.id)).not.toContain('e879e4')
 
     await expect(deleteNodes({ ids: ['ghost'] })).rejects.toThrow(/no longer exists/i)
+  })
+})
+
+describe('updateEdge', () => {
+  it('relabels a connection, and refuses one that is gone', async () => {
+    const edge = await updateEdge({ id: 'e-d09c08-b0653a', patch: { label: 'Open' } })
+    expect(edge.label).toBe('Open')
+    expect((await fetchFlow()).edges.find((each) => each.id === edge.id).label).toBe('Open')
+
+    await expect(updateEdge({ id: 'ghost', patch: { label: 'x' } })).rejects.toThrow(
+      /no longer exists/i,
+    )
   })
 })
 

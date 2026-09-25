@@ -8,6 +8,9 @@ import { shapePath, textInset } from '@/domain/shapes.js'
 import { accentClasses } from './accents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
 import { CONNECT_STATE } from './connectKey.js'
+import { EDIT_TEXT } from './editKey.js'
+import InlineText from './InlineText.vue'
+import { FIELD_LIMIT } from '@/domain/validators.js'
 
 /** One card for every shape: the registry supplies the meaning, `shapes.js` the outline. */
 const props = defineProps({
@@ -22,6 +25,17 @@ const isKeyboardFocused = computed(() => focusedId.value === props.id)
 
 /** @type {import('./connectKey.js').ConnectContext} */
 const connect = inject(CONNECT_STATE, { from: ref(''), accepts: () => false })
+
+const edit = inject(EDIT_TEXT, null)
+const isEditing = computed(() => edit?.editingId.value === props.id)
+
+/** @param {string} name */
+function rename(name) {
+  const next = name.trim()
+  // An empty title is not a title: leaving it empty keeps the old one.
+  if (next && next !== node.value.name) edit?.renameNode(props.id, next)
+  edit?.stop()
+}
 
 const isConnectSource = computed(() => connect.from.value === props.id)
 const isDropTarget = computed(() => Boolean(connect.from.value) && !isConnectSource.value)
@@ -63,6 +77,7 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     }"
     :aria-label="`${meta.label}: ${node.name}`"
     :data-shape="node.type"
+    @dblclick="edit?.start(id)"
   >
     <svg
       v-if="outline"
@@ -90,7 +105,18 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
       class="!h-2 !w-2 !border-line !bg-surface"
     />
 
+    <InlineText
+      v-if="isEditing"
+      class="relative"
+      :class="isText ? 'text-base font-semibold' : 'text-sm font-semibold'"
+      :value="node.name"
+      label="Shape title"
+      :maxlength="FIELD_LIMIT.TITLE_MAX"
+      @save="rename"
+      @cancel="edit?.stop()"
+    />
     <h3
+      v-else
       class="relative w-full font-semibold break-words"
       :class="[isText ? 'text-base' : 'text-sm', isTable ? 'truncate' : 'line-clamp-2']"
     >
