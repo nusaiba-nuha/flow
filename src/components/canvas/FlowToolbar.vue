@@ -11,7 +11,7 @@ import { useToastStore } from '@/stores/toasts.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
-const emit = defineEmits(['help'])
+const emit = defineEmits(['help', 'import'])
 
 // The one place the shortcut is bound: the toolbar is always mounted.
 const { undo, redo, history } = useFlowHistory({ bindKeys: true })
@@ -76,6 +76,15 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
       @click="canvas.toggleText"
     >
       <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
+    </IconButton>
+
+    <IconButton
+      label="Import"
+      title="Import Mermaid or a docker-compose file"
+      @click="emit('import')"
+    >
+      <path d="M12 3v12M7 10l5 5 5-5" />
+      <path d="M5 21h14" />
     </IconButton>
 
     <IconButton

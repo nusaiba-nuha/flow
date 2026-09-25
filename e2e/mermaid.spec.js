@@ -12,11 +12,11 @@ test.beforeEach(async ({ page }) => {
 test('imports a pasted flowchart, says what it skipped, and undo brings the old one back', async ({
   page,
 }) => {
-  await textPane(page).getByRole('button', { name: 'Import Mermaid' }).click()
-  const dialog = page.getByRole('dialog', { name: 'Import Mermaid' })
+  await page.getByRole('banner').getByRole('button', { name: 'Import' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Import' })
 
   await dialog
-    .getByLabel('Mermaid flowchart')
+    .getByLabel('Mermaid to import')
     .fill(
       [
         'flowchart LR',
