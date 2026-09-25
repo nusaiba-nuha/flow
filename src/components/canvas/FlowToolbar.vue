@@ -10,7 +10,7 @@ import { COMBO, comboLabel } from '@/domain/shortcuts.js'
 import { useToastStore } from '@/stores/toasts.js'
 
 /** Owns its composables, so the route view stays a composition surface. */
-const emit = defineEmits(['create', 'help'])
+const emit = defineEmits(['help'])
 
 const { undo, redo, history } = useFlowHistory()
 const { start, isPending: isStarting } = useStartDiagram()
@@ -84,14 +84,5 @@ const helpHint = computed(() => comboLabel(COMBO.HELP, isMac.value))
     </IconButton>
 
     <ThemeToggle />
-
-    <button
-      type="button"
-      class="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-hover"
-      title="Create a node and open its details. It is not connected to anything yet"
-      @click="emit('create')"
-    >
-      Create new node
-    </button>
   </div>
 </template>

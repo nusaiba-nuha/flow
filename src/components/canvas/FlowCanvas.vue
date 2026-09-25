@@ -5,7 +5,12 @@ import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 
 import { useFlowQuery } from '@/composables/useFlowQuery.js'
-import { useConnectNodes, useDisconnect, useMoveNode } from '@/composables/useNodeMutations.js'
+import {
+  useConnectNodes,
+  useCreateNode,
+  useDisconnect,
+  useMoveNode,
+} from '@/composables/useNodeMutations.js'
 import { useStartDiagram } from '@/composables/useStartDiagram.js'
 import { useCanvasStore } from '@/stores/canvas.js'
 import { useCanvasKeyboard } from '@/composables/useCanvasKeyboard.js'
@@ -17,6 +22,9 @@ import { ROUTE } from '@/router/index.js'
 import { nodeComponents } from './nodeComponents.js'
 import { FOCUSED_NODE_ID } from './focusKey.js'
 import { CONNECT_STATE, DETACH_EDGE } from './connectKey.js'
+import { SHAPE_DRAG_TYPE } from '@/components/palette/dragType.js'
+import { NODE_SIZE } from '@/domain/constants.js'
+import { freeSpotNear } from '@/domain/layout.js'
 import FlowEdge from './FlowEdge.vue'
 import CanvasControls from './CanvasControls.vue'
 import CanvasState from './CanvasState.vue'
@@ -28,6 +36,7 @@ const { document: diagram, nodes, edges, isLoading, isError, error, refetch } = 
 const moveNode = useMoveNode()
 const connectNodes = useConnectNodes()
 const disconnect = useDisconnect()
+const createNode = useCreateNode()
 const { start } = useStartDiagram()
 const toasts = useToastStore()
 const {
@@ -38,6 +47,7 @@ const {
   fitView,
   getNodes,
   removeNodes,
+  screenToFlowCoordinate,
   setViewport,
   updateNode: updateFlowNode,
   viewport,
@@ -343,6 +353,76 @@ function centreOn(node) {
   setViewport(target, { duration: reducedMotion() ? 0 : panDuration(distance) })
 }
 
+/**
+ * A new shape, centred on a point in diagram coordinates, then opened so it can
+ * be named. Without a point it goes at the origin, which is where an empty
+ * diagram is looking.
+ *
+ * @param {string} shape
+ * @param {{ x: number, y: number } | null} at
+ * @param {{ exact?: boolean }} [options]
+ */
+function addShape(shape, at, options = {}) {
+  const wanted = at
+    ? {
+        x: Math.round(at.x - NODE_SIZE.WIDTH / 2),
+        y: Math.round(at.y - NODE_SIZE.HEIGHT / 2),
+      }
+    : { x: 0, y: 0 }
+  // A drop lands exactly where it was let go; a click finds room near the middle.
+  const position = options.exact ? wanted : freeSpotNear(wanted, nodes.value)
+
+  createNode.mutate(
+    { title: metaFor(shape).label, description: '', shape, position },
+    {
+      onSuccess(node) {
+        const id = toNodeId(node.id)
+        canvas.requestFocus(id)
+        router.push({ name: ROUTE.NODE_DETAILS, params: { id } })
+      },
+      onError: () => toasts.push('The shape could not be added.', { tone: 'danger' }),
+    },
+  )
+}
+
+/** The middle of what is visible, less the drawer, in diagram coordinates. */
+function viewCentre() {
+  const pane = container.value?.getBoundingClientRect()
+  if (!pane || !nodes.value.length) return null
+
+  const width = pane.width - (route.params.id ? DRAWER_WIDTH : 0)
+  return screenToFlowCoordinate({ x: pane.left + width / 2, y: pane.top + pane.height / 2 })
+}
+
+/** @param {DragEvent} event */
+function onDragOver(event) {
+  if (!event.dataTransfer?.types.includes(SHAPE_DRAG_TYPE)) return
+  event.preventDefault()
+  event.dataTransfer.dropEffect = 'copy'
+}
+
+/** @param {DragEvent} event */
+function onDrop(event) {
+  const shape = event.dataTransfer?.getData(SHAPE_DRAG_TYPE)
+  if (!shape) return
+  event.preventDefault()
+
+  // An empty canvas has no Vue Flow mounted to translate the point.
+  const at = nodes.value.length
+    ? screenToFlowCoordinate({ x: event.clientX, y: event.clientY })
+    : null
+  addShape(shape, at, { exact: true })
+}
+
+watch(
+  () => canvas.pendingShape,
+  (shape) => {
+    if (!shape) return
+    canvas.clearShapeRequest()
+    addShape(shape, viewCentre())
+  },
+)
+
 watch(
   () => canvas.focusNodeId,
   async (id) => {
@@ -356,7 +436,13 @@ watch(
 </script>
 
 <template>
-  <div ref="container" class="h-full w-full" :class="connectingFrom ? 'is-connecting' : ''">
+  <div
+    ref="container"
+    class="h-full w-full"
+    :class="connectingFrom ? 'is-connecting' : ''"
+    @dragover="onDragOver"
+    @drop="onDrop"
+  >
     <CanvasState
       v-if="isLoading || isError || !nodes.length"
       :is-loading="isLoading"

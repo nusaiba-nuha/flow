@@ -34,26 +34,14 @@ test('every control on the canvas explains itself', async ({ page }) => {
   expectAllExplained(await auditButtons(page.locator('body')))
 })
 
-test('every control in the drawer and the dialogs explains itself', async ({ page }) => {
+test('every control in the drawer and the help dialog explains itself', async ({ page }) => {
   await page.goto('/flow/node/b0653a')
   await page.getByLabel('Title').waitFor()
   expectAllExplained(await auditButtons(page.locator('body')))
 
   await page.goto('/flow')
-  await page.getByRole('button', { name: 'Create new node' }).click()
+  await page.getByRole('button', { name: 'Keyboard shortcuts' }).click()
   expectAllExplained(await auditButtons(page.locator('body')))
-})
-
-test('the create control does not promise a connection it will not make', async ({ page }) => {
-  await page.goto('/flow')
-  const create = page.getByRole('button', { name: 'Create new node' })
-
-  await expect(create).toHaveAttribute('title', /not connected/i)
-
-  await create.click()
-  await expect(page.getByRole('dialog', { name: 'Create new node' })).toContainText(
-    'added on its own, below the diagram',
-  )
 })
 
 test('a disabled control still says why it is disabled', async ({ page }) => {

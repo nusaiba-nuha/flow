@@ -6,7 +6,7 @@ import BaseModal from '../BaseModal.vue'
 // The panel is teleported to the body, so assertions query the document.
 const render = () =>
   mount(BaseModal, {
-    props: { title: 'Create new node' },
+    props: { title: 'Keyboard shortcuts' },
     slots: { default: '<input class="first" /><button class="last">Save</button>' },
   })
 
@@ -17,7 +17,7 @@ describe('BaseModal', () => {
     const wrapper = render()
 
     expect(document.activeElement).toBe($('input.first'))
-    expect($('[role="dialog"]').getAttribute('aria-label')).toBe('Create new node')
+    expect($('[role="dialog"]').getAttribute('aria-label')).toBe('Keyboard shortcuts')
     wrapper.unmount()
   })
 

@@ -44,7 +44,9 @@ The full reasoning, and how we will know if it is working, is at the top of the
 - **Canvas.** Pan, zoom and drag shapes on a Vue Flow canvas. Dragged positions are kept.
 - **New diagram and samples.** Start empty, or from a web app architecture or support flow
   sample. Undo brings back whatever was there.
-- **Create, edit, delete.** Every change updates the canvas immediately and rolls back if it fails.
+- **Shape palette.** Drag a shape onto the canvas to drop it there, or click it (or press Enter)
+  to add it in a clear spot near the middle.
+- **Edit and delete.** Every change updates the canvas immediately and rolls back if it fails.
 - **Connections.** Drag from one node to another to connect them, as many in and out as you like;
   remove a connection from the control on the edge.
 - **Undo and redo** for every change, from the toolbar or `Ctrl+Z` / `Ctrl+Shift+Z`.

@@ -36,6 +36,7 @@ const description = computed(() => meta.value.summary(node.value))
 const outline = computed(() => shapePath(node.value.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT, 1.5))
 const inset = computed(() => textInset(node.value.type, NODE_SIZE.WIDTH, NODE_SIZE.HEIGHT))
 const isText = computed(() => node.value.type === SHAPE.TEXT)
+const isDecision = computed(() => node.value.type === SHAPE.DECISION)
 
 /** Selection and keyboard focus draw on the outline itself, since a ring would be a rectangle. */
 const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 3 : 1.5))
@@ -53,7 +54,8 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
     :style="{
       width: `${NODE_SIZE.WIDTH}px`,
       height: `${NODE_SIZE.HEIGHT}px`,
-      padding: `${inset.y + 8}px ${inset.x + 12}px`,
+      // A diamond's inset already leaves room; padding on top would leave none for text.
+      padding: `${inset.y + 8}px ${inset.x || 12}px`,
     }"
     :aria-label="`${meta.label}: ${node.name}`"
     :data-shape="node.type"
@@ -93,7 +95,8 @@ const strokeWidth = computed(() => (props.selected || isKeyboardFocused.value ? 
 
     <p
       v-if="description"
-      class="relative mt-0.5 line-clamp-2 w-full text-xs leading-snug text-muted"
+      class="relative mt-0.5 w-full text-xs leading-snug text-muted"
+      :class="isDecision ? 'line-clamp-1' : 'line-clamp-2'"
     >
       {{ description }}
     </p>

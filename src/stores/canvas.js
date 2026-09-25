@@ -9,6 +9,21 @@ export const useCanvasStore = defineStore('canvas', () => {
   /** Node the canvas should pan to next, such as one just created. */
   const focusNodeId = ref('')
 
+  /**
+   * A shape asked for from outside the canvas, which alone knows where the
+   * middle of the view is in diagram coordinates.
+   */
+  const pendingShape = ref('')
+
+  /** @param {string} shape */
+  function requestShape(shape) {
+    pendingShape.value = shape
+  }
+
+  function clearShapeRequest() {
+    pendingShape.value = ''
+  }
+
   /** @param {{ x: number, y: number, zoom: number }} next */
   function setViewport(next) {
     viewport.value = next
@@ -28,5 +43,15 @@ export const useCanvasStore = defineStore('canvas', () => {
     focusNodeId.value = ''
   }
 
-  return { viewport, focusNodeId, setViewport, forgetViewport, requestFocus, clearFocus }
+  return {
+    viewport,
+    focusNodeId,
+    pendingShape,
+    setViewport,
+    forgetViewport,
+    requestFocus,
+    clearFocus,
+    requestShape,
+    clearShapeRequest,
+  }
 })

@@ -60,7 +60,7 @@ function useOptimisticFlowMutation({ mutationFn, apply, invalidate = true, label
 
 export function useCreateNode() {
   return useOptimisticFlowMutation({
-    label: 'Create node',
+    label: 'Add shape',
     mutationFn: (variables) => flowApi.createNode(variables),
     apply: (flow, variables) => ({
       ...flow,

@@ -35,10 +35,7 @@ defineEmits(['retry', 'sample'])
 
     <div v-else class="pointer-events-auto max-w-sm text-center">
       <p class="text-sm font-medium">An empty diagram</p>
-      <p class="mt-1 text-xs text-muted">
-        Add the first shape with <span class="text-ink">Create new node</span>, or start from a
-        sample.
-      </p>
+      <p class="mt-1 text-xs text-muted">Drag a shape in from the left, or start from a sample.</p>
 
       <ul class="mt-4 grid gap-2">
         <li v-for="sample in SAMPLES" :key="sample.id">
