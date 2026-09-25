@@ -44,6 +44,13 @@ export const SHORTCUT_GROUPS = Object.freeze([
         description: 'Delete the selection, or a selected connection',
       },
       { combos: [['Esc']], description: 'Clear a selection of several shapes' },
+      { combos: [['mod', 'C']], description: 'Copy the selection, as .flow text' },
+      { combos: [['mod', 'X']], description: 'Cut the selection' },
+      {
+        combos: [['mod', 'V']],
+        description: 'Paste shapes, from this diagram, another tab or any .flow text',
+      },
+      { combos: [['mod', 'D']], description: 'Duplicate the selection' },
     ],
   },
   {

@@ -70,6 +70,9 @@ over the `.flow` file or its text.
   label; F2 renames the focused shape. Enter saves, Escape cancels.
 - **Select several.** Shift-click, or Shift-drag a box, to select shapes; move them together, or
   delete them with Delete, as one undoable step.
+- **Copy, cut, paste and duplicate** (`Ctrl+C`, `Ctrl+X`, `Ctrl+V`, `Ctrl+D`), with the connections
+  between copied shapes. The clipboard holds `.flow` text, so shapes paste between tabs, and any
+  `.flow` text an agent writes pastes straight onto the canvas.
 - **Edit and delete.** Every change updates the canvas immediately and rolls back if it fails.
 - **Connections.** Drag from one node to another to connect them, as many in and out as you like;
   remove a connection from the control on the edge.
