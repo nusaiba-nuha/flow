@@ -60,11 +60,20 @@ const unescapeLabel = (text) =>
     .replace(/<br\s*\/?>/gi, ' ')
     .trim()
 
+/** Diff colours, as Mermaid styles. Removed is dashed, as in the SVG. */
+const CHANGE_STYLES = Object.freeze({
+  added: 'stroke:#16a34a,stroke-width:3px',
+  removed: 'stroke:#dc2626,stroke-width:3px,stroke-dasharray:5,opacity:0.7',
+  changed: 'stroke:#d97706,stroke-width:3px',
+})
+
 /**
  * @param {import('./types.js').FlowDocument} document
+ * @param {{ highlight?: Map<string, 'added' | 'removed' | 'changed'> }} [options]
+ *   marks nodes and edges by id, for a diff; GitHub renders the result in a comment
  * @returns {string}
  */
-export function toMermaid(document) {
+export function toMermaid(document, { highlight = new Map() } = {}) {
   /** @type {Map<string, string>} */
   const safe = new Map()
   const taken = new Set()
@@ -88,6 +97,23 @@ export function toMermaid(document) {
     const label = edge.label ? `|"${escapeLabel(edge.label)}"|` : ''
     lines.push(`  ${safe.get(edge.source)} -->${label} ${safe.get(edge.target)}`)
   })
+
+  if (highlight.size) {
+    Object.entries(CHANGE_STYLES).forEach(([change, style]) => {
+      const nodes = document.nodes
+        .filter((node) => highlight.get(String(node.id)) === change)
+        .map((node) => safe.get(node.id))
+      if (!nodes.length) return
+      lines.push(`  classDef ${change} ${style}`)
+      lines.push(`  class ${nodes.join(',')} ${change}`)
+    })
+    // Edges have no ids in Mermaid, only their order.
+    document.edges.forEach((edge, index) => {
+      const change = highlight.get(edge.id)
+      if (change)
+        lines.push(`  linkStyle ${index} ${CHANGE_STYLES[change].replace(',opacity:0.7', '')}`)
+    })
+  }
 
   return `${lines.join('\n')}\n`
 }

@@ -134,7 +134,7 @@ docs sites can build images.
 Compare two versions of a diagram: added, removed and changed nodes and edges highlighted, on the
 canvas and as an SVG.
 
-### FL-54 · GitHub Action ⏭️
+### FL-54 · GitHub Action ✅
 
 On a pull request that changes a `.flow` file, post the before and after as a comment.
 
@@ -142,7 +142,7 @@ On a pull request that changes a `.flow` file, post the before and after as a co
 
 | Ticket | What                                                                     | Status |
 | ------ | ------------------------------------------------------------------------ | ------ |
-| FL-55  | Multi-select: box, Shift+click, Ctrl+A; move and delete as one undo step | ⬜     |
+| FL-55  | Multi-select: box, Shift+click, Ctrl+A; move and delete as one undo step | ⏭️     |
 | FL-56  | Inline text editing on double-click, for shapes and edge labels          | ⬜     |
 | FL-57  | Resize shapes, stored on the node                                        | ⬜     |
 | FL-58  | Connectors: four sides, straight, orthogonal or curved, arrows, dashes   | ⬜     |
