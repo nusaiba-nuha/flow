@@ -59,6 +59,13 @@ jobs:
           npm run -s plugin
           git diff --exit-code plugin/
 
+      # The format docs and llms.txt are generated from templates: they must match them.
+      - name: Generated docs
+        if: '!cancelled()'
+        run: |
+          npm run -s docs
+          git diff --exit-code public/
+
       - name: VS Code extension builds
         if: '!cancelled()'
         run: npm run -s vscode
