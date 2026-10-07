@@ -13,9 +13,7 @@ Claude, Copilot or any coding agent reads without guessing, and can edit back.
 [![CI](https://github.com/raj-khan/isketch/actions/workflows/ci.yml/badge.svg)](https://github.com/raj-khan/isketch/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-ff5a2c.svg)](LICENSE)
 
-![Sketching in isketch, Copy for AI, and an agent building from the brief](docs/loop.gif)
-
-https://github.com/user-attachments/assets/cbfbc844-7373-4891-a985-50e2870fe1b5
+https://github.com/user-attachments/assets/c8fa1ab6-4f18-469f-8f9b-1232e438902b
 
 </div>
 
